@@ -26,29 +26,15 @@ covariance = (ext_SIG*ext_SIG')/length(ext_SIG);
 clear covariance
 % Identify eigenvalues that are numerically zero
 idx = find(S > length(S)*eps(max(S)));
-% eigenvalues = sort(S,'descend');
-% rankTolerance = mean(eigenvalues((length(eigenvalues)/2):end));
-% maxLastEig = sum(S > rankTolerance);
-% lowerLimitValue = (eigenvalues(maxLastEig) + eigenvalues(maxLastEig + 1)) / 2;
-% idx = find(S > lowerLimitValue);
 % Compute the whitening matrix
 SI = 1./sqrt(S(idx));
 whitening_matrix = V(:,idx) * diag(SI) * V(:,idx)';
 %whitening_matrix = diag(SI) * V(:,idx)';
 % Whitening transformation of the extended signal
 whitened_signal = whitening_matrix*ext_SIG;
-%% Initalize the predicted spike trains
-% Template for the predicted binary spike train
-predicted_spike_trains_binary = zeros(num_MUs, ext_SIG_Dim);
-% Template for the predicted raw spike train
-predicted_spike_trains_raw = predicted_spike_trains_binary;
-icasig_skew = predicted_spike_trains_binary;
-icasig_kurt = predicted_spike_trains_binary;
-icasig_logc = predicted_spike_trains_binary;
-
+%% MU responses/filters 
 mur_r = zeros(size(motor_unit_responses,1), size(motor_unit_responses,2)*size(motor_unit_responses,3));
 mur_w = zeros(size(motor_unit_responses,1), size(whitening_matrix,1));
-%% Reconstruct the spike trains of all MUs
 for mu_idx = 1:num_MUs
     % Get the motor unit response of one MU 
     mu_response = squeeze(motor_unit_responses(mu_idx,:,:));
@@ -58,63 +44,52 @@ for mu_idx = 1:num_MUs
     mur_r(mu_idx,:) = mu_response;
     mu_response = whitening_matrix * mu_response;
     mu_response = mu_response./norm(mu_response);
-    predicted_spike_trains = mu_response'*whitened_signal;
-    predicted_spike_trains = predicted_spike_trains .* abs(predicted_spike_trains);
-    %mu_response = sum(whitened_signal(:,true_spike_trains), 2);
-    idx = find(true_spike_trains(mu_idx,:) == 1);
     mur_w(mu_idx,:) = mu_response;
-    % Predict the MU spike train
-%     mu_response = sum(whitened_signal(:,idx+119), 2);
-%     predicted_spike_trains = mu_response'*whitened_signal;
-%     predicted_spike_trains = predicted_spike_trains .* abs(predicted_spike_trains);
-    % predicted_spike_trains_mean = mu_response'*whitened_signal;
-    %predicted_spike_trains_mean = predicted_spike_trains_mean .* abs(predicted_spike_trains_mean);
-    predicted_spike_trains_raw(mu_idx, : ) = predicted_spike_trains;
-    % Compute the predicted binary spike train
-    %predicted_spike_trains(predicted_spike_trains < 0 ) = 0.0;
-    while 1
-        % Peak detection
-        [pks, locs] = findpeaks(predicted_spike_trains',  'MinPeakDistance', 0.02*Fs);
-        if size(pks,1)<=1
-            predicted_spike_trains(locs) = 0.0;
-            continue
-        end
-        % K-means clustering
-        idx = kmeans(pks, 2, 'Start', [min(pks), max(pks)]');
-        [~, argmax] = max(pks);
-        active_class = idx(argmax);
-        tp_peaks = locs(idx == active_class);
-        if size(tp_peaks,1)>1
-            break
-        else %outlier detected
-            predicted_spike_trains(tp_peaks) = 0.0;
-            continue
-        end
-        
-    end
-    predicted_spike_trains_binary(mu_idx, tp_peaks) = 1.0;  
 end
-% The length of the spike trains is the same as for the raw input signal
-predicted_spike_trains_binary = predicted_spike_trains_binary(:,1:ext_SIG_Dim - L +1);
-predicted_spike_trains_raw = predicted_spike_trains_raw(:,1:ext_SIG_Dim - L +1);
-%% Evaluate performance and robustness of the decomposition
-% Initalise 
-roa_opt = zeros(num_MUs,1);
-%pnr = zeros(num_MUs,1);
+
+%% Initalize
+% Template for the predicted binary spike train
+predicted_spike_trains_binary = zeros(num_MUs, ext_SIG_Dim);
+% Template for the predicted spike trains
+predicted_spike_trains_raw = predicted_spike_trains_binary;
+icasig_skew = predicted_spike_trains_binary;
+icasig_kurt = predicted_spike_trains_binary;
+icasig_logc = predicted_spike_trains_binary;
+% Template for SIL values
 SIL_opt = zeros(num_MUs,1);
 SIL_ica_kurt = zeros(num_MUs,1);
-roa_ica_kurt = zeros(num_MUs,1);
 SIL_ica_skew = zeros(num_MUs,1);
-roa_ica_skew = zeros(num_MUs,1);
 SIL_ica_logc = zeros(num_MUs,1);
+% Template for RoA values
+roa_opt = zeros(num_MUs,1);
+roa_ica_kurt = zeros(num_MUs,1);
+roa_ica_skew = zeros(num_MUs,1);
 roa_ica_logc = zeros(num_MUs,1);
 % Equal length of the true spike train and the extended signal
 true_spike_trains = [zeros(num_MUs, L) true_spike_trains];
-% Loop over all motor units
+%% Loop over all motor units
 for mu_idx = 1:num_MUs
+    %% Optimal decomposition using the model knowledge
+    w = squeeze(motor_unit_responses(mu_idx,:,:));
+    % Transform the MU response into the optimal separation vector
+    w = fliplr(w);
+    w = reshape(w, [], 1);
+    %mur_r(mu_idx,:) = mu_response;
+    w = whitening_matrix * w;
+    [~,~,SIL_opt(mu_idx)] = calcSIL(whitened_signal, w, Fs);
+    icasig = w'*whitened_signal.*abs(w'*whitened_signal);
+    [pks, locs] = findpeaks(icasig',  'MinPeakDistance', 0.02*Fs);
+    % K-means clustering
+    idx = kmeans(pks, 2, 'Start', [min(pks), max(pks)]');
+    [~, argmax] = max(pks);
+    active_class = idx(argmax);
+    tp_peaks = locs(idx == active_class);
+    ica_spike_train_binary = zeros(1, ext_SIG_Dim);
+    ica_spike_train_binary(tp_peaks) = 1;
+    ica_spike_train_binary = ica_spike_train_binary(1:ext_SIG_Dim - L + 1);
     % Align the predicted spike train and the true spike train in time
     [aligned_predicted_spike_train, aligned_true_spike_train, shift] = align_signals(...
-        squeeze(predicted_spike_trains_binary(mu_idx, :)), squeeze(true_spike_trains(mu_idx, :)), 1000);
+        ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), 1000);
     aligned_predicted_spike_train = squeeze(aligned_predicted_spike_train);
     aligned_true_spike_train = squeeze(aligned_true_spike_train);
     % Clasify the predicted spikes into true positive firings (TP), false
@@ -126,33 +101,8 @@ for mu_idx = 1:num_MUs
     FN = sum( ~aligned_predicted_spike_train_tolerance.*aligned_true_spike_train, 'all');
     % Compute the rate-of-agreement (roa)
     roa_opt(mu_idx) = TP/(TP+FP+FN);
-    % Compute the pulse-to-noise ratio (pnr):
-    pnr(mu_idx) = 10*log(mean(predicted_spike_trains_raw(mu_idx,logical(predicted_spike_trains_binary(mu_idx,:))).^2, 'all') / ...
-        mean(predicted_spike_trains_raw(mu_idx,~logical(predicted_spike_trains_binary(mu_idx,:))).^2, 'all'));
-    % Get indices of the true positive spikes in the prediced spike train.
-    true_spikes_idx = find(aligned_true_spike_train_tolerance.*aligned_predicted_spike_train); 
-    if shift > 0 % In this case the indices correspond to the true spike train and must be converted (see function 'align_signals.m')
-        true_spikes_idx = true_spikes_idx + shift;
-    end
-    true_spikes_idx(true_spikes_idx < 1) = 1; % Make sure that there are no negative indices
-    true_spikes_idx(true_spikes_idx > size(predicted_spike_trains_binary,2)) = size(predicted_spike_trains_binary,2); % Make sure that the indices do not exeed the length of the array
-    % Get indices of the not true positive spikes in the prediced spike train.
-    no_spikes_idx = logical(ones(size(predicted_spike_trains_raw(mu_idx,:))));
-    no_spikes_idx(true_spikes_idx) = 0;
-    % Compute the silhouette score (SIL)
-    centroid_peaks = mean(predicted_spike_trains_raw(mu_idx, true_spikes_idx));
-    centroid_no_activity = mean(predicted_spike_trains_raw(mu_idx, no_spikes_idx));
-    %sum_distance_peaks = sum(((predicted_spike_trains_raw(mu_idx, true_spikes_idx) - centroid_peaks).^2).^0.5);
-    %sum_distance_no_activity = sum(((predicted_spike_trains_raw(mu_idx, true_spikes_idx) - centroid_no_activity).^2).^0.5);
-%    SIL(mu_idx) = (sum_distance_no_activity - sum_distance_peaks )/max(sum_distance_peaks, sum_distance_no_activity);
-    mu_response = squeeze(motor_unit_responses(mu_idx,:,:));
-    % Transform the MU response into the optimal separation vector
-    mu_response = fliplr(mu_response);
-    mu_response = reshape(mu_response, [], 1);
-    %mur_r(mu_idx,:) = mu_response;
-    mu_response = whitening_matrix * mu_response;
-    [~,~,SIL_opt(mu_idx)] = calcSIL(whitened_signal, mu_response, Fs);
-    %%
+    predicted_spike_trains_raw(mu_idx,:) = icasig;
+    %% ICA Decomposition, contrast function: Skewness
     w = fixedpointalg(mu_response,whitened_signal,[],200,'skew');
     [~,~,SIL_ica_skew(mu_idx)] = calcSIL(whitened_signal, w, Fs);
     icasig = w'*whitened_signal.*abs(w'*whitened_signal);
@@ -180,7 +130,7 @@ for mu_idx = 1:num_MUs
     % Compute the rate-of-agreement (roa)
     roa_ica_skew(mu_idx) = TP/(TP+FP+FN);
     icasig_skew(mu_idx,:) = icasig;
-    %%
+    %% ICA Decomposition, contrast function: Kurtosis
     w = fixedpointalg(mu_response,whitened_signal,[],200,'kurtosis');
     [~,~,SIL_ica_kurt(mu_idx)] = calcSIL(whitened_signal, w, Fs);
     icasig = w'*whitened_signal.*abs(w'*whitened_signal);
@@ -208,7 +158,7 @@ for mu_idx = 1:num_MUs
     % Compute the rate-of-agreement (roa)
     roa_ica_kurt(mu_idx) = TP/(TP+FP+FN);
     icasig_kurt(mu_idx,:) = icasig;
-    %%
+    %% ICA Decomposition, contrast function: LogCosh
     w = fixedpointalg(mu_response,whitened_signal,[],200,'logcosh');
     [~,~,SIL_ica_logc(mu_idx)] = calcSIL(whitened_signal, w, Fs);
     icasig = w'*whitened_signal.*abs(w'*whitened_signal);
