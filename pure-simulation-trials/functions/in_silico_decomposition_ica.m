@@ -70,14 +70,14 @@ true_spike_trains = [zeros(num_MUs, L) true_spike_trains];
 %% Loop over all motor units
 for mu_idx = 1:num_MUs
     %% Optimal decomposition using the model knowledge
-    w = squeeze(motor_unit_responses(mu_idx,:,:));
+    mu_response = squeeze(motor_unit_responses(mu_idx,:,:));
     % Transform the MU response into the optimal separation vector
-    w = fliplr(w);
-    w = reshape(w, [], 1);
+    mu_response = fliplr(mu_response);
+    mu_response = reshape(mu_response, [], 1);
     %mur_r(mu_idx,:) = mu_response;
-    w = whitening_matrix * w;
-    [~,~,SIL_opt(mu_idx)] = calcSIL(whitened_signal, w, Fs);
-    icasig = w'*whitened_signal.*abs(w'*whitened_signal);
+    mu_response = whitening_matrix * mu_response;
+    [~,~,SIL_opt(mu_idx)] = calcSIL(whitened_signal, mu_response, Fs);
+    icasig = mu_response'*whitened_signal.*abs(mu_response'*whitened_signal);
     [pks, locs] = findpeaks(icasig',  'MinPeakDistance', 0.02*Fs);
     % K-means clustering
     idx = kmeans(pks, 2, 'Start', [min(pks), max(pks)]');
