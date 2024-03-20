@@ -34,8 +34,8 @@ max_exc_lvl=5; % Percentage % of max exc
 
 % Excitatory drive
 E_t=[linspace(0,max_exc_lvl,ramp(1)*fs) max_exc_lvl*ones(1,ramp(2)*fs) flip(linspace(0,max_exc_lvl,ramp(3)*fs))];
-
-data=zeros(size(muap{1},1),size(t,2));
+L = size(muap{1},2);
+data=zeros(size(muap{1},1),size(t,2) + L -1 );
 spiketrains=zeros(size(muap,2), size(t,2));
 
 % Loop through each motoneuron
@@ -65,7 +65,7 @@ for i=1:n_mn
     ST(round(2e3*t_imp{i}))=1;
     spiketrains(i,:) = ST;
     for ch=1:size(muap{i},1)
-        data(ch,:)=data(ch,:)+conv(ST,muap{i}(ch,:),'same');
+        data(ch,:)=data(ch,:)+conv(ST,muap{i}(ch,:));
     end
 end
 
