@@ -1,89 +1,107 @@
 %% Generate EMG signals according to the Fuglevand recruitment model
-
-% Set subject nr (1 or 2) - grid 1-2 for subject 2 have a few bad channels
-subject_nr=2;
-
+rng(0)
 % Set folder
 addpath(genpath('../experimental-simulation/'));
+addpath(genpath('../pure-simulation-trials/functions/'))
 folder='';
 
-% Load MUAPs and recruitment thresholds
-load([folder,'muaps_RT_S',num2str(subject_nr),'.mat'])
+% Set subject nr (1 or 2) - grid 1-2 for subject 2 have a few bad channels
+subject_IDs = [1 2];
+mvc_leves  = [5 15 30 50 80]; 
+noise_dB= [5 10 20 30]; 
 
-% Set params
-T=30; % Total simulation time in seconds
-fs=2048; % Sample rate
-t=linspace(0,T,T*fs); % Time vector
-noise_dB=20; % added coloured gaussian noise
+for sub_idx=1:length(subject_IDs)
+    for mvc_idx=1:length(mvc_leves)
+        subject_nr = subject_IDs(sub_idx);       
+        % Load MUAPs and recruitment thresholds
+        load([folder,'muaps_RT_S',num2str(subject_nr),'.mat'])
+        
+        % Set params
+        T=30; % Total simulation time in seconds
+        fs=2048; % Sample rate
+        t=linspace(0,T,T*fs); % Time vector
+   
+        % Motoneuron params
+        n_mn=size(muap,2); % Number of motoneurons in the pool
+        g_e=1; % gain of the excitatory drive-firing rate relationship
+        MFR=8; % Hz - Minimum firing rate
+        PFR1=35; % Hz - peak firing rate of the first motoneuron
+        PFRD=10; % Hz - desired difference in peak firing rates between the first and last units
+        ISICoV=0.15; % Inter-spike interval coefficient of variation
+        PFRi=PFR1-PFRD*(RT./RT(end)); % Peak firing rate of motoneuron i
+        
+        % Ramp params
+        time_recruit=5;
+        time_decruit=5;
+        time_stable=T-time_recruit-time_decruit;
+        ramp=[time_recruit time_stable time_decruit];
+        max_exc_lvl=mvc_leves(mvc_idx); % Percentage % of max exc
+        
+        % Excitatory drive
+        E_t=[linspace(0,max_exc_lvl,ramp(1)*fs) max_exc_lvl*ones(1,ramp(2)*fs) flip(linspace(0,max_exc_lvl,ramp(3)*fs))];
+        L = size(muap{1},2);
+        emg_data=zeros(size(muap{1},1),size(t,2) + L -1 );
+        spiketrains=zeros(size(muap,2), size(t,2));
+        active_MUs = length(find(RT <= max_exc_lvl));
+        
+        % Loop through each motoneuron
+        for i=1:active_MUs
+            disp(['MU: ',num2str(i),'/',num2str(n_mn)])
+            t_thresh=E_t-RT(i); % Above this thresh - fire
+            find_t_thresh=find(t_thresh>=0); % Which samples are associated with firing
+            if isempty(find_t_thresh) % if nothing above this thresh, skip
+                continue;
+            end
+            t_imp{i}(1)=t(find_t_thresh(1)); % Which time point is the first above threshold
+            t_imp{i}(1)=((ISICoV/6)*t_imp{i}(1))*randn(1)+t_imp{i}(1); % Add random ISICoV to first firing
+            exc_diff=t_thresh(find_t_thresh(1)); % Time point in sec for the first impulse
+            curr_t=t_imp{i}(1); % Set current time point
+            iter=1; % Firing counter
+            while curr_t<=t(find_t_thresh(end)) % while sample point is below last sample point associated with firing
+                tmp=max(1./(g_e*(exc_diff)+MFR),1./PFRi(i));
+                t_imp{i}(iter+1)=(ISICoV*tmp)*randn(1)+tmp+t_imp{i}(iter);
+                iter=iter+1; % Next firing
+                [~,minInd]=min(abs(t_imp{i}(iter)-t(find_t_thresh)));
+                exc_diff=t_thresh(find_t_thresh(minInd));
+                curr_t=t_imp{i}(iter);
+            end
+        
+            % Convolve spike train with MUAPs for each channel
+            ST=zeros(size(t));
+            ST(round(2e3*t_imp{i}))=1;
+            spiketrains(i,:) = ST;
+            for ch=1:size(muap{i},1)
+                emg_data(ch,:)=emg_data(ch,:)+conv(ST,muap{i}(ch,:));
+            end
+        end
+        
 
-% Motoneuron params
-n_mn=size(muap,2); % Number of motoneurons in the pool
-g_e=1; % gain of the excitatory drive-firing rate relationship
-MFR=8; % Hz - Minimum firing rate
-PFR1=35; % Hz - peak firing rate of the first motoneuron
-PFRD=10; % Hz - desired difference in peak firing rates between the first and last units
-ISICoV=0.15; % Inter-spike interval coefficient of variation
-PFRi=PFR1-PFRD*(RT./RT(end)); % Peak firing rate of motoneuron i
+        for noise_idx=1:length(noise_dB)
+            % Make noise
+            noise = randn(size(emg_data,1),size(emg_data,2));
+            [b,a] = butter(3, [10 500] ./ (fs/2),'bandpass');
+            noise = filtfilt(b,a,noise')';
+            noise = noise.*std(emg_data,0,'all')./db2mag(noise_dB(noise_idx));
+            
+            
+            muscle_ID = sprintf('subject_%d',subject_nr);
+            mvc_ID    = sprintf('ramp_%d_percent_noise_%d_dB',max_exc_lvl, noise_dB(noise_idx));
+            
+            MUR = zeros(active_MUs,size(muap{1},1),size(muap{1},2));
+            for mu_idx=1:active_MUs 
+                MUR(mu_idx,:,:) = muap{mu_idx}; 
+            end
 
-% Ramp params
-time_recruit=5;
-time_decruit=5;
-time_stable=T-time_recruit-time_decruit;
-ramp=[time_recruit time_stable time_decruit];
-max_exc_lvl=5; % Percentage % of max exc
-
-% Excitatory drive
-E_t=[linspace(0,max_exc_lvl,ramp(1)*fs) max_exc_lvl*ones(1,ramp(2)*fs) flip(linspace(0,max_exc_lvl,ramp(3)*fs))];
-L = size(muap{1},2);
-data=zeros(size(muap{1},1),size(t,2) + L -1 );
-spiketrains=zeros(size(muap,2), size(t,2));
-
-% Loop through each motoneuron
-for i=1:n_mn
-    disp(['MU: ',num2str(i),'/',num2str(n_mn)])
-    t_thresh=E_t-RT(i); % Above this thresh - fire
-    find_t_thresh=find(t_thresh>=0); % Which samples are associated with firing
-    if isempty(find_t_thresh) % if nothing above this thresh, skip
-        continue;
-    end
-    t_imp{i}(1)=t(find_t_thresh(1)); % Which time point is the first above threshold
-    t_imp{i}(1)=((ISICoV/6)*t_imp{i}(1))*randn(1)+t_imp{i}(1); % Add random ISICoV to first firing
-    exc_diff=t_thresh(find_t_thresh(1)); % Time point in sec for the first impulse
-    curr_t=t_imp{i}(1); % Set current time point
-    iter=1; % Firing counter
-    while curr_t<=t(find_t_thresh(end)) % while sample point is below last sample point associated with firing
-        tmp=max(1./(g_e*(exc_diff)+MFR),1./PFRi(i));
-        t_imp{i}(iter+1)=(ISICoV*tmp)*randn(1)+tmp+t_imp{i}(iter);
-        iter=iter+1; % Next firing
-        [~,minInd]=min(abs(t_imp{i}(iter)-t(find_t_thresh)));
-        exc_diff=t_thresh(find_t_thresh(minInd));
-        curr_t=t_imp{i}(iter);
-    end
-
-    % Convolve spike train with MUAPs for each channel
-    ST=zeros(size(t));
-    ST(round(2e3*t_imp{i}))=1;
-    spiketrains(i,:) = ST;
-    for ch=1:size(muap{i},1)
-        data(ch,:)=data(ch,:)+conv(ST,muap{i}(ch,:));
+            disp(['Doing the decomposition for case ', muscle_ID, ' ', mvc_ID])
+            
+            [~, ~,roa, SIL,sCos] = ...
+                    in_silico_decomposition_ica(emg_data + noise, MUR, spiketrains(1:active_MUs,:), fs);
+                % Save the results 
+                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.roa = roa;
+                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.SIL = SIL;
+                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.sCos = sCos;
+        end
     end
 end
-
-%%
-addpath ../pure-simulation-trials/functions/
-
-muscle_ID = sprintf('subject_%d',subject_nr);
-mvc_ID    = 'ramp_1';
-
-MUR = zeros(size(muap,2),size(muap{1},1),size(muap{1},2));
-for mu_idx=1:194 
-    MUR(mu_idx,:,:) = muap{mu_idx}; 
-end
-
-[~, ~,roa, SIL] = ...
-        in_silico_decomposition_ica(data, MUR, spiketrains, fs);
-    % Save the results 
-    decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.roa = roa;
-    decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.SIL = SIL;
 
 
