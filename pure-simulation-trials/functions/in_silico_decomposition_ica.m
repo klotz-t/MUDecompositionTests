@@ -1,4 +1,4 @@
-function [SPIKESIG, predicted_spike_trains_binary, roa, SIL] = in_silico_decomposition_ica(SIG, motor_unit_responses, true_spike_trains, Fs)
+function [SPIKESIG, predicted_spike_trains_binary, roa, SIL, s_cos] = in_silico_decomposition_ica(SIG, motor_unit_responses, true_spike_trains, Fs)
 % In-silico motor unit decomposition framework as proposed in Klotz et al.
 % (2023). Given a multi-channel signal SIG (Num. Channels x Time Samples),
 % the corresponding MU responses (Num. MUs x Num. Channels x Time Samples),
@@ -71,7 +71,7 @@ roa_ica_logc = zeros(num_MUs,1);
 true_spike_trains = [zeros(num_MUs, L) true_spike_trains];
 %% Loop over all motor units
 for mu_idx = 1:num_MUs
-    disp(['MU: ',num2str(mu_idx),'/',num2str(num_MUs)])
+    disp(['Decompose MU: ',num2str(mu_idx),'/',num2str(num_MUs)])
     %% Optimal decomposition using the model knowledge
     mu_response = squeeze(motor_unit_responses(mu_idx,:,:));
     % Transform the MU response into the optimal separation vector
@@ -210,5 +210,5 @@ SPIKESIG.kurt = icasig_kurt;
 SPIKESIG.logc = icasig_logc;
 %%
 % s_cos_r = compute_cosine_similarity2(mur_r);
-% s_cos_w = compute_cosine_similarity2(mur_w);
+s_cos = compute_cosine_similarity2(mur_w);
 end
