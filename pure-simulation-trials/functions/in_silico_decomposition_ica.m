@@ -89,10 +89,10 @@ for mu_idx = 1:num_MUs
     tp_peaks = locs(idx == active_class);
     ica_spike_train_binary = zeros(1, ext_SIG_Dim);
     ica_spike_train_binary(tp_peaks) = 1;
-    ica_spike_train_binary = ica_spike_train_binary(1:ext_SIG_Dim - L + 1);
+    ica_spike_train_binary = ica_spike_train_binary(1:size(true_spike_trains,2));
     % Align the predicted spike train and the true spike train in time
-    [aligned_predicted_spike_train, aligned_true_spike_train, shift] = align_signals(...
-        ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), 1000);
+    [aligned_predicted_spike_train, aligned_true_spike_train, ~] = alignsignals(...
+        ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), Method='xcorr', MaxLag = 1000, Truncate=true);
     aligned_predicted_spike_train = squeeze(aligned_predicted_spike_train);
     aligned_true_spike_train = squeeze(aligned_true_spike_train);
     % Clasify the predicted spikes into true positive firings (TP), false
@@ -118,10 +118,10 @@ for mu_idx = 1:num_MUs
         tp_peaks = locs(idx == active_class);
         ica_spike_train_binary = zeros(1, ext_SIG_Dim);
         ica_spike_train_binary(tp_peaks) = 1;
-        ica_spike_train_binary = ica_spike_train_binary(1:ext_SIG_Dim - L + 1);
+        ica_spike_train_binary = ica_spike_train_binary(1:size(true_spike_trains,2));
         % Align the predicted spike train and the true spike train in time
-        [aligned_predicted_spike_train, aligned_true_spike_train, shift] = align_signals(...
-            ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), 1000);
+        [aligned_predicted_spike_train, aligned_true_spike_train, ~] = alignsignals(...
+            ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), Method='xcorr', MaxLag = 1000, Truncate=true);
         aligned_predicted_spike_train = squeeze(aligned_predicted_spike_train);
         aligned_true_spike_train = squeeze(aligned_true_spike_train);
         % Clasify the predicted spikes into true positive firings (TP), false
@@ -148,10 +148,10 @@ for mu_idx = 1:num_MUs
         tp_peaks = locs(idx == active_class);
         ica_spike_train_binary = zeros(1, ext_SIG_Dim);
         ica_spike_train_binary(tp_peaks) = 1;
-        ica_spike_train_binary = ica_spike_train_binary(1:ext_SIG_Dim - L + 1);
+        ica_spike_train_binary = ica_spike_train_binary(1:size(true_spike_trains,2));
         % Align the predicted spike train and the true spike train in time
-        [aligned_predicted_spike_train, aligned_true_spike_train, shift] = align_signals(...
-            ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), 1000);
+        [aligned_predicted_spike_train, aligned_true_spike_train, ~] = alignsignals(...
+            ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), Method='xcorr', MaxLag = 1000, Truncate=true);
         aligned_predicted_spike_train = squeeze(aligned_predicted_spike_train);
         aligned_true_spike_train = squeeze(aligned_true_spike_train);
         % Clasify the predicted spikes into true positive firings (TP), false
@@ -178,10 +178,10 @@ for mu_idx = 1:num_MUs
         tp_peaks = locs(idx == active_class);
         ica_spike_train_binary = zeros(1, ext_SIG_Dim);
         ica_spike_train_binary(tp_peaks) = 1;
-        ica_spike_train_binary = ica_spike_train_binary(1:ext_SIG_Dim - L + 1);
+        ica_spike_train_binary = ica_spike_train_binary(1:size(true_spike_trains,2));
         % Align the predicted spike train and the true spike train in time
-        [aligned_predicted_spike_train, aligned_true_spike_train, shift] = align_signals(...
-            ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), 1000);
+        [aligned_predicted_spike_train, aligned_true_spike_train, ~] = alignsignals(...
+            ica_spike_train_binary, squeeze(true_spike_trains(mu_idx, :)), Method='xcorr', MaxLag = 1000, Truncate=true);
         aligned_predicted_spike_train = squeeze(aligned_predicted_spike_train);
         aligned_true_spike_train = squeeze(aligned_true_spike_train);
         % Clasify the predicted spikes into true positive firings (TP), false
