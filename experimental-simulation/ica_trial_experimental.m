@@ -101,7 +101,7 @@ for sub_idx=1:length(subject_IDs)
             t_start = 5*fs;
             t_end   = 25*fs;
             [icasig, ~,roa, SIL,sCos] = ...
-                    in_silico_decomposition_ica(emg_data(1:4:end,t_start:t_end) + noise(1:4:end,t_start:t_end), MUR(:,1:4:end,:), spiketrains(1:active_MUs,t_start:t_end), fs);
+                    in_silico_decomposition_ica(emg_data(1:2:end,t_start:t_end) + noise(1:2:end,t_start:t_end), MUR(:,1:2:end,:), spiketrains(1:active_MUs,t_start:t_end), fs);
                 % Save the results 
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.roa = roa;
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.SIL = SIL;
