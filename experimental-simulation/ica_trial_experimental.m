@@ -7,16 +7,20 @@ folder='';
 
 % Set subject nr (1 or 2) - grid 1-2 for subject 2 have a few bad channels
 subject_IDs = [1 2];
-mvc_leves  = [5 30 80]; % [5 15 30 50 80]; 
-noise_dB= [5 10 20 30]; 
+mvc_leves  = [5 15 30 50 80]; 
+noise_dB= [10 20 30 50];%[5 10 20 30]; 
+%taperWin=tukeywin(101,0.1)';
 %mvc_leves = 15;
 %noise_dB = 30;
 
-for sub_idx=1:length(subject_IDs)
+for sub_idx=1:1%length(subject_IDs)
     for mvc_idx=1:length(mvc_leves)
         subject_nr = subject_IDs(sub_idx);       
         % Load MUAPs and recruitment thresholds
         load([folder,'muaps_RT_S',num2str(subject_nr),'.mat'])
+        for mu_idx=1:length(muap)
+            muap{mu_idx} = tukeywin(61,0.2)' .* muap{mu_idx}(:,20:80);
+        end
         
         % Set params
         T=30; % Total simulation time in seconds
@@ -73,12 +77,13 @@ for sub_idx=1:length(subject_IDs)
             ST(round(2e3*t_imp{i}))=1;
             spiketrains(i,:) = ST;
             for ch=1:size(muap{i},1)
+                muap{i}(ch,:) = (muap{i}(ch,:) - mean(muap{i}(ch,:),2)); %.*taperWin;
                 emg_data(ch,:)=emg_data(ch,:)+conv(ST,muap{i}(ch,:));
             end
         end
 
-        mean_vals = mean(emg_data,2);
-        emg_data = emg_data - mean_vals;
+        % mean_vals = mean(emg_data(:,5*fs:25*fs),2);
+        % emg_data = emg_data - mean_vals;
         
 
         for noise_idx=1:length(noise_dB)
@@ -94,18 +99,19 @@ for sub_idx=1:length(subject_IDs)
             
             MUR = zeros(active_MUs,size(muap{1},1),size(muap{1},2));
             for mu_idx=1:active_MUs 
-                MUR(mu_idx,:,:) = muap{mu_idx} - mean_vals; 
+                MUR(mu_idx,:,:) = muap{mu_idx};% - mean_vals; 
             end
 
             disp(['Doing the decomposition for case ', muscle_ID, ' ', mvc_ID])
             t_start = 5*fs;
             t_end   = 25*fs;
             [icasig, ~,roa, SIL,sCos] = ...
-                    in_silico_decomposition_ica(emg_data(1:2:end,t_start:t_end) + noise(1:2:end,t_start:t_end), MUR(:,1:2:end,:), spiketrains(1:active_MUs,t_start:t_end), fs);
+                    in_silico_decomposition_ica(emg_data(1:1:end,t_start:t_end) + noise(1:1:end,t_start:t_end), MUR(:,1:1:end,:), spiketrains(1:active_MUs,t_start:t_end), fs);
                 % Save the results 
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.roa = roa;
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.SIL = SIL;
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.sCos = sCos;
+                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.icasig = icasig;
         end
     end
 end
