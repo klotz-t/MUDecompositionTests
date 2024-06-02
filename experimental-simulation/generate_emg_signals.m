@@ -11,7 +11,7 @@ folder='';
 load([folder,'muaps_RT_S',num2str(subject_nr),'.mat'])
 
 % Set params
-T=30; % Total simulation time in seconds
+T=60; % Total simulation time in seconds
 fs=2048; % Sample rate
 t=linspace(0,T,T*fs); % Time vector
 noise_dB=20; % added coloured gaussian noise
@@ -61,7 +61,7 @@ for i=1:n_mn
 
     % Convolve spike train with MUAPs for each channel
     ST=zeros(size(t));
-    ST(round(2e3*t_imp{i}))=1;
+    ST(round(fs*t_imp{i}))=1;
     for ch=1:size(muap{i},1)
         data(ch,:)=data(ch,:)+conv(ST,muap{i}(ch,:),'same');
     end
