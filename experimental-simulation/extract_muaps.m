@@ -66,7 +66,7 @@ for selectedRecording=1:size(files,1)
                 iterTrig=iterTrig+1;
             end
             muap{MUnum}(ch,:)=muap{MUnum}(ch,:)./iterTrig;
-            muap{MUnum}(ch,:)=muap{MUnum}(ch,:)-median(muap{MUnum}(ch,:));
+            muap{MUnum}(ch,:)=muap{MUnum}(ch,:)-mean(muap{MUnum}(ch,:));
             % Use a tukey window to make first and last sample 0
             muap{MUnum}(ch,:)=taperWin.*muap{MUnum}(ch,:);
         end
