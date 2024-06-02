@@ -7,13 +7,15 @@ folder='';
 
 % Set subject nr (1 or 2) - grid 1-2 for subject 2 have a few bad channels
 subject_IDs = [1 2];
-mvc_leves  = [5 15 30 50 80]; 
+% mvc_leves  = [5 15 30 50 80]; 
+% noise_dB= [10 20 30 50];%[5 10 20 30]; 
+mvc_leves  = [5 15 30 50]; 
 noise_dB= [10 20 30 50];%[5 10 20 30]; 
 %taperWin=tukeywin(101,0.1)';
 %mvc_leves = 15;
 %noise_dB = 30;
 
-for sub_idx=1:1%length(subject_IDs)
+for sub_idx=1:length(subject_IDs)
     for mvc_idx=1:length(mvc_leves)
         subject_nr = subject_IDs(sub_idx);       
         % Load MUAPs and recruitment thresholds
@@ -44,7 +46,8 @@ for sub_idx=1:1%length(subject_IDs)
         max_exc_lvl=mvc_leves(mvc_idx); % Percentage % of max exc
         
         % Excitatory drive
-        E_t=[linspace(0,max_exc_lvl,ramp(1)*fs) max_exc_lvl*ones(1,ramp(2)*fs) flip(linspace(0,max_exc_lvl,ramp(3)*fs))];
+        %E_t=[linspace(0,max_exc_lvl,ramp(1)*fs) max_exc_lvl*ones(1,ramp(2)*fs) flip(linspace(0,max_exc_lvl,ramp(3)*fs))];
+        E_t=[zeros(1,ramp(1)*fs) max_exc_lvl*ones(1,ramp(2)*fs) zeros(1,ramp(3)*fs)];
         L = size(muap{1},2);
         emg_data=zeros(size(muap{1},1),size(t,2) + L -1 );
         spiketrains=zeros(size(muap,2), size(t,2));
@@ -74,7 +77,7 @@ for sub_idx=1:1%length(subject_IDs)
         
             % Convolve spike train with MUAPs for each channel
             ST=zeros(size(t));
-            ST(round(2e3*t_imp{i}))=1;
+            ST(round(fs*t_imp{i}))=1;
             spiketrains(i,:) = ST;
             for ch=1:size(muap{i},1)
                 muap{i}(ch,:) = (muap{i}(ch,:) - mean(muap{i}(ch,:),2)); %.*taperWin;
@@ -105,13 +108,15 @@ for sub_idx=1:1%length(subject_IDs)
             disp(['Doing the decomposition for case ', muscle_ID, ' ', mvc_ID])
             t_start = 5*fs;
             t_end   = 25*fs;
-            [icasig, ~,roa, SIL,sCos] = ...
-                    in_silico_decomposition_ica(emg_data(1:1:end,t_start:t_end) + noise(1:1:end,t_start:t_end), MUR(:,1:1:end,:), spiketrains(1:active_MUs,t_start:t_end), fs);
+            [~, ~,roa, SIL,sCos,recall, precision] = ...
+                    in_silico_decomposition_ica(emg_data(65:128,t_start:t_end) + noise(65:128,t_start:t_end), MUR(:,65:128,:), spiketrains(1:active_MUs,t_start:t_end), fs);
                 % Save the results 
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.roa = roa;
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.SIL = SIL;
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.sCos = sCos;
-                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.icasig = icasig;
+                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.recall = recall;
+                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.precision = precision;
+                %decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.icasig = icasig;
         end
     end
 end
