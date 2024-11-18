@@ -32,13 +32,13 @@ noise_com  = 20; % percent of mean
 noise_ind = 0.25*noise_com; % percent of mean
 %
 %% Loop over drives
-spiketrains = cell(length(mean_drive),1); % Preallocate output vector
+%spiketrains = cell(length(mean_drive),1); % Preallocate output vector
 options=odeset('InitialStep',dt,'RelTol',1e-5,'AbsTol',1e-5); % options for ode solver
 tic
-for i = 1:length(mean_drive)
+for i=1:1 %i = 1:length(mean_drive)
 
     % Create the cortical drive signal (use random seed i)
-    CI = CorticalInput(mean_drive(i),noise_com,ndt,Fs,i,noise_ind,NumberOfMUs);
+    %CI = CorticalInput(mean_drive(i),noise_com,ndt,Fs,i,noise_ind,NumberOfMUs);
 
     % Initial conditions for first time step: InitStates 
     mn_y0 = reshape(mn_pool.InitStates,6*NumberOfMUs,[]); 
@@ -50,7 +50,7 @@ for i = 1:length(mean_drive)
     % Solve the model
     for time=1:ndt-1
         % Get the MN drive for the current time step
-        mu_drive = CI(:,time)'; 
+        mu_drive = CIb(:,time)'; 
         
         % Apply solver
         [t,y]=ode23(@(t,y)mn_pool.evaluate_rhs_mn_pool(t,y,mu_drive),...
@@ -77,7 +77,7 @@ for i = 1:length(mean_drive)
     spiketrains{i} = sparse(spiketrains{i}); % make sparse
     
     % Clear Variables
-    clear CI mn_y0 mempot
+    %clear CI mn_y0 mempot
 end
 toc
 %%
