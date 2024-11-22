@@ -1,0 +1,20 @@
+function [wSIG,whitening_matrix] = whitening(eSIG,method)
+
+switch method
+    case 'ZCA'
+        % Compute the covariance matrix of the extended signal
+        covariance = (eSIG*eSIG')/length(eSIG);
+        % Eigendecomposition of the covariance matrix of the extended signal
+        [V,S] = eig(covariance, 'vector');
+        clear covariance
+        % Identify eigenvalues that are numerically zero
+        %idx = find(S > length(S)*eps(max(S)));
+        idx = find(S > mean(S(1:round(length(S)/2))));
+        % Compute the whitening matrix
+        SI = 1./sqrt(S(idx));
+        whitening_matrix = V(:,idx) * diag(SI) * V(:,idx)';
+        % Whitening transformation of the extended signal
+        wSIG = whitening_matrix*eSIG;
+end
+
+end
