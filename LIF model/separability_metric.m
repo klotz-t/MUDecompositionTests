@@ -1,4 +1,4 @@
-function val=separability_metric(sig,true_firings)
+function [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig,true_firings)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Separability metric (truncated such that it is between 0 and 1):
 % Median amplitude difference between ground truth and background peaks
@@ -12,7 +12,7 @@ win=-10:10; % peaks will not be fully aligned - use a +/- 5 ms window
 fsEMG=2048; % sig sample rate
 fsMN=10e3; % true firings sample rate
 n_mad=3; % number of mad for threshold in find peaks detection
-prctile_val=0.5; % which prctile to compare source amplitude values
+prctile_val=50; % which prctile to compare source amplitude values
 
 % Ensure that peaks are on the positive side (may change depending on
 % contrast function)
@@ -66,13 +66,16 @@ matched_indx(remInd)=[];
 % Get their amplitudes and remove unmatched amps such that they have
 % the same number of values
 matched_amps=sig(matched_indx);
-unmatched_amps=sort(sig(unmatched_indx),'descend');
+[unmatched_amps,I]=sort(sig(unmatched_indx),'descend');
 unmatched_amps((length(matched_amps)+1):end)=[];
+unmatched_indx=unmatched_indx(I);
+unmatched_indx((length(matched_indx)+1):end)=[];
 
 % Compute separability metric
 if isempty(unmatched_amps)
     % If there is no unmatched amps, it is a perfect fit (unmatched amp = 0)
     unmatched_amps=0;
+    unmatched_indx=[];
     val=1-prctile(unmatched_amps,prctile_val)/prctile(matched_amps,prctile_val);
 else
     val=1-prctile(unmatched_amps,prctile_val)/prctile(matched_amps,prctile_val);
@@ -80,4 +83,4 @@ end
 
 % Truncate such that values cannot be negative
 % Negative value means background noise has higher peaks
-val=(0*(val<0) + val*(val>0));
+val=(0*(val<0) + val*(val>=0));
