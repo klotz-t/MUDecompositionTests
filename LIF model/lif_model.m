@@ -35,9 +35,6 @@ for MUind=1:n_mn
         treftmp=tref(MUind);
     end
 
-    G = zeros(size(T));
-    G(1) = 0;
-
     % Loop over time
     for t=1:length(T)-1
         if tr==0
@@ -49,8 +46,7 @@ for MUind=1:n_mn
                 % Set refractory time
                 tr = round(treftmp/dt);
             else
-                Vm(t+1) = Vm(t)+dt*(-(Vm(t)-V_e)+G(t)+Im(t)*Rm(MUind))/(tau_m(MUind));
-                G(t+1) = gain_leak(MUind)*(Vm(t)-V_e)-gain_exc(MUind)*(Im(t)*Rm(MUind));
+                Vm(t+1) = Vm(t)+dt*(-gain_leak(MUind)*(Vm(t)-V_e)+gain_exc(MUind)*Im(t)*Rm(MUind))/(tau_m(MUind));
             end
         else
             % Reset membrane potential

@@ -46,8 +46,7 @@ membr_param.tref = 2.7e-8./(motoneuron_soma_diameters.^1.51) .* 0.2;%motoneurons
 membr_param.Rm=(1.68e-10)./(3.96e-4.*(3.85e-9 .* 9.1.^(((1:n_mn)./n_mn).^1.1831)).^0.396).^2.43; % motoneuron_resistances;%3.7e6.*(1./exp((log(100)./(n_mn-1)).*(0:(n_mn-1)))).^(1./5.493272);%
 % Set membrane time constants based on slow and fast type (s)
 membr_param.tau_m=7.9e-5.*(motoneuron_soma_diameters.^1) .*  membr_param.Rm;%motoneurons_membrane_time_const;%12e-3.*(1./exp((log(100)./(n_mn-1)).*(0:(n_mn-1)))).^(1./8.124093);
-%membr_param.beta = 0.77;%0.6;% 0.7 for slowest
-membr_param.gain_leak=linspace(0.75,0.85,n_mn);%flip(linspace(0.25,0.75,n_mn));
+membr_param.gain_leak=linspace(0.25,0.15,n_mn);
 membr_param.gain_exc=membr_param.gain_leak;
 
 % Set time parameters
