@@ -47,7 +47,7 @@ idx2 = [9, 10, 11, ...
 %%
 amplitude_scale = [5 10 15 20];
 
-for dist_idx = 1:4
+for dist_idx = 3:4
     for amp_idx=1:4
         for noise_idx=1:5
             % Define MU responses
@@ -59,6 +59,12 @@ for dist_idx = 1:4
             signal_2 = reshape(MUR(2,:,:), 1, []);
             similarity = dot(signal_1,signal_2)  / (norm(signal_1) * norm(signal_2));
             disp(['The cosine similarity between the two MU responses is ', num2str(similarity)])
+            energy_muap1 = sum(signal_1.^2 , 'all');
+            energy_muap2 =  sum(signal_2.^2 , 'all');
+            mean_energy = mean([energy_muap1 energy_muap2]);
+            mean_squared_difference = sum((signal_1- signal_2).^2 , 'all');
+            similarity_energy  = mean_squared_difference/ mean_energy;
+            disp(['The energy similarity between the two MU responses is ', num2str(similarity_energy)])
             % Mix the MU responses 
             nCh  = 70; % Number of Channels
             L    = 120; % Time samples of the motor unit responses
