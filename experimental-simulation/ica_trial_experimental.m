@@ -15,18 +15,24 @@ noise_dB= [10 20 30 50];%[5 10 20 30];
 %mvc_leves = 15;
 %noise_dB = 30;
 
-for sub_idx=1:length(subject_IDs)
+for sub_idx=2:length(subject_IDs)
     for mvc_idx=1:length(mvc_leves)
         subject_nr = subject_IDs(sub_idx);       
         % Load MUAPs and recruitment thresholds
         load([folder,'muaps_RT_S',num2str(subject_nr),'.mat'])
         for mu_idx=1:length(muap)
             muap{mu_idx} = tukeywin(61,0.2)' .* muap{mu_idx}(:,20:80);
+            %muap{mu_idx} = tukeywin(101,0.2)' .* muap{mu_idx}(:,:);
+            tmp = zeros(256,301);
+            for i=1:size(muap{mu_idx},1)
+                tmp(i,:) = interp1(t0,muap{mu_idx}(i,:),t1);
+            end
+            muap{mu_idx} = tmp;
         end
         
         % Set params
         T=30; % Total simulation time in seconds
-        fs=2048; % Sample rate
+        fs=5*2048; % Sample rate
         t=linspace(0,T,T*fs); % Time vector
    
         % Motoneuron params
@@ -52,9 +58,10 @@ for sub_idx=1:length(subject_IDs)
         emg_data=zeros(size(muap{1},1),size(t,2) + L -1 );
         spiketrains=zeros(size(muap,2), size(t,2));
         active_MUs = length(find(RT <= max_exc_lvl));
+        t_imp = cell(1,active_MUs);
         
         % Loop through each motoneuron
-        for i=1:active_MUs
+        for i=1:2
             disp(['MU: ',num2str(i),'/',num2str(n_mn)])
             t_thresh=E_t-RT(i); % Above this thresh - fire
             find_t_thresh=find(t_thresh>=0); % Which samples are associated with firing
@@ -116,6 +123,7 @@ for sub_idx=1:length(subject_IDs)
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.sCos = sCos;
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.recall = recall;
                 decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.precision = precision;
+                decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.spiketrain = spiketrains(1:active_MUs,t_start:t_end);
                 %decomp_out.(muscle_ID).(mvc_ID).HD_sEMG.icasig = icasig;
         end
     end
