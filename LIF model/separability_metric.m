@@ -12,7 +12,7 @@ win=-10:10; % peaks will not be fully aligned - use a +/- 5 ms window
 fsEMG=2048; % sig sample rate
 fsMN=10e3; % true firings sample rate
 n_mad=3; % number of mad for threshold in find peaks detection
-prctile_val=50; % which prctile to compare source amplitude values
+prctile_vals=[50 95]; % which prctile to compare source amplitude values
 
 % Ensure that peaks are on the positive side (may change depending on
 % contrast function)
@@ -76,11 +76,21 @@ if isempty(unmatched_amps)
     % If there is no unmatched amps, it is a perfect fit (unmatched amp = 0)
     unmatched_amps=0;
     unmatched_indx=[];
-    val=1-prctile(unmatched_amps,prctile_val)/prctile(matched_amps,prctile_val);
+    val(1)=1-prctile(unmatched_amps,prctile_vals(1))/prctile(matched_amps,100-prctile_vals(1));
+    tmp1=prctile(unmatched_amps,prctile_vals(2));
+    tmp2=prctile(matched_amps,100-prctile_vals(2));
 else
-    val=1-prctile(unmatched_amps,prctile_val)/prctile(matched_amps,prctile_val);
+    val(1)=1-prctile(unmatched_amps,prctile_vals(1))/prctile(matched_amps,100-prctile_vals(1));
+    tmp1=prctile(unmatched_amps,prctile_vals(2));
+    tmp2=prctile(matched_amps,100-prctile_vals(2));
 end
+
+% False positive rate
+val(2)=length(find(unmatched_amps>=tmp2))/length(unmatched_amps);
+
+% False negative rate
+val(3)=length(find(matched_amps<=tmp1))/length(matched_amps);
 
 % Truncate such that values cannot be negative
 % Negative value means background noise has higher peaks
-val=(0*(val<0) + val*(val>=0));
+val=(0.*(val<0) + val.*(val>=0));
