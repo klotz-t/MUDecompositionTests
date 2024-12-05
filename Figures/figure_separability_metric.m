@@ -1,0 +1,98 @@
+% Figure Separabilitymetric
+
+load('separability_metric_example.mat')
+
+cd '../LIF model/'
+
+cmap=lines(4);
+
+t=tiledlayout(4,1);
+figure(1);set(gcf,'units','points','position',[530,131,803,801]);
+
+nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig1,ground_truth_spikes);
+hold on;
+plot(linspace(0,length(sig1)/2048,length(sig1)),sig1./max(sig1))
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,25) prctile(matched_amps,25)],'--','Color','k','LineWidth',1);
+plot(unmatched_indx/2048,unmatched_amps,'o','Color',cmap(3,:),'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(unmatched_amps,75) prctile(unmatched_amps,75)],'--','Color','k','LineWidth',1);
+hold off;
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',16);
+set(gca,'XTickLabel',[]);
+xticks(20:5:40);
+yticks([0 1]);
+ylimtmp=ylim;
+ylimtmp(2)=1;
+ylim(ylimtmp);
+%set(gca,'YTickLabel',[])
+%set(gca,'YTick',[])
+%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
+% ylabel('Source amplitude (n.u.)');
+
+nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig2,ground_truth_spikes);
+hold on;
+plot(linspace(0,length(sig2)/2048,length(sig2)),sig2./max(sig2));
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,50) prctile(matched_amps,50)],'--','Color','k','LineWidth',1);
+plot(unmatched_indx/2048,unmatched_amps,'o','Color',cmap(3,:),'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],'--','Color','k','LineWidth',1);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],':','Color',cmap(3,:),'LineWidth',1);
+hold off;
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',16);
+xticks(20:5:40);
+yticks([0 1]);
+%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
+% ylabel('Source amplitude (n.u.)');
+set(gca,'XTickLabel',[])
+
+nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig3,ground_truth_spikes);
+hold on;
+plot(linspace(0,length(sig3)/2048,length(sig3)),sig3./max(sig3));
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,50) prctile(matched_amps,50)],'--','Color','k','LineWidth',1);
+plot(unmatched_indx/2048,unmatched_amps,'o','Color',cmap(3,:),'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],'--','Color','k','LineWidth',1);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],':','Color',cmap(3,:),'LineWidth',1);
+hold off;
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',16);
+xticks(20:5:40);
+yticks([0 1]);
+set(gca,'XTickLabel',[])
+%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
+% ylabel('Source amplitude (n.u.)');
+
+nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig4,ground_truth_spikes);
+hold on;
+plot(linspace(0,length(sig4)/2048,length(sig3)),sig4./max(sig4));
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,50) prctile(matched_amps,50)],'--','Color','k','LineWidth',1);
+hold off;
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',16);
+xticks(20:5:40);
+yticks([0 1]);
+xlabel('Time (s)');
+%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
+% ylabel('Source amplitude (n.u.)');
+
+% t.TileSpacing='compact';
+t.Padding='compact';
