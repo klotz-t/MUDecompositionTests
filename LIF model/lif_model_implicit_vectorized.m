@@ -16,7 +16,7 @@ T=time_param.T; % Time vector
 spike_times=cell(1,n_mn);
 
 Vm   = zeros(n_mn,length(T));
-dR   = dt.*V_e.*(gain_leak./tau_m)';
+dL   = dt.*V_e.*(gain_leak./tau_m)';
 dI   = dt.*(gain_exc.*Rm./tau_m)';
 % M    = diag(1+dt./tau_m.*gain_leak);
 iM   = 1./ (1+dt./tau_m.*gain_leak)';
@@ -31,7 +31,7 @@ Vm(:,1) = V_reset;
 for t=1:length(T)-1
     % Integrate Membrane Voltage with Implicit Euler
     %Vm(:,t+1) = (inv_M * (Vm(:,t) + dR + dI.*CI(:,t)));
-    Vm(:,t+1) = iM .* (Vm(:,t) + dR + dI.*CI(:,t));
+    Vm(:,t+1) = iM .* (Vm(:,t) + dL + dI.*CI(:,t));
     % Deal with MNs in refractory period
     idx = find(tr > 0);
     Vm(idx,t+1) = V_reset;
