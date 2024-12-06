@@ -8,7 +8,7 @@ function [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separabil
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Hardcoded values for now
-win=-10:10; % peaks will not be fully aligned - use a +/- 5 ms window
+win=-15:15; % peaks will not be fully aligned - use a +/- 5 ms window
 fsEMG=2048; % sig sample rate
 fsMN=10e3; % true firings sample rate
 n_mad=3; % number of mad for threshold in find peaks detection
@@ -22,7 +22,7 @@ sig=sign(skewness(sig)).*sig;
 sig=sig./max(sig);
 
 % Find peaks above a certain threshold based on mad
-[pks,spikes] = findpeaks(sig,'MinPeakHeight',n_mad*mad(sig));
+[pks,spikes] = findpeaks(sig,'MinPeakHeight',n_mad*mad(sig),'MinPeakDistance',round(fsEMG*0.02));
 % Remove peaks below 0
 spikes(find(pks<0))=[];
 pks(find(pks<0))=[];
@@ -43,8 +43,12 @@ peak_st(spikes)=1;
 
 % Adjust ground truth spikes based on time lag
 findLag=lags(find(max(r)==r));
-[minVal,minInd]=min(findLag);
-findLag=findLag(minInd);
+tmp=zeros(1,length(findLag));
+for nlags=1:length(findLag)
+    tmp(nlags)=mean(sig(locs+findLag(nlags)));
+end
+[maxVal,maxInd]=max(tmp);
+findLag=findLag(maxInd);
 locs=locs+findLag;
 
 % Find the source peaks that belong/not belong to ground truth
