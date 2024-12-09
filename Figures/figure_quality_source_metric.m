@@ -4,7 +4,12 @@ clearvars; close all;
 
 cd '../LIF model/'
 
-generate_emg_signals
+I=7e-9; % 7 nA input current
+noise_dB=20;
+fs=2048;
+
+[spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
+[data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
 
 addpath '../pure-simulation-trials/functions/'
 
@@ -22,7 +27,7 @@ pnr=zeros(1,size(spike_times,2));
 skew=zeros(1,size(spike_times,2));
 sep=zeros(3,size(spike_times,2));
 
-for i=1:size(spike_times,2) % MU selection
+for i=1:2%size(spike_times,2) % MU selection
     disp([num2str(i),'/',num2str(size(spike_times,2))]);
 
     % Extend and whiten

@@ -1,4 +1,4 @@
-function spike_times=lif_model(n_mn,CI,membr_param,time_param,verbose)
+function spike_times=lif_model(n_mn,CI,membr_param,time_param)
 
 V_reset=membr_param.V_reset; % Reset potential (V)
 V_e=membr_param.V_e; % Leak reversal potential (V)
@@ -15,9 +15,6 @@ T=time_param.T; % Time vector
 
 spike_times=cell(1,n_mn);
 for MUind=1:n_mn
-    if verbose==1
-        disp(MUind)
-    end
     % Add noise
     Im=CI(MUind,:);
     % Define membrane potential vector

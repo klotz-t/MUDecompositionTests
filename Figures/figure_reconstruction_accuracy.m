@@ -2,7 +2,12 @@
 
 cd '../LIF model/'
 
-generate_emg_signals
+I=7e-9; % 7 nA input current
+noise_dB=20;
+fs=2048;
+
+[spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
+[data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
 
 addpath '../pure-simulation-trials/functions/'
 
