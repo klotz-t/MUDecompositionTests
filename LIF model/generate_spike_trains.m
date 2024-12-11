@@ -1,19 +1,15 @@
-function [spike_times,time_param,membr_param,CI]=generate_spike_trains(max_I,paired_sync_vec)
+function [spike_times,time_param,membr_param,CI]=generate_spike_trains(max_I,CCoV,ICoV)
 
 if nargin < 1
-    error('Input current missing');
+    error('Input current missing'); % mean drive in nA
 end
 
 if nargin < 2
-    paired_sync=0;
-    sync_MUs=[49 50];
-else
-    try
-        paired_sync=paired_sync_vec(1);
-        sync_MUs=paired_sync_vec(2:3);
-    catch
-        error('Incorrect sync_MUs input')
-    end
+    CCoV = 20; % common noise: percent of mean
+end
+
+if nargin < 3
+    ICoV = 0.25*CCoV; % independent noise: percent of mean
 end
 
 % Set maximal injectec current (mean drive)
@@ -56,7 +52,7 @@ time_param.fs = 10e3; % 10 kHz
 time_param.dt = 1/time_param.fs; % Time step (s)
 time_param.T = 0:time_param.dt:time_param.T_dur; % Time vector
 
-CI=cortical_input(n_mn,n_clust,max_I,time_param,type,paired_sync,sync_MUs);
+CI=cortical_input(n_mn,n_clust,max_I,time_param,type,CCoV,ICoV);
 spike_times=lif_model(n_mn,CI,membr_param,time_param);
 
 end

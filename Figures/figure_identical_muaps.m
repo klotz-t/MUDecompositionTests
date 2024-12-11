@@ -124,7 +124,7 @@ set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
 set(gca,'YTick',[]);
-title('MUAP-based projection vector (two identical MUAPs)','FontWeight','normal')
+title('Reconstructed source using a ground truth MUAP-based projection vector (two identical MUAPs)','FontWeight','normal')
 
 nexttile;
 hold on;
@@ -138,7 +138,7 @@ set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
 set(gca,'YTick',[]);
-title('Window and ground truth spike-based projection vector (MU #49)','FontWeight','normal')
+title('Reconstructed window-based sources using a ground truth spike-based projection vector (MU #49)','FontWeight','normal')
 
 nexttile;
 hold on;
@@ -151,7 +151,7 @@ set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
 set(gca,'YTick',[]);
-title('Window and ground truth spike-based projection vector (MU #50)','FontWeight','normal')
+title('Reconstructed window-based sources using a ground truth spike-based projection vector (MU #50)','FontWeight','normal')
 
 nexttile;
 hold on;
