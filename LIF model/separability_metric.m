@@ -19,7 +19,7 @@ prctile_vals=[50 95]; % which prctile to compare source amplitude values
 sig=sign(skewness(sig)).*sig;
 
 % Normalise such that max peak is 1 (not really needed)
-sig=sig./max(sig);
+%sig=sig./max(sig);
 
 % Find peaks above a certain threshold based on mad
 [pks,spikes] = findpeaks(sig,'MinPeakHeight',n_mad*mad(sig),'MinPeakDistance',round(fsEMG*0.02));
@@ -94,6 +94,7 @@ val(2)=length(find(unmatched_amps>=tmp2))/length(unmatched_amps);
 
 % False negative rate
 val(3)=length(find(matched_amps<=tmp1))/length(matched_amps);
+val(4) = (mean(matched_amps) - mean(unmatched_amps))/std(sig);
 
 % Truncate such that values cannot be negative
 % Negative value means background noise has higher peaks
