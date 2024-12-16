@@ -25,9 +25,9 @@ R=16; % extension factor
 sil=zeros(1,size(spike_times,2));
 pnr=zeros(1,size(spike_times,2));
 skew=zeros(1,size(spike_times,2));
-sep=zeros(3,size(spike_times,2));
+sep=zeros(4,size(spike_times,2));
 
-for i=1:2%size(spike_times,2) % MU selection
+for i=1:size(spike_times,2) % MU selection
     disp([num2str(i),'/',num2str(size(spike_times,2))]);
 
     % Extend and whiten
@@ -59,7 +59,7 @@ for i=1:2%size(spike_times,2) % MU selection
 
     % Compute SIL and PNR
     sil(i)=compute_sil(sig,est_spikes);
-    pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3]);
+    pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3],1);
     skew(i)=skewness(sig);
     sep(:,i)=separability_metric(sig,spike_times{i});
 
@@ -96,7 +96,7 @@ hold on;
 scatter(100*sep(1,:),pnr,100,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
-ylim([10 25]);
+ylim([15 40]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 set(gca,'XTickLabel',[]);
 ylabel('Pulse-to-noise ratio, PNR (dB)');
@@ -106,7 +106,7 @@ hold on;
 scatter(100*sep(2,:),pnr,100,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
-ylim([10 25]);
+ylim([15 40]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
@@ -116,7 +116,7 @@ hold on;
 scatter(100*sep(3,:),pnr,100,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
-ylim([10 25]);
+ylim([15 40]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
@@ -184,3 +184,9 @@ xlabel('False negative rate (%)');
 t.TileSpacing='compact';
 t.Padding='compact';
 
+[rho,pval] = corr(pnr',sep(1,:)')
+[rho,pval] = corr(sil',sep(1,:)')
+[rho,pval] = corr(skew',sep(1,:)')
+
+[rho,pval] = corr(skew',pnr')
+[rho,pval] = corr(skew',sil')
