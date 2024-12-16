@@ -1,8 +1,8 @@
 % figure common spikes
 
-clearvars; close all;
+%clearvars; close all;
 
-useExistingData=1;
+useExistingData=0;
 
 fs=2048;
 
@@ -52,6 +52,30 @@ if useExistingData==0
                 % Extend and whiten
                 eSIG = extension(data,R);
                 [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+                % % %%
+                % % Compute the true covariance matrix
+                % w = muap{1}(65:128,:);
+                % w = extension2(w,R);
+                % H = w;
+                % for idx2=2:length(spike_times)
+                %     w = muap{idx2}(65:128,:);
+                %     w = extension2(w,R);
+                %     H = cat(2,H,w);
+                % end
+                % ST = zeros(length(spike_times),size(data,2));
+                % for idx3=1:length(spike_times)
+                %     ST(idx3,round(2048.*spike_times{idx3}./10000)) = 1; 
+                % end
+                % eST = extension2(ST,size(muap{1},2)+R-1);
+                % cST = cov(eST');
+                % ceSIG = H*cST*H';
+                % [V,S] = eig(ceSIG, 'vector');
+                % reg_val = mean(1:S(round(length(S)/2)));
+                % % Compute the whitening matrix
+                % SI = 1./sqrt(S + reg_val);
+                % whitening_matrix = V * diag(SI) * V';
+                % wSIG = whitening_matrix*eSIG;
+                %%
 
                 % MU1
                 w = muap{MU1}(65:128,:);
@@ -108,7 +132,7 @@ if useExistingData==0
                 fnr2(i,j)=tmp(3);
             end
         end
-        save(['../Figures/common_spikes_',num2str(noise_dB),'dB.mat'])
+        save(['../Figures/common_spikes_n',num2str(noise_dB),'dB.mat'])
     end
 end
 
@@ -116,8 +140,9 @@ clearvars;
 
 cd '../Figures/'
 
-load('common_spikes_20dB.mat');
-
+%load('common_spikes_20dB.mat');
+load('common_spikes_n20dB.mat');
+%%
 % Make figure
 
 t=tiledlayout(2,3);
