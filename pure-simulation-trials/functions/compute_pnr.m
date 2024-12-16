@@ -1,12 +1,18 @@
-function pnr = compute_pnr(ipts, mupulses, fsamp, constrain_pulses, separate_paired_firings)
+function pnr = compute_pnr(ipts, mupulses, fsamp, constrain_pulses, ignore_negative_ipts, separate_paired_firings)
     % Compute the pulse-to-noise ratio (PNR) for a single motor unit (MU).
 
     % Default values
     if nargin < 4
         constrain_pulses = [true, 3];
     end
-    if nargin < 5
+
+    if nargin < 6
         separate_paired_firings = false;
+    end
+
+    if ignore_negative_ipts
+        % Ignore negative values
+        ipts = ipts .* abs(ipts);
     end
 
     % Handle case of no firings

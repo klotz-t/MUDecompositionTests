@@ -1,13 +1,16 @@
-function plot_sta(muap,fs,col)
+function plot_sta(muap,fs,col,norm_amp)
 
 if nargin<3
     col='k';
 end
 
+if nargin<4
+    norm_amp = max(abs(muap(:)),[],'omitnan');
+end
+
 t = 1e3*[0:size(muap,3)-1]/fs; % time vector
 
 %figure;set(gcf,'units','points','position',[355,132,1047,776]);
-norm_amp = max(abs(muap(:)),[],'omitnan');
 hold on;
 for i = 1:size(muap,1) % looping across all SOL channels
     for j=1:size(muap,2)

@@ -99,6 +99,7 @@ if changing_muap==1
         muap_var{i+1}=zeros(size(muap{MU1}));
         muap_var{i+1}(65:128,:)=muap_tmp_vec;
     end
+    muap{MU1}=muap_var;
 end
 
 % if identical_muaps==1
