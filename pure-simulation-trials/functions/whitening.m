@@ -29,6 +29,13 @@ switch method
         whitening_matrix = diag(SI) * V(:,idx)';
         % Whitening transformation of the extended signal
         wSIG = whitening_matrix*eSIG;
+    case 'Cholesky'
+        % Compute the covariance matrix of the extended signal
+        covariance = (eSIG*eSIG')/length(eSIG);
+        % Cholesky Decomposition
+        R = chol(covariance);
+        whitening_matrix = inv(R');
+        wSIG = whitening_matrix*eSIG;
 
 end
 
