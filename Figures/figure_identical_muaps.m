@@ -26,6 +26,8 @@ R=16; % extension factor
 
 % Extend and whiten
 eSIG = extension(data,R);
+eSIG_ref = eSIG;
+cSIG_ref = eSIG*eSIG'/size(eSIG,2);
 [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
 
 w = muap{MU2}(65:128,:);
@@ -66,19 +68,33 @@ sig1_sub={};
 sig2=zeros(1,size(data,2));
 sig2_sub={};
 iter=0;
+
+spike_train_ref=spike_times{MU1} - (fsSIM/1e3)/(fsEMG/1e3);
+locs_ref=round((fsEMG*1e-3)*spike_train_ref/(fsSIM*1e-3));
+mean_muap = mean(eSIG_ref(:,locs_ref),2);
+k=1;
+
 for win=1:win_jumps:size(data,2)-win_jumps
     %try
         % MU 49
         data_win=data(:,win:(win+win_jumps));
         eSIG = extension(data_win,R);
+        cSIG = eSIG*eSIG'/size(eSIG,2);
         [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
 
         % Reconstruction
         spike_train=spike_times{MU1}(spike_times{MU1}>=(fsSIM/1e3)*win/(fsEMG/1e3) & spike_times{MU1}<=(fsSIM/1e3)*(win+win_jumps)/(fsEMG/1e3))-(fsSIM/1e3)*(win-1)/(fsEMG/1e3);
         locs=round((fsEMG*1e-3)*spike_train/(fsSIM*1e-3));
 
+        spike_train2=spike_times{MU1}(spike_times{MU1}>=(fsSIM/1e3)*win/(fsEMG/1e3) & spike_times{MU1}<=(fsSIM/1e3)*(win+win_jumps)/(fsEMG/1e3))-(fsSIM/1e3)/(fsEMG/1e3);
+        locs2=round((fsEMG*1e-3)*spike_train2/(fsSIM*1e-3));
+
         if ~isempty(locs)
             iter=iter+1;
+            tmp = mean(eSIG_ref(:,locs2),2);
+            error_cm(k) = norm(reshape(cSIG - cSIG_ref,[],1))/norm(reshape(cSIG_ref,[],1))
+            error_average(k) = norm(tmp - mean_muap) / norm(mean_muap)
+            k = k + 1;
             w=mean(wSIG(:,locs),2);
             w = w./norm(w);
 

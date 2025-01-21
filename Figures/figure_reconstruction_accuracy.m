@@ -129,3 +129,22 @@ hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim([16.5 18.0]);
 set(gca,'visible','off');
+
+%% Calculations for paper
+%  Construct the extended and whitened mixing matrix
+wp = muap{1}(65:128,:);
+wp = extension2(wp,R);
+H = wp;
+for idx2=2:length(spike_times)
+    wp = muap{idx2}(65:128,:);
+    wp = extension2(wp,R);
+    H = cat(2,H,wp);
+end
+H = whitening_matrix*H;
+% Compute the expected spike amplitude 
+col_idx = 5727;
+expected_amplitude = norm(H(:,col_idx));
+empirical_amplitude = max(w'*wMU,[],'all');
+% Values at plus/minus one sample 
+projected_amplitudes = w'*H;
+pm_one = [norm(projected_amplitudes(:,col_idx-1)) norm(projected_amplitudes(:,col_idx+1))]./expected_amplitude;
