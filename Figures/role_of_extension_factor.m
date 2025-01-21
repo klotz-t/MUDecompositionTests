@@ -2,6 +2,8 @@
 
 useExistingData=0;
 
+rng(0)
+
 fs=2048;
 
 MU1=1;
@@ -10,9 +12,7 @@ MU2=50;
 CCoV_vec=20;
 ICoV_vec=10;
 
-
-
-extF = [1 2 4 8 12 16 24]; % 32 64];
+extF = [1 2 4 8 12 16 24];
 
 MU1_norm = zeros(length(extF),1);
 MU50_norm = zeros(length(extF),1);
@@ -60,7 +60,6 @@ if useExistingData==0
             H = cat(2,H,w);
         end
 
-    
         % MU1
         w = muap{MU1}(65:128,:);
         w = extension(w,R);
@@ -74,13 +73,10 @@ if useExistingData==0
         tmp = H;
         tmp(:,1:101+R-1) = [];
         
-
         s_cos = w'*tmp;
         c1(i) = max(s_cos);
         s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
         s1(i) = max(s_cos);
-
-   
     
         % MU2
         w = muap{MU2}(65:128,:);
@@ -99,37 +95,69 @@ if useExistingData==0
         c50(i) = max(s_cos);
         s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
         s50(i) = max(s_cos);
-    
-
     end
 end
 
 %%
+
+cmap=lines(2);
+
 t=tiledlayout(1,3);
-set(gcf,'units','points','position',[257,170,1275,785])
+set(gcf,'units','points','position',[286,340,1275,499])
 
 nexttile;
-plot(extF,MU1_norm,'x-',extF,MU50_norm,'x-','LineWidth',2)
-ylim([0 12])
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-xlabel('Extension Factor (-)');
-ylabel('Spike Amplitude (-)');
-title({'Spike Amplitude'},'FontWeight','normal');
-
-nexttile;
-plot(extF,1-c1./MU1_norm,'x-',extF,1-c50./MU50_norm,'x-','LineWidth',2)
+hold on;
+p1=plot(extF,MU1_norm./max([MU1_norm; MU50_norm]),'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
+p2=plot(extF,MU50_norm./max([MU1_norm; MU50_norm]),'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
+hold off;
 ylim([0 1])
+set(gca,'YTickLabel',[]);
+set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-xlabel('Extension Factor (-)');
-ylabel('Seperability Metric (-)');
-title({'Difference to largest background peak'},'FontWeight','normal');
-
+xlabel('Extension factor');
+ylabel('Spike amplitude');
+title({'Spike amplitude'},'FontWeight','normal');
+h=legend([p1 p2],{'MU #1','MU #50'},'location','southwest');
+h.Box='off';
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xticks(0:8:24)
 
 nexttile;
-plot(extF,s1,'x-',extF,s50,'x-','LineWidth',2)
+hold on;
+p1=plot(extF,1-c1./MU1_norm,'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
+p2=plot(extF,1-c50./MU50_norm,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
+hold off;
 ylim([0 1])
+set(gca,'YTickLabel',[]);
+set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-xlabel('Extension Factor (-)');
-ylabel('S_{cos} (-)');
+xlabel('Extension factor');
+ylabel('Separability metric');
+title({'Difference to background peak'},'FontWeight','normal');
+h=legend([p1 p2],{'MU #1','MU #50'},'location','southwest');
+h.Box='off';
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xticks(0:8:24)
+
+nexttile;
+hold on;
+p1=plot(extF,s1,'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
+p2=plot(extF,s50,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
+hold off;
+ylim([0 1])
+set(gca,'YTickLabel',[]);
+set(gca,'YTick',[]);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+xlabel('Extension factor');
+ylabel('Cosine similarity');
 title({'Most similar MUAP'},'FontWeight','normal');
+h=legend([p1 p2],{'MU #1','MU #50'},'location','southwest');
+h.Box='off';
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xticks(0:8:24)
 
+t.TileSpacing='compact';
+t.Padding='compact';
+
+g=gcf;
+g.Renderer='painters';

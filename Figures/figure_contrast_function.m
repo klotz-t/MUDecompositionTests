@@ -23,15 +23,22 @@ for i=1:length(nvalues)
         cvals(j,i) = G(1,nvalues(i)) - G(ps_vals(j),nvalues(i))./G(1,nvalues(i));
     end 
 end
-figure(11)
-subplot(131)
+
+t=tiledlayout(1,3);
+set(gcf,'units','points','position',[0,210,1511,556]);
+
+nexttile;
+
+hold on;
 plot(nvalues,cvals','LineWidth',2)
+hold off;
 xlim([0 8]), ylim([0 1.2])
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Exponent a')
-ylabel('Source contrast (-)')
+ylabel('Source contrast')
 title('Contrast between sources')
-legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast')
+h1=legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast');
+h1.Box='off';
+set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 %% Influecne of the contrast function on higher-order terms
 % Standard deviation
 sigma = 1;
@@ -69,34 +76,41 @@ end
 tmp1 = T0./(T0+T2);
 % Weighting of zero-order term relative to the total cost (up to order 4)
 tmp2 = T0./(T0+T2+T3+T4);
-figure(11)
-subplot(132)
+
+nexttile;
+
 patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(1,:))], color1, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
 alpha(0.5)
 xlim([0 8]), ylim([0 1.2])
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-title('Zero-order vs Higher-order terms')
-legend('3*\sigma','5*\sigma','10*\sigma')
+title('Zero- vs Higher-order terms')
+h2=legend('3*\sigma','5*\sigma','10*\sigma');
+h2.Box='off';
 xlabel('Exponent a')
-ylabel('Learning weight (-)')
+ylabel('Learning weight')
+set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 
 %%
 tmp1 = cvals(4,:).*T0./(T0+T2);
 tmp2 = cvals(4,:).*T0./(T0+T2+T3+T4);
-figure(11)
-subplot(133)
+
+nexttile;
+
 patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(1,:))], color1, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
 alpha(0.5)
 xlim([0 8]), ylim([0 1.2])
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 title('Optimal non-linearity')
-legend('3*\sigma','5*\sigma','10*\sigma')
+h3=legend('3*\sigma','5*\sigma','10*\sigma');
+h3.Box='off';
 xlabel('Exponent a')
-ylabel('Loss (-)')
+ylabel('Loss')
+set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
+
+t.TileSpacing='compact';
+t.Padding='compact';
 
 %% Number of spikes required to dominate an outlier
 % Ratio of the expected spike value and the outlier amplitude
@@ -110,7 +124,7 @@ for i=1:length(nvalues)
 end
 figure(12) 
 semilogy(nvalues,nspikes','LineWidth',2)
-set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',16);
+set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 xlim([0 8])
 ylim([0 10^5])
 xlabel('Exponent a')

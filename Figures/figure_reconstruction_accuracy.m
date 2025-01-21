@@ -1,5 +1,7 @@
 % figure reconstruction accuracy
 
+rng(0)
+
 cd '../LIF model/'
 
 I=7e-9; % 7 nA input current
@@ -55,7 +57,7 @@ end
 w = w(:,maxInd);
 w = w./norm(w);
 
-% Make figure
+%% Make figure
 t=tiledlayout(4,1);
 figure(1);set(gcf,'units','points','position',[498,99,831,972])
 time_win=[5 55];
@@ -64,7 +66,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 set(gca,'XTickLabel',[]);
@@ -74,7 +76,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wPy);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 set(gca,'XTickLabel',[]);
@@ -84,7 +86,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wNoise);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 set(gca,'XTickLabel',[]);
@@ -94,7 +96,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 title('MU filter applied to the EMG signal (sum of all terms)','FontWeight','normal');
@@ -108,7 +110,7 @@ figure(2);set(gcf,'units','points','position',[781,458,337,306])
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU,'LineWidth',1.5);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim([28.37 28.57]);
 set(gca,'visible','off');
 
@@ -116,7 +118,7 @@ figure(3);set(gcf,'units','points','position',[781,458,337,306])
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wPy,'LineWidth',1.5);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim([16.5 18.0]);
 set(gca,'visible','off');
 
@@ -124,6 +126,6 @@ figure(4);set(gcf,'units','points','position',[781,458,337,306])
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG,'LineWidth',1.5);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim([16.5 18.0]);
 set(gca,'visible','off');

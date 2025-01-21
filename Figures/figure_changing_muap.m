@@ -2,6 +2,8 @@
 
 clearvars; close all;
 
+rng(1)
+
 useExistingData=0;
 
 if useExistingData==0
@@ -20,7 +22,7 @@ if useExistingData==0
 
     similar_muaps_vec=[0 MU1 MU1+1 0 1];
     changing_muap_vec=[1 MU1];
-    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI);
+    [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI);
 
     muap_stacked=zeros(64,size(muap{MU1}{1},2),size(muap{MU1},2));
     for ind=1:size(muap{MU1},2)
@@ -68,7 +70,7 @@ if useExistingData==0
 
         tmp=separability_metric(sig,spike_times{MU1});
         [~,energy_similarity1]=compute_cosine_similarity(mean_muap,muap{MU1}{i}(65:128,:));
-        [~,energy_similarity2]=compute_cosine_similarity(muap{MU1}{13}(65:128,:),muap{MU1}{i}(65:128,:));
+        [~,energy_similarity2]=compute_cosine_similarity(muap{MU1}{7}(65:128,:),muap{MU1}{i}(65:128,:));
 
         sep(i)=tmp(1);
         fpr(i)=tmp(2);
@@ -76,33 +78,60 @@ if useExistingData==0
         es1(i)=energy_similarity1;
         es2(i)=energy_similarity2;
     end
+    save('../Figures/changing_muap.mat') 
 end
 
-amp_vary=movmean(CI(MU1,:),20000);
-amp_vary(length(amp_vary))=amp_vary(1);
-amp_vary=abs(amp_vary-amp_vary(1));
-amp_vary=12*amp_vary./max(amp_vary);
-amp_vary=round(amp_vary);
+clearvars;
 
-% figure
+cd '../Figures/'
+
+load('changing_muap.mat');
+
+% amp_vary=movmean(CI(MU1,:),20000);
+% amp_vary(length(amp_vary))=amp_vary(1);
+% amp_vary=abs(amp_vary-amp_vary(1));
+% amp_vary=12*amp_vary./max(amp_vary);
+% amp_vary=round(amp_vary);
+
+es_mat=zeros(size(muap{MU1},2),size(muap{MU1},2));
+for i=1:size(muap{MU1},2)
+    for j=1:size(muap{MU1},2)
+        [~,energy_similarity]=compute_cosine_similarity(muap{MU1}{i}(65:128,:),muap{MU1}{j}(65:128,:));
+        es_mat(i,j)=energy_similarity;
+    end
+end
+
+%% figure
 cmap=lines(2);
 
 t=tiledlayout(3,2);
-set(gcf,'units','points','position',[283,203,925,715])
+set(gcf,'units','points','position',[397,201,925,888])
 
-nexttile([1 2]);
+nexttile;
 hold on;
-plot(linspace(0,length(amp_vary)/time_param.fs,length(amp_vary)),amp_vary+1,'o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'LineWidth',2);
+plot(spike_times{MU1}/time_param.fs,amp_vary(spike_times{MU1}),'o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'LineWidth',2);
 hold off;
 xlim([0 60]);
 ylim([1 13]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('Time (s)');
 ylabel('MUAP distribution #');
 yticks(1:2:13);
-% xticks(transl_spikes/10);
-% h=legend([s1 s2],{'MU #36','MU #50'},'location','northeast','NumColumns',2);
-% h.Box='off';
+% title({'MUAP distribution for each firing'},'FontWeight','normal');
+
+nexttile;
+imagesc([1 13],[13 1],100.*interp2(es_mat,4));
+cb=colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
+xlabel('MUAP distribution #');
+ylabel('MUAP distribution #');
+% title({'Energy similarity (%)'},'FontWeight','normal');
+xticks(1:2:13)
+yticks(1:2:13)
+cb.Ticks=[0 5 10];
+set(gca,'YTickLabel',[flip(1:2:13)]);
+
+colormap(flip(turbo))
 
 nexttile;
 hold on;
@@ -111,10 +140,10 @@ hold off;
 xlim([1 13]);
 xticks(1:2:13);
 ylim([0 100]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-%xlabel('Delay (ms)');
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
+xlabel('MUAP distribution #');
 ylabel('Separability (%)');
-set(gca,'XTickLabel',[]);
+% set(gca,'XTickLabel',[]);
 % xticks(transl_spikes/10);
 % h=legend([s1 s2],{'MU #36','MU #50'},'location','northeast','NumColumns',2);
 % h.Box='off';
@@ -126,10 +155,10 @@ hold off;
 xlim([1 13]);
 xticks(1:2:13);
 ylim([0 100]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-%xlabel('Delay (ms)');
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
+xlabel('MUAP distribution #');
 ylabel('False positive rate (%)');
-set(gca,'XTickLabel',[]);
+% set(gca,'XTickLabel',[]);
 
 % xticks(transl_spikes/10);
 % h=legend([s1 s2],{'MU #36','MU #50'},'location','northeast','NumColumns',2);
@@ -142,7 +171,7 @@ hold off;
 xlim([1 13]);
 xticks(1:2:13);
 ylim([0 100]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('MUAP distribution #');
 ylabel('False negative rate (%)');
 % xticks(transl_spikes/10);
@@ -157,11 +186,11 @@ hold off;
 xlim([1 13]);
 xticks(1:2:13);
 ylim([0 14]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('MUAP distribution #');
 ylabel('Energy similarity (%)');
 % xticks(transl_spikes/10);
-h=legend([s1 s2],{'Average MUAP as ref.','MUAP #13 as ref.'},'location','northeast');
+h=legend([s1 s2],{'Average MUAP as ref.','MUAP #7 as ref.'},'location','northeast');
 h.Box='off';
 
 t.TileSpacing='compact';

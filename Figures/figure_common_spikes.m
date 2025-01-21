@@ -2,7 +2,9 @@
 
 %clearvars; close all;
 
-useExistingData=0;
+rng(0)
+
+useExistingData=1;
 
 fs=2048;
 
@@ -15,17 +17,19 @@ ICoV_vec=0:2:20;
 sep1=zeros(length(CCoV_vec),length(ICoV_vec));
 fpr1=zeros(length(CCoV_vec),length(ICoV_vec));
 fnr1=zeros(length(CCoV_vec),length(ICoV_vec));
+norm1=zeros(length(CCoV_vec),length(ICoV_vec));
 
 sep2=zeros(length(CCoV_vec),length(ICoV_vec));
 fpr2=zeros(length(CCoV_vec),length(ICoV_vec));
 fnr2=zeros(length(CCoV_vec),length(ICoV_vec));
+norm2=zeros(length(CCoV_vec),length(ICoV_vec));
 
 if useExistingData==0
     cd '../LIF model/'
     addpath '../pure-simulation-trials/functions/'
 
     % Generate EMG signals
-    for noise_dB=[10 20]
+    for noise_dB=20
         disp(num2str(noise_dB))
 
         for i=1:length(CCoV_vec)
@@ -93,6 +97,7 @@ if useExistingData==0
                 end
                 [~,maxInd]=max(save_skew);
                 w = w(:,maxInd);
+                norm1(i,j)=norm(w);
                 w = w./norm(w);
 
                 % Reconstruction
@@ -120,6 +125,7 @@ if useExistingData==0
                 end
                 [~,maxInd]=max(save_skew);
                 w = w(:,maxInd);
+                norm2(i,j)=norm(w);
                 w = w./norm(w);
 
                 % Reconstruction
@@ -132,7 +138,7 @@ if useExistingData==0
                 fnr2(i,j)=tmp(3);
             end
         end
-        save(['../Figures/common_spikes_n',num2str(noise_dB),'dB.mat'])
+        save(['../Figures/common_spikes_',num2str(noise_dB),'dB.mat'])
     end
 end
 
@@ -140,73 +146,111 @@ clearvars;
 
 cd '../Figures/'
 
-%load('common_spikes_20dB.mat');
-load('common_spikes_n20dB.mat');
+load('common_spikes_20dB.mat');
+%load('common_spikes_n20dB.mat');
 %%
 % Make figure
 
 t=tiledlayout(2,3);
-set(gcf,'units','points','position',[257,170,1275,785])
+set(gcf,'units','points','position',[229,62,1459,893])
 
 nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep1,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 % xlabel('MUAP similarity (%)');
 ylabel('Common CoV noise (%)');
 title({'Separability metric (%)';'MU #1'},'FontWeight','normal');
 % set(gca,'XTickLabel',[]);
 % clim([0 100]);
+xticks(0:5:20);
 
 nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr1,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 % xlabel('MUAP similarity (%)');
 % ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
 title({'False positive rate (%)';'MU #1'},'FontWeight','normal');
 % set(gca,'XTickLabel',[]);
 % clim([0 100]);
+xticks(0:5:20);
 
 nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr1,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 % xlabel('MUAP similarity (%)');
 % ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
 title({'False negative rate (%)';'MU #1'},'FontWeight','normal');
 % set(gca,'XTickLabel',[]);
 % clim([0 100]);
+xticks(0:5:20);
 
 nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep2,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 ylabel('Common CoV noise (%)');
 title('MU #50','FontWeight','normal');
 % clim([0 100]);
+xticks(0:5:20);
 
 nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr2,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 %ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
 title('MU #50','FontWeight','normal');
 % clim([0 100]);
+xticks(0:5:20);
 
 nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr2,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 %ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
 title('MU #50','FontWeight','normal');
+% clim([0 100]);
+xticks(0:5:20);
+
+t.TileSpacing='compact';
+t.Padding='compact';
+
+cmap=turbo;
+colormap(flip(cmap))
+
+%%
+
+t=tiledlayout(1,2);
+set(gcf,'units','points','position',[316,298,954,467])
+
+nexttile;
+imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],interp2(norm1,4));
+colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
+xlabel('Independent CoV noise (%)');
+ylabel('Common CoV noise (%)');
+title({'Norm whitened MUAP';'MU #1'},'FontWeight','normal');
+% set(gca,'XTickLabel',[]);
+% clim([0 100]);
+
+
+nexttile;
+imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],interp2(norm2,4));
+colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
+xlabel('Independent CoV noise (%)');
+%ylabel('Scaled MUAP amplitude (a.u.)');
+set(gca,'YTickLabel',[]);
+title({'Norm whitened MUAP';'MU #50'},'FontWeight','normal');
 % clim([0 100]);
 
 t.TileSpacing='compact';

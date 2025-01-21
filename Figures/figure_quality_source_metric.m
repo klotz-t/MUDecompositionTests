@@ -2,6 +2,8 @@
 
 clearvars; close all;
 
+rng(0)
+
 cd '../LIF model/'
 
 I=7e-9; % 7 nA input current
@@ -25,6 +27,7 @@ R=16; % extension factor
 sil=zeros(1,size(spike_times,2));
 pnr=zeros(1,size(spike_times,2));
 skew=zeros(1,size(spike_times,2));
+kurt=zeros(1,size(spike_times,2));
 sep=zeros(4,size(spike_times,2));
 
 for i=1:size(spike_times,2) % MU selection
@@ -61,6 +64,7 @@ for i=1:size(spike_times,2) % MU selection
     sil(i)=compute_sil(sig,est_spikes);
     pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3],1);
     skew(i)=skewness(sig);
+    kurt(i)=kurtosis(sig);
     sep(:,i)=separability_metric(sig,spike_times{i});
 
     % Make figure
@@ -85,101 +89,110 @@ for i=1:size(spike_times,2) % MU selection
     end
 end
 
-% Make figure
+%% Make figure
 cmap=lines(4);
 
 t=tiledlayout(3,3);
-set(gcf,'units','points','position',[243,66,1017,799])
+set(gcf,'units','points','position',[338,124,1251,799])
 
 nexttile;
 hold on;
-scatter(100*sep(1,:),pnr,100,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(1,:),pnr,150,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([15 40]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
-ylabel('Pulse-to-noise ratio, PNR (dB)');
+ylabel('PNR (dB)');
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(2,:),pnr,100,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(2,:),pnr,150,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([15 40]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(3,:),pnr,100,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(3,:),pnr,150,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([15 40]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(1,:),sil,100,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(1,:),sil,150,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([0.75 1]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
-ylabel('Silhouette value, SIL (n.u.)');
+ylabel('SIL (n.u.)');
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(2,:),sil,100,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(2,:),sil,150,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([0.75 1]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(3,:),sil,100,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(3,:),sil,150,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([0.75 1]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(1,:),skew,100,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(1,:),skew,150,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([0 4]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Separability (%)');
 ylabel('Skewness');
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(2,:),skew,100,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(2,:),skew,150,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([0 4]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'YTickLabel',[]);
 xlabel('False positive rate (%)');
+xticks(0:25:100);
 
 nexttile;
 hold on;
-scatter(100*sep(3,:),skew,100,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
+scatter(100*sep(3,:),skew,150,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
 ylim([0 4]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'YTickLabel',[]);
 xlabel('False negative rate (%)');
+xticks(0:25:100);
 
 t.TileSpacing='compact';
 t.Padding='compact';

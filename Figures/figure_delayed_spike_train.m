@@ -1,5 +1,7 @@
 % figure_delayed_spike_train
 
+rng(0)
+
 cd '../LIF model/'
 addpath '../pure-simulation-trials/functions/'
 
@@ -71,6 +73,8 @@ end
 
 cd '../Figures/'
 
+save('delayed_spike_train.mat')
+
 %%
 
 cmap=lines(2);
@@ -85,7 +89,7 @@ s2=plot(transl_spikes/10,100*sep(2,:),'-o','Color',cmap(2,:),'MarkerFaceColor',c
 hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0 100]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 %xlabel('Delay (ms)');
 ylabel('Separability (%)');
 xticks(transl_spikes/10);
@@ -99,7 +103,7 @@ s2=plot(transl_spikes/10,100*fpr(2,:),'-o','Color',cmap(2,:),'MarkerFaceColor',c
 hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0 100]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 %xlabel('Delay (ms)');
 ylabel('False positive rate (%)');
 xticks(transl_spikes/10);
@@ -113,7 +117,7 @@ s2=plot(transl_spikes/10,100*fnr(2,:),'-o','Color',cmap(2,:),'MarkerFaceColor',c
 hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0 100]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('Delay (ms)');
 ylabel('False negative rate (%)');
 xticks(transl_spikes/10);
@@ -126,7 +130,7 @@ hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0.7 1]);
 yticks(0.7:0.1:1)
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('Delay (ms)');
 ylabel('Norm of whitened MUAP (n.u.)');
 xticks(transl_spikes/10);
