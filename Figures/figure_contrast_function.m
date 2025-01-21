@@ -33,12 +33,15 @@ ylabel('Source contrast (-)')
 title('Contrast between sources')
 legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast')
 %% Influecne of the contrast function on higher-order terms
+rng(0)
+tmp = randn(1,300)*0.05 + 1;
+tmp = [tmp, 1.5];
 % Standard deviation
 sigma = 1;
 % Skewness
-skew = 3;
+skew = skewness(tmp);%3;
 % Kurtosis
-kurt = 25;
+kurt = kurtosis(tmp);%25;
 % Peak amplitude relative to the variance
 ps_vals = sigma*[3 5 10 20 30];
 % Exponents of the non-linearity
