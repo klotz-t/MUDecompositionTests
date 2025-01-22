@@ -2,78 +2,84 @@
 
 rng(0)
 
-cd '../LIF model/'
-addpath '../pure-simulation-trials/functions/'
+useExistingData=1;
 
-fs=2048;
+if useExistingData==0
+    cd '../LIF model/'
+    addpath '../pure-simulation-trials/functions/'
 
-% Generate spike trains
-I=7e-9; % 7 nA input current
-[spike_times,time_param,membr_param]=generate_spike_trains(I);
+    fs=2048;
 
-% Generate EMG signals
-noise_dB=20;
-MU1=36;
-MU2=50;
+    % Generate spike trains
+    I=7e-9; % 7 nA input current
+    [spike_times,time_param,membr_param]=generate_spike_trains(I);
 
-transl_spikes=10:10:100; % samples at 10 kHz
-spike_times_MU=spike_times{50};
+    % Generate EMG signals
+    noise_dB=20;
+    MU1=36;
+    MU2=50;
 
-sep=zeros(2,length(transl_spikes));
-fpr=zeros(2,length(transl_spikes));
-fnr=zeros(2,length(transl_spikes));
-whitened_muap_norm=zeros(2,length(transl_spikes));
+    transl_spikes=10:10:100; % samples at 10 kHz
+    spike_times_MU=spike_times{50};
 
-for i=1:length(transl_spikes)
-    disp([num2str(i),'/',num2str(length(transl_spikes))]);
-    spike_times{36}=spike_times_MU+transl_spikes(i);
-    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
+    sep=zeros(2,length(transl_spikes));
+    fpr=zeros(2,length(transl_spikes));
+    fnr=zeros(2,length(transl_spikes));
+    whitened_muap_norm=zeros(2,length(transl_spikes));
 
-    % Select 64 out of 256 channels
-    data=data(65:128,:);
-    sig_noise=sig_noise(65:128,:);
-    data_unfilt=data_unfilt(65:128,:);
+    for i=1:length(transl_spikes)
+        disp([num2str(i),'/',num2str(length(transl_spikes))]);
+        spike_times{36}=spike_times_MU+transl_spikes(i);
+        [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
 
-    R=16; % extension factor
+        % Select 64 out of 256 channels
+        data=data(65:128,:);
+        sig_noise=sig_noise(65:128,:);
+        data_unfilt=data_unfilt(65:128,:);
 
-    % Extend and whiten
-    eSIG = extension(data,R);
-    [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+        R=16; % extension factor
 
-    for MU=1:2
-        eval(['w = muap{MU',num2str(MU),'}(65:128,:);']);
-        w = extension(w,R);
-        w = whitening_matrix * w;
+        % Extend and whiten
+        eSIG = extension(data,R);
+        [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
 
-        % Reconstruction
-        sigtmp=w'*wSIG;
-        % sig=sig./max(sig);
+        for MU=1:2
+            eval(['w = muap{MU',num2str(MU),'}(65:128,:);']);
+            w = extension(w,R);
+            w = whitening_matrix * w;
 
-        % Select the source with highest skewness
-        save_skew=zeros(1,size(sigtmp,1));
-        for ind=1:size(sigtmp,1)
-            save_skew(ind)=skewness(sigtmp(ind,:));
+            % Reconstruction
+            sigtmp=w'*wSIG;
+            % sig=sig./max(sig);
+
+            % Select the source with highest skewness
+            save_skew=zeros(1,size(sigtmp,1));
+            for ind=1:size(sigtmp,1)
+                save_skew(ind)=skewness(sigtmp(ind,:));
+            end
+            [~,maxInd]=max(save_skew);
+            w = w(:,maxInd);
+
+            whitened_muap_norm(MU,i)=norm(w);
+
+            w = w./norm(w);
+
+            % Reconstruction
+            sig{MU}(i,:)=w'*wSIG;
+            eval(['tmp=separability_metric(sig{',num2str(MU),'}(',num2str(i),',:),spike_times{MU',num2str(MU),'});']);
+
+            sep(MU,i)=tmp(1);
+            fpr(MU,i)=tmp(2);
+            fnr(MU,i)=tmp(3);
         end
-        [~,maxInd]=max(save_skew);
-        w = w(:,maxInd);
-
-        whitened_muap_norm(MU,i)=norm(w);
-
-        w = w./norm(w);
-
-        % Reconstruction
-        sig{MU}(i,:)=w'*wSIG;
-        eval(['tmp=separability_metric(sig{',num2str(MU),'}(',num2str(i),',:),spike_times{MU',num2str(MU),'});']);
-
-        sep(MU,i)=tmp(1);
-        fpr(MU,i)=tmp(2);
-        fnr(MU,i)=tmp(3);
     end
+
+    cd '../Figures/'
+
+    save('delayed_spike_train.mat','transl_spikes','sep','fpr','fnr','whitened_muap_norm')
 end
 
-cd '../Figures/'
-
-save('delayed_spike_train.mat')
+load('delayed_spike_train.mat') 
 
 %%
 
