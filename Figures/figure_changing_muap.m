@@ -78,7 +78,7 @@ if useExistingData==0
         es1(i)=energy_similarity1;
         es2(i)=energy_similarity2;
     end
-    save('../Figures/changing_muap.mat') 
+    save('../Figures/changing_muap.mat','muap','MU1','spike_times','time_param','amp_vary','sep','fpr','fnr','es1','es2'); 
 end
 
 clearvars;
