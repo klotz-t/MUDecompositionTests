@@ -4,7 +4,7 @@ rng(0)
 
 cd '../LIF model/'
 
-I=7e-9; % 7 nA input current
+I=10e-9; % input current (nA)
 noise_dB=20;
 fs=2048;
 
@@ -19,7 +19,7 @@ sig_noise=sig_noise(65:128,:);
 data_unfilt=data_unfilt(65:128,:);
 
 R=16; % extension factor
-i=50; % MU selection
+i=105; % MU selection (50)
 
 % Extend and whiten
 eSIG = extension(data,R);
@@ -57,9 +57,11 @@ end
 w = w(:,maxInd);
 w = w./norm(w);
 
+cd '../Figures/'
+
 %% Make figure
 t=tiledlayout(4,1);
-figure(1);set(gcf,'units','points','position',[498,99,831,972])
+figure(1);set(gcf,'units','points','position',[498,61,678,804])
 time_win=[5 55];
 
 nexttile;
@@ -111,7 +113,7 @@ hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU,'LineWidth',1.5);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
-xlim([28.37 28.57]);
+xlim([27.95 28.07])%xlim([28.37 28.57]);
 set(gca,'visible','off');
 
 figure(3);set(gcf,'units','points','position',[781,458,337,306])
