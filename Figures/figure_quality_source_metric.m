@@ -58,10 +58,12 @@ for i=1:size(spike_times,2) % MU selection
     est_spikes=est_spike_times(sig,fs);
 
     % Compute SIL and PNR
-    sil(i)=compute_sil(sig,est_spikes);
-    pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3],1);
-    skew(i)=skewness(sig);
-    sep(:,i)=separability_metric(sig,spike_times{i});
+    if length(spike_times{i}) > 10
+        sil(i)=compute_sil(sig,est_spikes);
+        pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3],1);
+        skew(i)=skewness(sig);
+        sep(:,i)=separability_metric(sig,spike_times{i});
+    end
 
     % Make figure
     if show_plots==1
