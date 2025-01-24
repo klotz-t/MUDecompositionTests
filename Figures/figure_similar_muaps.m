@@ -2,6 +2,8 @@
 
 clearvars; close all;
 
+rng(0)
+
 useExistingData=1;
 
 if useExistingData==0
@@ -93,14 +95,14 @@ data10db=load('similar_muaps_10dB.mat');
 % Make figure
 
 t=tiledlayout(2,3);
-set(gcf,'units','points','position',[257,170,1275,785])
+set(gcf,'units','points','position',[216,62,1491,893])
 
 nexttile;
 imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.sep,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+%colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 % xlabel('MUAP similarity (%)');
-ylabel('Scaled MUAP amplitude (a.u.)');
+ylabel('Scaled amplitude (a.u.)');
 title({'Separability metric (%)';'20 dB'},'FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data20db.es(:,1)',1))))
@@ -109,8 +111,8 @@ clim([0 100]);
 
 nexttile;
 imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.fpr,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+%colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 % xlabel('MUAP similarity (%)');
 % ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
@@ -123,7 +125,7 @@ clim([0 100]);
 nexttile;
 imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.fnr,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 % xlabel('MUAP similarity (%)');
 % ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
@@ -135,10 +137,10 @@ clim([0 100]);
 
 nexttile;
 imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.sep,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-xlabel('MUAP similarity (%)');
-ylabel('Scaled MUAP amplitude (a.u.)');
+%colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xlabel('Energy similarity (%)');
+ylabel('Scaled amplitude (a.u.)');
 title('10 dB','FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data10db.es(:,1)',1))))
@@ -146,9 +148,9 @@ clim([0 100]);
 
 nexttile;
 imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.fpr,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-xlabel('MUAP similarity (%)');
+%colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xlabel('Energy similarity (%)');
 %ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
 title('10 dB','FontWeight','normal');
@@ -159,8 +161,8 @@ clim([0 100]);
 nexttile;
 imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.fnr,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
-xlabel('MUAP similarity (%)');
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xlabel('Energy similarity (%)');
 %ylabel('Scaled MUAP amplitude (a.u.)');
 set(gca,'YTickLabel',[]);
 title('10 dB','FontWeight','normal');

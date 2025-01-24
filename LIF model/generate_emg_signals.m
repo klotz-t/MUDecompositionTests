@@ -1,4 +1,4 @@
-function [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI)
+function [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI)
 
 if nargin < 2
     error('Incorrect input')
@@ -24,6 +24,7 @@ end
 
 if nargin < 5
     changing_muap=0;
+    amp_vary=0;
 else
     try
         changing_muap=changing_muap_vec(1);
@@ -86,18 +87,24 @@ end
 
 if changing_muap==1
     muap_var={};
-    amp_vary=movmean(CI(MU1,:),20000);
-    amp_vary(length(amp_vary))=amp_vary(1);
-    amp_vary=abs(amp_vary-amp_vary(1));
-    amp_vary=12*amp_vary./max(amp_vary);
-    amp_vary=round(amp_vary);
+    % amp_vary=movmean(CI(MU1,:),20000);
+    % amp_vary(length(amp_vary))=amp_vary(1);
+    % amp_vary=abs(amp_vary-amp_vary(1));
+    % amp_vary=12*amp_vary./max(amp_vary);
+    % amp_vary=round(amp_vary);
+    % indx=find(amp_vary==12);
+    % new_amps=randi(13,1,length(indx))-1;%randi(5,1,length(indx))+7;
+    % amp_vary(indx)=new_amps;
+    amp_vary=randi(13,1,length(time_param.T));
     for i=min(amp_vary):max(amp_vary)
         muap_tmp=interp_muap_grid(muap{MU1},1);
         muap_tmp=muap_tmp([1:4:4*13],i+[1:4:4*5],:);
         muap_tmp_vec=muap_vectorise(rot90(rot90(muap_tmp)));
 
-        muap_var{i+1}=zeros(size(muap{MU1}));
-        muap_var{i+1}(65:128,:)=muap_tmp_vec;
+        muap_var{i}=zeros(size(muap{MU1}));
+        muap_var{i}(65:128,:)=muap_tmp_vec;
+        % muap_var{i+1}=zeros(size(muap{MU1}));
+        % muap_var{i+1}(65:128,:)=muap_tmp_vec;
     end
     muap{MU1}=muap_var;
 end

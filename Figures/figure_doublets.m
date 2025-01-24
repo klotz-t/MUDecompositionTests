@@ -1,5 +1,7 @@
 % figure reconstruction accuracy doublets
 
+rng(0)
+
 cd '../LIF model/'
 
 I=7e-9; % 7 nA input current
@@ -68,7 +70,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 set(gca,'XTickLabel',[]);
@@ -78,7 +80,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU,'LineWidth',1.5);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
 xlim([(spike_times{50}(1)-400)/10e3 (spike_times{50}(1)+400)/10e3])
 set(gca,'visible','off');
 
@@ -86,7 +88,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 title('MU filter applied to the EMG signal (sum of all terms)','FontWeight','normal');
@@ -96,7 +98,7 @@ nexttile;
 hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG,'LineWidth',1.5);
 hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
 xlim([(spike_times{50}(1)-400)/10e3 (spike_times{50}(1)+400)/10e3])
 set(gca,'visible','off');
 
