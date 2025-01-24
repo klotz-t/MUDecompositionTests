@@ -33,17 +33,23 @@ ylabel('Source contrast (-)')
 title('Contrast between sources')
 legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast')
 %% Influecne of the contrast function on higher-order terms
-rng(0)
-tmp = randn(1,300)*0.05 + 1;
-tmp = [tmp, 1.5];
 % Standard deviation
 sigma = 1;
-% Skewness
-skew = skewness(tmp);%3;
-% Kurtosis
-kurt = kurtosis(tmp);%25;
 % Peak amplitude relative to the variance
 ps_vals = sigma*[3 5 10 20 30];
+% Compute higher order moments
+skew    = zeros(size(ps_vals));
+kurt    = zeros(size(ps_vals));
+rng(0)
+for j=1:length(ps_vals)
+    tmp = randn(1,300) * sigma + ps_vals(j);
+    tmp = [tmp, 1.5*ps_vals(j)];
+    % Skewness
+    skew(j) = skewness(tmp);%3;
+    % Kurtosis
+    kurt(j) = kurtosis(tmp);%25;   
+end
+
 % Exponents of the non-linearity
 nvalues = linspace(0.1,20,100);
 % Zero-order terms
@@ -58,8 +64,8 @@ for i=1:length(nvalues)
     for j=1:length(ps_vals)
         T0(j,i) = G(ps_vals(j),nvalues(i)); 
         T2(j,i) = 1/2  * G_2(ps_vals(j),nvalues(i)) * sigma^2;
-        T3(j,i) = 1/6  * G_3(ps_vals(j),nvalues(i)) * sigma^3*skew;
-        T4(j,i) = 1/24 * G_4(ps_vals(j),nvalues(i)) * sigma^4*(kurt+3);
+        T3(j,i) = 1/6  * G_3(ps_vals(j),nvalues(i)) * sigma^3*skew(j);
+        T4(j,i) = 1/24 * G_4(ps_vals(j),nvalues(i)) * sigma^4*(kurt(j)+3);
         % T0(j,i) = yvals(j)^nvalues(i); 
         % T2(j,i) = 1/2*nvalues(i)*(nvalues(i)-1)*yvals(j)^(nvalues(i)-2)*sigma^2;
         % T3(j,i) = 1/6*nvalues(i)*(nvalues(i)-1)*(nvalues(i)-2)*yvals(j)^(nvalues(i)-3)*sigma^3*skew;
@@ -74,30 +80,30 @@ tmp1 = T0./(T0+T2);
 tmp2 = T0./(T0+T2+T3+T4);
 figure(11)
 subplot(132)
-patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(1,:))], color1, 'EdgeColor', 'k')
-patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeColor', 'k')
-patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
+patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(2,:))], color1, 'EdgeColor', 'k')
+patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(3,:))], color2, 'EdgeColor', 'k')
+patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(4,:))], color3, 'EdgeColor', 'k')
 alpha(0.5)
 xlim([0 8]), ylim([0 1.2])
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 title('Zero-order vs Higher-order terms')
-legend('3*\sigma','5*\sigma','10*\sigma')
+legend('5*\sigma','10*\sigma','20*\sigma')
 xlabel('Exponent a')
 ylabel('Learning weight (-)')
 
 %%
-tmp1 = cvals(4,:).*T0./(T0+T2);
-tmp2 = cvals(4,:).*T0./(T0+T2+T3+T4);
+tmp1 = cvals(3,:).*T0./(T0+T2);
+tmp2 = cvals(3,:).*T0./(T0+T2+T3+T4);
 figure(11)
 subplot(133)
-patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(1,:))], color1, 'EdgeColor', 'k')
-patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeColor', 'k')
-patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
+patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(2,:))], color1, 'EdgeColor', 'k')
+patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(3,:))], color2, 'EdgeColor', 'k')
+patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(4,:))], color3, 'EdgeColor', 'k')
 alpha(0.5)
 xlim([0 8]), ylim([0 1.2])
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 title('Optimal non-linearity')
-legend('3*\sigma','5*\sigma','10*\sigma')
+legend('5*\sigma','10*\sigma','20*\sigma')
 xlabel('Exponent a')
 ylabel('Loss (-)')
 
