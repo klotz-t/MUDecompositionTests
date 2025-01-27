@@ -68,7 +68,7 @@ muap=muap_unsort(sortInd);
 
 clearvars data1 data2 RT_unsort muap_unsort sortInd
 
-rng(1,'twister')
+%rng(1,'twister')
 select_muaps=sort(randsample(size(muap,2),n_mn))';
 
 RT=RT(select_muaps);

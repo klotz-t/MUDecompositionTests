@@ -6,6 +6,8 @@ rng(0)
 
 useExistingData=1;
 
+truncuate = 0;
+
 fs=2048;
 
 MU1=1;
@@ -24,16 +26,24 @@ fpr2=zeros(length(CCoV_vec),length(ICoV_vec));
 fnr2=zeros(length(CCoV_vec),length(ICoV_vec));
 norm2=zeros(length(CCoV_vec),length(ICoV_vec));
 
+wnorm1=zeros(length(CCoV_vec),length(ICoV_vec));
+scos1 =zeros(length(CCoV_vec),length(ICoV_vec));
+
+wnorm2=zeros(length(CCoV_vec),length(ICoV_vec));
+scos2 =zeros(length(CCoV_vec),length(ICoV_vec));
+
+
 if useExistingData==0
     cd '../LIF model/'
     addpath '../pure-simulation-trials/functions/'
 
     % Generate EMG signals
+
     for noise_dB=20
         disp(num2str(noise_dB))
 
         for i=1:length(CCoV_vec)
-            parfor j=1:length(ICoV_vec)
+            for j=1:length(ICoV_vec)
                 disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
 
                 CCoV=CCoV_vec(i);
@@ -42,6 +52,13 @@ if useExistingData==0
                 % Generate spike trains
                 I=7e-9; % 7 nA input current
                 [spike_times,time_param,~,CI]=generate_spike_trains(I,CCoV,ICoV);
+                
+                % Fix the size of the active MU pool
+                if truncuate
+                    if length(spike_times) > 58
+                        spike_times = spike_times(1:58);
+                    end
+                end
                 
                 % Generate EMG signals
                 [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
@@ -55,30 +72,34 @@ if useExistingData==0
 
                 % Extend and whiten
                 eSIG = extension(data,R);
-                [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
-                % % %%
-                % % Compute the true covariance matrix
-                % w = muap{1}(65:128,:);
-                % w = extension2(w,R);
-                % H = w;
-                % for idx2=2:length(spike_times)
-                %     w = muap{idx2}(65:128,:);
-                %     w = extension2(w,R);
-                %     H = cat(2,H,w);
-                % end
-                % ST = zeros(length(spike_times),size(data,2));
-                % for idx3=1:length(spike_times)
-                %     ST(idx3,round(2048.*spike_times{idx3}./10000)) = 1; 
-                % end
-                % eST = extension2(ST,size(muap{1},2)+R-1);
-                % cST = cov(eST');
-                % ceSIG = H*cST*H';
-                % [V,S] = eig(ceSIG, 'vector');
-                % reg_val = mean(1:S(round(length(S)/2)));
-                % % Compute the whitening matrix
-                % SI = 1./sqrt(S + reg_val);
-                % whitening_matrix = V * diag(SI) * V';
-                % wSIG = whitening_matrix*eSIG;
+                %[wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+                %%
+                eNoise = extension(sig_noise,R);
+                % Compute the true covariance matrix
+                w = muap{1}(65:128,:);
+                w = extension2(w,R);
+                H = w;
+                for idx2=2:length(spike_times)
+                    w = muap{idx2}(65:128,:);
+                    w = extension2(w,R);
+                    H = cat(2,H,w);
+                end
+                ST = zeros(length(spike_times),size(data,2));
+                for idx3=1:length(spike_times)
+                    ST(idx3,round(2048.*spike_times{idx3}./10000)) = 1; 
+                end
+                eST = extension2(ST,size(muap{1},2)+R-1);
+                cST = cov(eST');
+                ceSIG = H*cST*H';
+                %%
+                [V,S] = eig(ceSIG + eNoise*eNoise'./length(eNoise), 'vector');
+                %%
+                reg_val = mean(mink(S,round(length(S)/2)));
+                % Compute the whitening matrix
+                SI = 1./sqrt(S + reg_val);
+                whitening_matrix = V * diag(SI) * V';
+                wSIG = whitening_matrix*eSIG;
+                wH   = whitening_matrix*H;
                 %%
 
                 % MU1
@@ -103,12 +124,17 @@ if useExistingData==0
                 % Reconstruction
                 sig=w'*wSIG;
 
+                tmp = wH;
+                tmp(:,1:101+R-1) = [];
+                s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
+                scos1(i,j) = max(s_cos);
+
                 tmp=separability_metric(sig,spike_times{MU1});
 
                 sep1(i,j)=tmp(1);
                 fpr1(i,j)=tmp(2);
                 fnr1(i,j)=tmp(3);
-
+                %%
                 % MU2
                 w = muap{MU2}(65:128,:);
                 w = extension(w,R);
@@ -130,6 +156,11 @@ if useExistingData==0
 
                 % Reconstruction
                 sig=w'*wSIG;
+
+                tmp = wH;
+                tmp(:,49*(101+R-1)+1:50*(101+R-1)) = [];
+                s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
+                scos2(i,j) = max(s_cos);
 
                 tmp=separability_metric(sig,spike_times{MU2});
 
