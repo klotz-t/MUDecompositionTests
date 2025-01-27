@@ -4,7 +4,7 @@ clearvars; close all;
 
 rng(1)
 
-useExistingData=0;
+useExistingData=1;
 
 if useExistingData==0
     cd '../LIF model/'
@@ -115,7 +115,7 @@ xlim([0 60]);
 ylim([1 13]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('Time (s)');
-ylabel('MUAP distribution #');
+ylabel('Spatio-temporal MUAP #');
 yticks(1:2:13);
 % title({'MUAP distribution for each firing'},'FontWeight','normal');
 
@@ -123,8 +123,8 @@ nexttile;
 imagesc([1 13],[13 1],100.*interp2(es_mat,4));
 cb=colorbar;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
-xlabel('MUAP distribution #');
-ylabel('MUAP distribution #');
+xlabel('Spatio-temporal MUAP #');
+ylabel('Spatio-temporal MUAP #');
 % title({'Energy similarity (%)'},'FontWeight','normal');
 xticks(1:2:13)
 yticks(1:2:13)
@@ -141,7 +141,7 @@ xlim([1 13]);
 xticks(1:2:13);
 ylim([0 100]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
-xlabel('MUAP distribution #');
+xlabel('Spatio-temporal MUAP #');
 ylabel('Separability (%)');
 % set(gca,'XTickLabel',[]);
 % xticks(transl_spikes/10);
@@ -156,7 +156,7 @@ xlim([1 13]);
 xticks(1:2:13);
 ylim([0 100]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
-xlabel('MUAP distribution #');
+xlabel('Spatio-temporal MUAP #');
 ylabel('False positive rate (%)');
 % set(gca,'XTickLabel',[]);
 
@@ -172,7 +172,7 @@ xlim([1 13]);
 xticks(1:2:13);
 ylim([0 100]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
-xlabel('MUAP distribution #');
+xlabel('Spatio-temporal MUAP #');
 ylabel('False negative rate (%)');
 % xticks(transl_spikes/10);
 
@@ -187,7 +187,7 @@ xlim([1 13]);
 xticks(1:2:13);
 ylim([0 14]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
-xlabel('MUAP distribution #');
+xlabel('Spatio-temporal MUAP #');
 ylabel('Energy similarity (%)');
 % xticks(transl_spikes/10);
 h=legend([s1 s2],{'Average MUAP as ref.','MUAP #7 as ref.'},'location','northeast');
