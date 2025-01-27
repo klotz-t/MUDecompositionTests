@@ -96,14 +96,20 @@ if useExistingData==0
         s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
         s50(i) = max(s_cos);
     end
+    cd '../Figures/'
+    save('extension_factor.mat','extF','MU1_norm','MU50_norm','c1','c50','s1','s50')
 end
+
+clearvars;
+
+load('extension_factor.mat')
 
 %%
 
 cmap=lines(2);
 
 t=tiledlayout(1,3);
-set(gcf,'units','points','position',[286,340,1275,499])
+set(gcf,'units','points','position',[143,371,1630,499])
 
 nexttile;
 hold on;
@@ -111,8 +117,8 @@ p1=plot(extF,MU1_norm./max([MU1_norm; MU50_norm]),'-o','Color',cmap(1,:),'Marker
 p2=plot(extF,MU50_norm./max([MU1_norm; MU50_norm]),'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 ylim([0 1])
-set(gca,'YTickLabel',[]);
-set(gca,'YTick',[]);
+% set(gca,'YTickLabel',[]);
+% set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Spike amplitude');
@@ -128,8 +134,8 @@ p1=plot(extF,1-c1./MU1_norm,'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'
 p2=plot(extF,1-c50./MU50_norm,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 ylim([0 1])
-set(gca,'YTickLabel',[]);
-set(gca,'YTick',[]);
+% set(gca,'YTickLabel',[]);
+% set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Separability metric');
@@ -145,8 +151,8 @@ p1=plot(extF,s1,'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',
 p2=plot(extF,s50,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 ylim([0 1])
-set(gca,'YTickLabel',[]);
-set(gca,'YTick',[]);
+% set(gca,'YTickLabel',[]);
+% set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Cosine similarity');
