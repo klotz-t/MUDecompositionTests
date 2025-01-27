@@ -181,8 +181,8 @@ mymap(3,51:end) = linspace(1,0.7412,51);
 mymap(2,51:end) = linspace(1,0.4471,51);
 mymap(1,51:end) = linspace(1,0,51);
 % Example data matrix and p-value matrix
-dataMatrix = cvals(1:11,1:5);
-pValueMatrix = pvals(1:11,1:5);
+dataMatrix = flipud(cvals(1:11,1:5));
+pValueMatrix = flipud(pvals(1:11,1:5));
 % Threshold for p-values
 pValueThreshold = 0.01;
 % Create a figure and axes
@@ -198,35 +198,41 @@ colorbar;
 for row = 1:numRows
     for col = 1:numCols
         % Display the data value
-        dataValueStr = num2str(dataMatrix(row, col), '%.2f');
-        text(col, row, dataValueStr, 'HorizontalAlignment', 'center', ...
-            'VerticalAlignment', 'bottom', 'Color', 'black', 'FontSize', 10);
+        val = dataMatrix(row, col);
+        dataValueStr = num2str(val, '%.2f');
+        if abs(val) < 0.6
+            text(col, row, dataValueStr, 'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', 'bottom', 'Color', 'black', 'FontSize', 10);
+        else
+            text(col, row, dataValueStr, 'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', 'bottom', 'Color', 'white', 'FontSize', 10);
+        end
         % Check if the p-value is below the threshold
         if pValueMatrix(row, col) < 0.001
-            % Overlay a symbol or p-value text on the heatmap
-            % Use '*' for symbol or num2str(pValueMatrix(row, col)) for text
             pValueStr = '***'; % Change to num2str(pValueMatrix(row, col)) to show p-value
-            text(col, row, pValueStr, 'HorizontalAlignment', 'center', ...
-                'VerticalAlignment', 'top', 'Color', 'black', 'FontSize', 12);
-        elseif pValueMatrix(row, col) < 0.01
-            % Overlay a symbol or p-value text on the heatmap
-            % Use '*' for symbol or num2str(pValueMatrix(row, col)) for text
+            
+        elseif pValueMatrix(row, col) < 0.01            
             pValueStr = '**'; % Change to num2str(pValueMatrix(row, col)) to show p-value
-            text(col, row, pValueStr, 'HorizontalAlignment', 'center', ...
-                'VerticalAlignment', 'top', 'Color', 'black', 'FontSize', 12);   
         elseif pValueMatrix(row, col) < 0.05
-            % Overlay a symbol or p-value text on the heatmap
-            % Use '*' for symbol or num2str(pValueMatrix(row, col)) for text
+        
             pValueStr = '*'; % Change to num2str(pValueMatrix(row, col)) to show p-value
-            text(col, row, pValueStr, 'HorizontalAlignment', 'center', ...
-                'VerticalAlignment', 'top', 'Color', 'black', 'FontSize', 12);       
         end
+        % Add symbol for p-value
+        if abs(val) < 0.6
+            text(col, row, pValueStr, 'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', 'top', 'Color', 'black', 'FontSize', 10);
+        else
+            text(col, row, pValueStr, 'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', 'top', 'Color', 'white', 'FontSize', 10);
+        end
+      
+        
     end
 end
 % Set axis labels and title
 % xlabel('Columns');
 % ylabel('Rows');
-yticklabels(names(1:11)), xticklabels(names(1:5))
+yticklabels(names(11:-1:1)), xticklabels(names(1:5))
 title('Factors affecting decomposition performance');
 % Adjust the axis to display correctly
 set(gca, 'XTick', 1:numCols, 'YTick', 1:numRows);
