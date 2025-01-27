@@ -59,6 +59,14 @@ w = w./norm(w);
 
 cd '../Figures/'
 
+FR=zeros(1,size(spike_times,2));
+for ind=1:size(spike_times,2)
+    FR(ind)=mean(1./(diff(spike_times{ind}/time_param.fs)));
+end
+
+round(mean(FR,'omitnan'),1)
+round(std(FR,'omitnan'),1)
+
 %% Make figure
 t=tiledlayout(4,1);
 figure(1);set(gcf,'units','points','position',[498,61,678,804])
