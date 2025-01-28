@@ -1,25 +1,41 @@
-% figure reconstruction accuracy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate figure 4 in "Revisiting convolutive blind source
+% separation for motor neuron identification: From theory to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-rng(0)
+clearvars; close all;
 
 cd '../LIF model/'
+addpath '../Functions/'
 
-I=10e-9; % input current (nA)
-noise_dB=20;
+% Use random seed to obtain identical results
+rng(0)
+
+% EMG sample rate
 fs=2048;
 
-[spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
-[data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
+% Set the maximum input current in the trapezoid (nA)
+I=10e-9;
 
-addpath '../Functions/'
+% Set the signal-to-noise ratio (dB)
+noise_dB=20;
+
+% Set extension factor
+R=16;
+
+% Set MU number
+i=105;
+
+% Generate motor neuron spike trains
+[spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
+
+% Generate EMG signals
+[data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
 
 % Select 64 out of 256 channels
 data=data(65:128,:);
 sig_noise=sig_noise(65:128,:);
 data_unfilt=data_unfilt(65:128,:);
-
-R=16; % extension factor
-i=105; % MU selection (50)
 
 % Extend and whiten
 eSIG = extension(data,R);
@@ -36,11 +52,13 @@ for j=1:size(data_unfilt,1)
     mu_sig(j,:) = conv(st,muap{i}(64+j,:),'same');
 end
 
+% Extension and whitening
 eMU = extension(mu_sig,R);
 wMU = whitening_matrix*eMU;
 ePy = extension(data_unfilt-mu_sig,R);
 wPy = whitening_matrix*ePy;
 
+% Compute MU filter
 w = muap{i}(65:128,:);
 w = extension(w,R);
 w = whitening_matrix * w;
@@ -59,11 +77,13 @@ w = w./norm(w);
 
 cd '../Figures/'
 
+% Compute mean firing rate for each motor neuron
 FR=zeros(1,size(spike_times,2));
 for ind=1:size(spike_times,2)
     FR(ind)=mean(1./(diff(spike_times{ind}/time_param.fs)));
 end
 
+% Compute mean firing rate and its standard deviation across the pool
 round(mean(FR,'omitnan'),1)
 round(std(FR,'omitnan'),1)
 

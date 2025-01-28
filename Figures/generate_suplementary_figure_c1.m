@@ -1,29 +1,48 @@
-% figure reconstruction accuracy doublets
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate supplementary figure c1 in "Revisiting convolutive 
+% blind sourceseparation for motor neuron identification: From theory
+% to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+clearvars; close all;
+
+% Use random seed to obtain identical results
 rng(0)
 
 cd '../LIF model/'
+addpath '../Functions/'
 
-I=7e-9; % 7 nA input current
-noise_dB=20;
+% EMG sample rate
 fs=2048;
 
-doublet_isi=20; % divide by 10 to get ms because of 10 kHz fs
+% Set the signal-to-noise ratio (dB)
+noise_dB=20;
 
+% Set the maximum input current in the trapezoid (nA)
+I=7e-9;
+
+% Set inter-spike interval for doublet in samples at 10 kHz
+doublet_isi=40;
+
+% Fix a MU
+MU=50;
+
+% Extension factor
+R=16;
+
+% Generate spike trains
 [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
-spike_times{50}=[spike_times{50}(1) spike_times{50}(1)+doublet_isi spike_times{50}(2:end)];
 
+% Artificially construct the doublet
+spike_times{MU}=[spike_times{MU}(1) spike_times{MU}(1)+doublet_isi spike_times{MU}(2:end)];
+
+% Generate EMG signals
 [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
-
-addpath '../Functions/'
 
 % Select 64 out of 256 channels
 data=data(65:128,:);
 sig_noise=sig_noise(65:128,:);
 data_unfilt=data_unfilt(65:128,:);
-
-R=16; % extension factor
-i=50; % MU selection
 
 % Extend and whiten
 eSIG = extension(data,R);
@@ -34,10 +53,10 @@ wNoise = whitening_matrix*eNoise;
 % Ground truth spike train
 mu_sig = zeros(size(data_unfilt));
 st=zeros(1,size(mu_sig,2));
-st(round((fs*1e-3)*spike_times{i}/(time_param.fs*1e-3)))=1;
+st(round((fs*1e-3)*spike_times{MU}/(time_param.fs*1e-3)))=1;
 
 for j=1:size(data_unfilt,1)
-    mu_sig(j,:) = conv(st,muap{i}(64+j,:),'same');
+    mu_sig(j,:) = conv(st,muap{MU}(64+j,:),'same');
 end
 
 eMU = extension(mu_sig,R);
@@ -45,7 +64,7 @@ wMU = whitening_matrix*eMU;
 ePy = extension(data_unfilt-mu_sig,R);
 wPy = whitening_matrix*ePy;
 
-w = muap{i}(65:128,:);
+w = muap{MU}(65:128,:);
 w = extension(w,R);
 w = whitening_matrix * w;
 
@@ -61,9 +80,9 @@ end
 w = w(:,maxInd);
 w = w./norm(w);
 
-%% Make figure
+% Generate figure
 t=tiledlayout(2,2);
-figure(1);set(gcf,'units','points','position',[219,207,1305,775])
+set(gcf,'units','points','position',[219,207,1305,775])
 time_win=[5 55];
 
 nexttile;
@@ -81,7 +100,7 @@ hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU,'LineWidth',1.5);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
-xlim([(spike_times{50}(1)-400)/10e3 (spike_times{50}(1)+400)/10e3])
+xlim([(spike_times{MU}(1)-400)/10e3 (spike_times{MU}(1)+400)/10e3])
 set(gca,'visible','off');
 
 nexttile;
@@ -99,7 +118,7 @@ hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG,'LineWidth',1.5);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
-xlim([(spike_times{50}(1)-400)/10e3 (spike_times{50}(1)+400)/10e3])
+xlim([(spike_times{MU}(1)-400)/10e3 (spike_times{MU}(1)+400)/10e3])
 set(gca,'visible','off');
 
 t.TileSpacing='compact';

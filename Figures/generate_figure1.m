@@ -1,16 +1,22 @@
-%% Script to showcase the influecne of the contrast function 
-% 
-%% Define basic variables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate figure 1 in "Revisiting convolutive blind source
+% separation for motor neuron identification: From theory to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clearvars; close all;
+
+% Define basic variables
 color1 = [255 100 100]./255;
 color2 = [224 158 0]./255;
 color3 = [0.2 0.6 0.3];
-%% Non Linearity
+
+% Non Linearity
 G   = @(x,n) x.^n;
 G_2 = @(x,n) n*(n-1).*x.^(n-2);
 G_3 = @(x,n) n*(n-1)*(n-2).*x.^(n-3);
 G_4 = @(x,n) n*(n-1)*(n-2)*(n-3).*x.^(n-4);
 
-%% Influecne of the contrast function on the peak separation
+% Influecne of the contrast function on the peak separation
 % Vector of peak separation values
 ps_vals   = linspace(0.1,0.9,5); 
 % Exponents of the non-linearity
@@ -24,12 +30,12 @@ for i=1:length(nvalues)
     end 
 end
 
-figure(11)
+% Generate figure
+% figure(11)
 t=tiledlayout(1,3);
 set(gcf,'units','points','position',[0,210,1511,556]);
 
 nexttile;
-
 hold on;
 plot(nvalues,cvals','LineWidth',2)
 hold off;
@@ -40,7 +46,8 @@ title('Contrast between sources')
 h1=legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast');
 h1.Box='off';
 set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
-%% Influecne of the contrast function on higher-order terms
+
+% Influence of the contrast function on higher-order terms
 % Standard deviation
 sigma = 1;
 % Peak amplitude relative to the variance
@@ -81,15 +88,12 @@ for i=1:length(nvalues)
     end  
 end
 
-%%
 % Weighting of zero-order term relative to the total cost (up to order 2)
 tmp1 = T0./(T0+T2);
 % Weighting of zero-order term relative to the total cost (up to order 4)
 tmp2 = T0./(T0+T2+T3+T4);
 
-
 nexttile;
-
 patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(1,:))], color1, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
@@ -102,11 +106,8 @@ xlabel('Exponent a')
 ylabel('Learning weight')
 set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 
-%%
-
 tmp1 = cvals(3,:).*T0./(T0+T2);
 tmp2 = cvals(3,:).*T0./(T0+T2+T3+T4);
-
 
 nexttile;
 
@@ -125,22 +126,22 @@ set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 t.TileSpacing='compact';
 t.Padding='compact';
 
-%% Number of spikes required to dominate an outlier
-% Ratio of the expected spike value and the outlier amplitude
-out2spike_values   = [0.01 0.05 0.1 0.25 0.5];
-% Compute number of spikes needed to overweight the outlier
-nspikes = zeros(length(out2spike_values),length(nvalues));
-for i=1:length(nvalues)
-    for j=1:length(out2spike_values)
-        nspikes(j,i) = 1^nvalues(i) ./ out2spike_values(j)^nvalues(i); 
-    end 
-end
-figure(12) 
-semilogy(nvalues,nspikes','LineWidth',2)
-set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
-xlim([0 8])
-ylim([0 10^5])
-xlabel('Exponent a')
-ylabel('Number of required spikes')
-title('Effect of Outliers')
-legend('r=100','r=20','r=10','r=4','r=2','Location','eastoutside')
+% %% Number of spikes required to dominate an outlier
+% % Ratio of the expected spike value and the outlier amplitude
+% out2spike_values   = [0.01 0.05 0.1 0.25 0.5];
+% % Compute number of spikes needed to overweight the outlier
+% nspikes = zeros(length(out2spike_values),length(nvalues));
+% for i=1:length(nvalues)
+%     for j=1:length(out2spike_values)
+%         nspikes(j,i) = 1^nvalues(i) ./ out2spike_values(j)^nvalues(i); 
+%     end 
+% end
+% figure(12) 
+% semilogy(nvalues,nspikes','LineWidth',2)
+% set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
+% xlim([0 8])
+% ylim([0 10^5])
+% xlabel('Exponent a')
+% ylabel('Number of required spikes')
+% title('Effect of Outliers')
+% legend('r=100','r=20','r=10','r=4','r=2','Location','eastoutside')

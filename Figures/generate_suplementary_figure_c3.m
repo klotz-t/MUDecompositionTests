@@ -1,43 +1,60 @@
-% figure_delayed_spike_train
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate supplementary figure c3 in "Revisiting convolutive 
+% blind sourceseparation for motor neuron identification: From theory
+% to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+clearvars; close all;
+
+% If load existing data
+useExistingData=1;
+
+% Use random seed to obtain identical results
 rng(0)
 
-useExistingData=1;
+% EMG sample rate
+fs=2048;
+
+% Set the signal-to-noise ratio (dB)
+noise_dB=20;
+
+% Set the maximum input current in the trapezoid (nA)
+I=7e-9;
+
+% Fixing to MU #36 and #50
+MU1=36;
+MU2=50;
+
+% Extension factor
+R=16;
 
 if useExistingData==0
     cd '../LIF model/'
     addpath '../Functions/'
 
-    fs=2048;
-
     % Generate spike trains
-    I=7e-9; % 7 nA input current
     [spike_times,time_param,membr_param]=generate_spike_trains(I);
 
-    % Generate EMG signals
-    noise_dB=20;
-    MU1=36;
-    MU2=50;
+    % Set delays in samples for identical spike train (translation)
+    transl_spikes=10:10:100; % 10 kHz fs
+    spike_times_MU=spike_times{MU2};
 
-    transl_spikes=10:10:100; % samples at 10 kHz
-    spike_times_MU=spike_times{50};
-
+    % Pre-define matrix for storing metrics
     sep=zeros(2,length(transl_spikes));
     fpr=zeros(2,length(transl_spikes));
     fnr=zeros(2,length(transl_spikes));
     whitened_muap_norm=zeros(2,length(transl_spikes));
 
+    % Loop through each delay
     for i=1:length(transl_spikes)
         disp([num2str(i),'/',num2str(length(transl_spikes))]);
-        spike_times{36}=spike_times_MU+transl_spikes(i);
+        spike_times{MU1}=spike_times_MU+transl_spikes(i);
         [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
 
         % Select 64 out of 256 channels
         data=data(65:128,:);
         sig_noise=sig_noise(65:128,:);
         data_unfilt=data_unfilt(65:128,:);
-
-        R=16; % extension factor
 
         % Extend and whiten
         eSIG = extension(data,R);
@@ -50,7 +67,6 @@ if useExistingData==0
 
             % Reconstruction
             sigtmp=w'*wSIG;
-            % sig=sig./max(sig);
 
             % Select the source with highest skewness
             save_skew=zeros(1,size(sigtmp,1));
@@ -60,6 +76,7 @@ if useExistingData==0
             [~,maxInd]=max(save_skew);
             w = w(:,maxInd);
 
+            % Compute whitened MUAP norm
             whitened_muap_norm(MU,i)=norm(w);
 
             w = w./norm(w);
@@ -68,21 +85,22 @@ if useExistingData==0
             sig{MU}(i,:)=w'*wSIG;
             eval(['tmp=separability_metric(sig{',num2str(MU),'}(',num2str(i),',:),spike_times{MU',num2str(MU),'});']);
 
+            % Store metrics
             sep(MU,i)=tmp(1);
             fpr(MU,i)=tmp(2);
             fnr(MU,i)=tmp(3);
         end
     end
-
+    % Save data
     cd '../Figures/'
-
     save('delayed_spike_train.mat','transl_spikes','sep','fpr','fnr','whitened_muap_norm')
 end
 
+clearvars;
+
 load('delayed_spike_train.mat') 
 
-%%
-
+% Generate figure
 cmap=lines(2);
 
 t=tiledlayout(2,2);
@@ -96,7 +114,6 @@ hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0 100]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
-%xlabel('Delay (ms)');
 ylabel('Separability (%)');
 xticks(transl_spikes/10);
 h=legend([s1 s2],{'MU #36','MU #50'},'location','northeast','NumColumns',2);
@@ -110,7 +127,6 @@ hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0 100]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
-%xlabel('Delay (ms)');
 ylabel('False positive rate (%)');
 xticks(transl_spikes/10);
 h=legend([s1 s2],{'MU #36','MU #50'},'location','northeast','NumColumns',2);
@@ -118,8 +134,8 @@ h.Box='off';
 
 nexttile;
 hold on;
-s1=plot(transl_spikes/10,100*fnr(1,:),'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
-s2=plot(transl_spikes/10,100*fnr(2,:),'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
+plot(transl_spikes/10,100*fnr(1,:),'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
+plot(transl_spikes/10,100*fnr(2,:),'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0 100]);
@@ -130,8 +146,8 @@ xticks(transl_spikes/10);
 
 nexttile;
 hold on;
-s1=plot(transl_spikes/10,whitened_muap_norm(1,:)./max(whitened_muap_norm(2,:)),'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
-s2=plot(transl_spikes/10,whitened_muap_norm(2,:)./max(whitened_muap_norm(2,:)),'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
+plot(transl_spikes/10,whitened_muap_norm(1,:)./max(whitened_muap_norm(2,:)),'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
+plot(transl_spikes/10,whitened_muap_norm(2,:)./max(whitened_muap_norm(2,:)),'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 xlim([transl_spikes(1)/10 transl_spikes(end)/10]);
 ylim([0.7 1]);
@@ -146,8 +162,3 @@ t.Padding='compact';
 
 g=gcf;
 g.Renderer='painters';
-
-% figure;
-% plot_sta(rot90(rot90(muap_grid(muap{36}(65:128,:)))),fs,'k');
-% plot_sta(rot90(rot90(muap_grid(muap{50}(65:128,:)))),fs,'r')
-
