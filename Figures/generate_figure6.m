@@ -35,7 +35,7 @@ scos2 =zeros(length(CCoV_vec),length(ICoV_vec));
 
 if useExistingData==0
     cd '../LIF model/'
-    addpath '../pure-simulation-trials/functions/'
+    addpath '../Functions/'
 
     % Generate EMG signals
 

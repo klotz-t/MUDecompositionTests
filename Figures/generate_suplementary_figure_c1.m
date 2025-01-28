@@ -15,7 +15,7 @@ spike_times{50}=[spike_times{50}(1) spike_times{50}(1)+doublet_isi spike_times{5
 
 [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
 
-addpath '../pure-simulation-trials/functions/'
+addpath '../Functions/'
 
 % Select 64 out of 256 channels
 data=data(65:128,:);

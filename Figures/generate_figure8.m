@@ -23,7 +23,7 @@ s50 = zeros(length(extF),1);
 
 if useExistingData==0
     cd '../LIF model/'
-    addpath '../pure-simulation-trials/functions/'
+    addpath '../Functions/'
     noise_dB = 20;
     disp(num2str(noise_dB))
 

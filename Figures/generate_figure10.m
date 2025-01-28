@@ -1,5 +1,5 @@
 % figure common spikes
-
+addpath ../Functions/
 %clearvars; close all;
 rng(0)
 

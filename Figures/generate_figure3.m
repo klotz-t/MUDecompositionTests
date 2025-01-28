@@ -16,7 +16,7 @@ if useExistingData==0
     [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
     [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
 
-    addpath '../pure-simulation-trials/functions/'
+    addpath '../Functions/'
 
     show_plots=0;
 

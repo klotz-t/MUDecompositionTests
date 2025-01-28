@@ -8,7 +8,7 @@ useExistingData=1;
 
 if useExistingData==0
     cd '../LIF model/'
-    addpath '../pure-simulation-trials/functions/'
+    addpath '../Functions/'
 
     fs=2048;
 

@@ -3,7 +3,7 @@
 load('separability_metric_example.mat')
 
 cd '../LIF model/'
-addpath '../pure-simulation-trials/functions/'
+addpath '../Functions/'
 
 cmap=lines(4);
 
