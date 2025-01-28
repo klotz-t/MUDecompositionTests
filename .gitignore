@@ -3,3 +3,5 @@
 *.png
 *.jpeg
 *.jpg
+./pure_simulation_trials/
+./old/
