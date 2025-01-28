@@ -168,7 +168,7 @@ data(isnan(data(:,4)), 4) = 1;
 data(isnan(data(:,5)), 5) = 1;
 data(isnan(data(:,13)), 13) = 0;
 %% Correlation matrix
-[cvals, pvals] = corr(data(:,1:16));
+[cvals, pvals] = corr(data(:,1:16),Type="Pearson");
 names = {'spike amplitude', 'max. cosine similarity','rel. peak separation','false positive rate','false negative rate', ...
     'spike interaction','min. energy similarity','rel. MUAP amplitude','extension factor','recruited MUs', ...
     'signal-to-noise ratio', 'SIL', 'PNR', 'skew', 'kurt', 'N_{spikes}'};
@@ -242,7 +242,7 @@ set(gca,'FontSize',12);
 axis equal tight;
 
 %% PNR
-th = 30;
+th = 25;
 true_class = data(:,4) < 0.1 & data(:,5)<0.1;
 pred_class = data(:,13) > th;
 
@@ -262,7 +262,7 @@ set(gcf,'color','w');
 set(gca,'FontSize',12);
 
 %% SIL
-th = 0.9;
+th = 0.87;
 true_class = data(:,4) < 0.1 & data(:,5)<0.1;
 pred_class = data(:,12) > th;
 
