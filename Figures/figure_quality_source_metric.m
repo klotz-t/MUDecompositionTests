@@ -64,8 +64,7 @@ if useExistingData==0
         est_spikes=est_spike_times(sig,fs);
 
         % Compute SIL and PNR
-        [~,~,sil(i)] = calcSIL(wSIG,w,fs);
-        % sil(i)=compute_sil(sig,est_spikes);
+        [~, ~ , sil(i)] = calcSIL(wSIG, w, fs);
         pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3],1);
         skew(i)=skewness(sig);
         kurt(i)=kurtosis(sig);
