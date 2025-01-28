@@ -169,9 +169,9 @@ data(isnan(data(:,5)), 5) = 1;
 data(isnan(data(:,13)), 13) = 0;
 %% Correlation matrix
 [cvals, pvals] = corr(data(:,1:16));
-names = {'|h_{il}|', 's_{cos}','SEP','FPR','FNR', ...
-    'Spike Independence','S_{energy}','MUAP amplitude','R','N_{MU}', ...
-    'SNR', 'SIL', 'PNR', 'skew', 'kurt', 'N_{spikes}'};
+names = {'spike amplitude', 'max. cosine similarity','rel. peak separation','false positive rate','false negative rate', ...
+    'spike interaction','min. energy similarity','rel. MUAP amplitude','extension factor','recruited MUs', ...
+    'signal-to-noise ratio', 'SIL', 'PNR', 'skew', 'kurt', 'N_{spikes}'};
 %%
 mymap = zeros(3,101);
 mymap(1,1:51) = linspace(0.8510,1,51);
@@ -187,7 +187,7 @@ pValueMatrix = flipud(pvals(1:11,1:5));
 pValueThreshold = 0.01;
 % Create a figure and axes
 figure(201);
-subplot(4,3, [1 2 4 5 7 8 10 11])
+subplot(5,3, [1 2 4 5 7 8 10 11])
 imagesc(dataMatrix); % Use imagesc to display the data matrix as a heatmap
 clim([-1 1])
 colormap(mymap');
@@ -233,9 +233,12 @@ end
 % xlabel('Columns');
 % ylabel('Rows');
 yticklabels(names(11:-1:1)), xticklabels(names(1:5))
-title('Factors affecting decomposition performance');
+title('Decomposition performance summary','Influecne of multiple factors');
 % Adjust the axis to display correctly
 set(gca, 'XTick', 1:numCols, 'YTick', 1:numRows);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',12);
 axis equal tight;
 
 %% PNR
@@ -248,10 +251,15 @@ C = confusionmat(true_class,pred_class);
 %figure, confusionchart(C,'Normalization','absolute','ColumnSummary','column-normalized','RowSummary','row-normalized')
 
 figure(201)
-subplot(4,3,3), confusionchart(C,{'ND','D'},'Normalization','row-normalized')
+subplot(5,3,3), confusionchart(C,{'ND','D'},'Normalization','row-normalized','GridVisible','off','XLabel','')
 title('PNR > 30 dB (row normalized)')
-subplot(4,3,6), confusionchart(C,{'ND','D'},'Normalization','column-normalized')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
+%
+subplot(5,3,6), confusionchart(C,{'ND','D'},'Normalization','column-normalized','GridVisible','off','XLabel','')
 title('PNR > 30 dB (column normalized)')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
 
 %% SIL
 th = 0.9;
@@ -263,10 +271,15 @@ C = confusionmat(true_class,pred_class);
 %figure, confusionchart(C,'Normalization','absolute','ColumnSummary','column-normalized','RowSummary','row-normalized')
 
 figure(201)
-subplot(4,3,9), confusionchart(C,{'ND','D'},'Normalization','row-normalized')
+subplot(5,3,9), confusionchart(C,{'ND','D'},'Normalization','row-normalized','GridVisible','off','XLabel','')
 title('SIL > 0.9 (row normalized)')
-subplot(4,3,12), confusionchart(C,{'ND','D'},'Normalization','column-normalized')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
+%
+subplot(5,3,12), confusionchart(C,{'ND','D'},'Normalization','column-normalized','GridVisible','off')
 title('SIL > 0.9 (column normalized)')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
 
 % %%
 % th = 30;
