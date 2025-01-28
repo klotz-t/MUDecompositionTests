@@ -4,7 +4,7 @@ clearvars; close all;
 
 rng(0)
 
-useExistingData=1;
+useExistingData=0;
 
 if useExistingData==0
     cd '../LIF model/'
@@ -64,7 +64,8 @@ if useExistingData==0
         est_spikes=est_spike_times(sig,fs);
 
         % Compute SIL and PNR
-        sil(i)=compute_sil(sig,est_spikes);
+        [~,~,sil(i)] = calcSIL(wSIG,w,fs);
+        % sil(i)=compute_sil(sig,est_spikes);
         pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3],1);
         skew(i)=skewness(sig);
         kurt(i)=kurtosis(sig);
@@ -92,7 +93,7 @@ if useExistingData==0
         end
     end
     cd '../Figures/'
-    save('quality_source_metric.mat','sep','pnr','sil','skew')
+    save('quality_source_metric.mat','sep','pnr','sil','skew','kurt')
 end
 
 clearvars
@@ -213,3 +214,5 @@ t.Padding='compact';
 
 [rho,pval] = corr(skew',pnr')
 [rho,pval] = corr(skew',sil')
+
+corr(skew(find(sil>=0.9))',sil(find(sil>=0.9))')
