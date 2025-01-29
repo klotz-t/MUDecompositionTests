@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % To calculate the silouhette value to estimate the quality of the Motor
 % Unit (the distance between the peaks and the noise)
+% Based on Simon Avrillon's implementation in MUedit
 
 % Input: 
 %   w = weigths

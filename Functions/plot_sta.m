@@ -1,3 +1,17 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Function to plot the spatio-temporal MUAP
+%
+% Input:    muap = a matrix of muaps with channels along rows and time
+%               along columns (3D)
+%           fs = sample rate
+%           col = color (black if unspecified)
+%           norm_amp = a value for normalising MUAP amplitudes
+%
+% Output:   figure
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function plot_sta(muap,fs,col,norm_amp)
 
 if nargin<3

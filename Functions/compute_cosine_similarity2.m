@@ -19,6 +19,7 @@ for mu_idx1 = 1:num_MUs
         cosine_similarity(mu_idx1, mu_idx2) = similarity;
         cosine_similarity(mu_idx2, mu_idx1) = similarity;
 
+        % Compute the energy similarity between two MU responses
         energy_muap1 = sum(signal_1.^2 , 'all');
         energy_muap2 =  sum(signal_2.^2 , 'all');
         mean_energy = mean([energy_muap1 energy_muap2]);

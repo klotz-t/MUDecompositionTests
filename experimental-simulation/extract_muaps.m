@@ -1,10 +1,12 @@
-%% Extract MUAPs and recruitment threshold values for subject 1 and 2
+% Script to extract experimental spatio-temporal MUAPs and
+% recruitment threshold values for subject 1 and 2 based on the MUdict.m
+% These MUAPs are used to generate synthetic EMG signals
 
 % Set folder
 addpath(genpath('../experimental-simulation/'));
 folder='';
 
-% Set subject nr (1 or 2) - grid 1-2 for subject 2 have a few bad channels
+% Set subject nr (1 or 2)
 subject_nr=1;
 
 % Set params
@@ -21,6 +23,7 @@ clearvars RTm firingprop
 % Find files for the relevant subject
 files=dir([folder,'S',num2str(subject_nr),'_*.mat']);
 
+% Pre-define muap cell
 muap=cell(1,size(Disrate,2));
 
 % Find which MUs we should extract from each recording (maximise firings)
@@ -73,4 +76,5 @@ for selectedRecording=1:size(files,1)
     end
 end
 
+% Save experimental spatio-temporal MUAPs
 save(['muaps_RT_S',num2str(subject_nr),'.mat'],'muap','RT')

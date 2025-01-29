@@ -1,20 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Function to generate synaptic input to motor neurons
+% Mean drive + common noise + independent noise
+% Based on Negro & Farina (2011): https://doi.org/10.1152/jn.00336.2011
+%
+% Input:    n_mn = number of motor neurons
+%           n_clust = number of motor neuron clusters (currently random)
+%           max_I = maximum input current
+%           time_param = time parameter struct
+%           type = contraction type (currently hard-coded, will update)
+%                   e.g., 'trapezoid'
+%           CCoV = cofficient of variation for the common noise
+%           ICoV = coefficient of variation for the independent noise
+%
+% Output:   CI = synaptic inputs as a matrix with n_mn synaptic inputs
+%                   based on the sum of mean drive, common and independent
+%                   noise.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function CI=cortical_input(n_mn,n_clust,max_I,time_param,type,CCoV,ICoV)
 
-% Copied and modified the version from Thomas (originally from Negro & Farina (2011)?)
-% To do: make the mean drive functions more general and less hardcoded etc
-
-% CCoV = 20; % percent of mean
-% ICoV = 0.25*CCoV; % percent of mean
-
+% Time duration and sample rate
 T_dur=time_param.T_dur;
 fs=time_param.fs;
 
-ext_sig=20; % s
-T_dur_ext=T_dur+ext_sig; % Add 20 sec
+% Add 20 s on the signal to remove edge effects
+ext_sig=20;
+T_dur_ext=T_dur+ext_sig;
 
-dt =  1/fs; % Time step in [ms] -- to obtain sampling points according to Fs
-T = 0:dt:T_dur_ext; % Time vector
+% Time step in ms
+dt =  1/fs;
+% Time vector
+T = 0:dt:T_dur_ext;
 
+% To do: make the mean drive functions more general and less hardcoded etc
 if strcmp(type,'trapezoid')
     mean_drive=[zeros(1,round(0.00*T_dur)*(1/dt)) linspace(0,max_I,round(0.16*T_dur)*(1/dt)) max_I*ones(1,round(0.66*T_dur)*(1/dt)+1) flip(linspace(0,max_I,round(0.16*T_dur)*(1/dt))) zeros(1,round(0.00*T_dur)*(1/dt))];
 elseif strcmp(type,'triangular')
@@ -33,10 +51,8 @@ elseif strcmp(type,'step')
 end
 
 mean_CI=max(mean_drive);
-% mean_CI=mean_drive;%(i);
 
 % Define filters
-% [transfer function coefficiants] = butterworthfilter(filter order, cut off frequency, filter type)
 [A0,B0] = butter(2, 100/fs*2,'low'); % low pass
 [A1,B1] = butter(2, [15/fs*2 35/fs*2],'bandpass'); % band pass
 
@@ -48,8 +64,8 @@ commonNoise = filtfilt(A1,B1,gNoise');
 drive_com = commonNoise./std(commonNoise).*(CCoV./100.*mean_CI');
 drive_com = drive_com(ceil(ext_sig*fs):ceil(T_dur_ext*fs),:);
 
-% Randomly generate clusters
-random_indx=randperm(n_mn);%reshape(randperm(tmp_num),n_clust,tmp_num/n_clust);
+% Randomly generate clusters if n_clust>1
+random_indx=randperm(n_mn);
 avg_mn_per_clust=floor(n_mn/n_clust);
 
 drive_com_new=zeros(size(drive_com,1),n_mn);
@@ -69,4 +85,3 @@ drive_ind = drive_ind(ceil(ext_sig*fs):ceil(T_dur_ext*fs),:);
 
 % Create drive (mean + common drive + independent noise)
 CI = ones(n_mn,1).*mean_drive + drive_com_new' + drive_ind';
-%CI = ones(n_mn,1).*mean_drive + ones(n_mn,1).*drive_com + drive_ind';

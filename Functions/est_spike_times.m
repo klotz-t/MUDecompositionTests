@@ -1,5 +1,15 @@
-function est_spikes=est_spike_times(sig,fsamp)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 % This spike train estimation is based on Simon Avrillon's code in MUedit
+%
+% Input:    sig = MU source
+%           fsamp = sample rate
+%
+% Output:   est_spikes = estimated time instants
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function est_spikes=est_spike_times(sig,fsamp)
 
 % Ignore negative values
 sig=sig.*abs(sig);

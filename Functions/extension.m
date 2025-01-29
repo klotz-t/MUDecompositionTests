@@ -1,5 +1,5 @@
 function eY = extension(Y,R)
-% Extend a multi-channel signal 'Y' by an extansiofactor 'R'.
+% Extend a multi-channel signal 'Y' by an extension factor 'R'.
 % eY = zeros(size(Y,1)*R,size(Y,2)+R);
 % for index = 1:R
 %     eY((index-1)*size(Y,1)+1:index*size(Y,1),[1:size(Y,2)]+(index-1)) = Y;

@@ -1,23 +1,37 @@
-function spike_times=lif_model_implicit(n_mn,CI,membr_param,time_param,verbose)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Simple leaky integrate and fire model with added gains on leakage
+% and excitability, suitable for simulating the behaviour of 
+% slow isometric contractions.
+%
+% Input:    n_mn = number of motor neurons
+%           CI = synaptic input from cortical_input.m
+%           membr_param = membrane parameter struct
+%           time_param = time parameter struct
+%
+% Output:   spike_times = cell with size n_mn comprising time instants
+%               at 10 kHz
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function spike_times=lif_model_implicit(n_mn,CI,membr_param,time_param)
 
 V_reset=membr_param.V_reset; % Reset potential (V)
 V_e=membr_param.V_e; % Leak reversal potential (V)
 V_th=membr_param.V_th; % Spike threshold (V)
 tref=membr_param.tref; % Refractory time (s)
-Rm=membr_param.Rm;
-tau_m=membr_param.tau_m;
-gain_leak=membr_param.gain_leak;
-gain_exc=membr_param.gain_exc;
+Rm=membr_param.Rm; % Membrane resistances
+tau_m=membr_param.tau_m; % Membrane time constants
+gain_leak=membr_param.gain_leak; % Gain parameter leakage
+gain_exc=membr_param.gain_exc; % Gain parameter excitability
 
 % Set time parameters
 dt=time_param.dt; % Time step (s)
 T=time_param.T; % Time vector
 
+% Pre-define cell with time instants of each motor neuron spike train
 spike_times=cell(1,n_mn);
+
+% For each motor neuron
 for MUind=1:n_mn
-    if verbose==1
-        disp(MUind)
-    end
     % Add noise
     Im=CI(MUind,:);
     % Define membrane potential vector
@@ -48,7 +62,6 @@ for MUind=1:n_mn
                 % Set refractory time
                 tr = round(treftmp/dt);
             end
-                
         else
             % Reset membrane potential
             Vm(t+1) = V_reset;
@@ -56,10 +69,5 @@ for MUind=1:n_mn
             tr = tr-1;
         end
     end
-    % if isempty(rec_spikes)
-    %     spike_times(MUind:n_mn)=[];
-    %     break;
-    % else
-        spike_times{MUind}=rec_spikes;
-    % end
+    spike_times{MUind}=rec_spikes;
 end

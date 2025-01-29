@@ -21,6 +21,10 @@
 %                   Note that the data-folder contains the mat-files
 %                   Simon have uploaded to figshare.
 %
+%                   Links:
+%                       1) https://github.com/simonavrillon/MUdictionnary
+%                       2) https://doi.org/10.6084/m9.figshare.24640944.v1
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Step 1: Get the filters from intensity 1 and apply them on itensity 2

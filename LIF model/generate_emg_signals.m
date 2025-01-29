@@ -1,18 +1,48 @@
-function [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec,changing_muap_vec, CI)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Function to generate EMG signals with different cases that can be studied
+% For example, to study similar MUAPs through distances over the grid and
+% their scaling. Also, possible to study non-stationarity through the
+% change of spatio-temporal MUAPs from spike-to-spike in a given MU.
+%
+% Input:    spike_times = cell of 300 motor neurons with their spike times
+%           time_param = Time parameter struct
+%           noise_dB = signal-to-noise ratio through added coloured noise
+%           similar_muaps_vec = [MU1 MU2 spat_transl scale_fact], where
+%               MU1 and MU2 are selected MUs, spat_transl is how much the
+%               two similar MUs are translated in the interpolated MUAP
+%               grid, scale_fact is how much they are scaled.
+%           changing_muap_vec = [changing_muap MU1], where changing_muap
+%               is 0 or 1 with MU1 being the reference MU.
+%           CI = synaptic input (sum of mean drive, common and independent
+%               noise)
+%
+% Output:   data = 64-channel EMG signals based on experimental MUAPs
+%           data_noisefree = Noise-free EMG signals
+%           sig_noise = The additive coloured noise
+%           muap = The spatio-temporal MUAPs used to generate the signals
+%           amp_vary = non-stationary spatio-temporal MUAPs
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function [data,data_noisefree,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI)
+
+% Set folder and add path for loading data and accessing functions
+addpath '../experimental-simulation'
+folder='../experimental-simulation/';
+
+% Need at leasat spike time and time parameters
 if nargin < 2
     error('Incorrect input')
 end
 
+% Set SNR to 20 dB if not specified
 if nargin < 3
     noise_dB=20;
 end
 
+% If using the interpolation to study identifiability wrt similar MUAPs
 if nargin < 4
-   rand_seed = false;
-end
-
-if nargin < 5
     similar_muaps=0;
 else
     try
@@ -26,7 +56,8 @@ else
     end
 end
 
-if nargin < 6
+% To study non-stationarity
+if nargin < 5
     changing_muap=0;
     amp_vary=0;
 else
@@ -36,52 +67,39 @@ else
     catch
         error('Incorrect changing_muap input')
     end
-    if nargin < 7
+    if nargin < 6
         error('Incorrect input, need cortical input as well');
     end
 end
-            
-% Generate EMG signals
 
 % Set params
 T=time_param.T_dur; % Total simulation time in seconds
 fs=2048; % Sample rate
 t=linspace(0,T,T*fs); % Time vector
-n_mn=300;
-%noise_dB=20; % added coloured gaussian noise
+n_mn=300; % Number of motor neurons
 
-% Spatial dependency
-% identical_muaps=0; % if use identical muaps for MUs 49-50
-
-% muap amplitude
-% changing_muap=0; % if the MUAP for MU 50 varies over the contraction
-
-addpath '../experimental-simulation'
-
-% Set folder
-folder='../experimental-simulation/';
-
+% Load experimentally extracted MUAPs
 data1=load([folder,'muaps_RT_S',num2str(1),'.mat']);
 data2=load([folder,'muaps_RT_S',num2str(2),'.mat']);
 
+% Merge and sort recruitment thresholds from both subjects
 RT_unsort=[data1.RT data2.RT];
 [RT,sortInd]=sort(RT_unsort);
 
+% Merge and sort MUAPs based on the recruitment thresholds
 muap_unsort=[data1.muap data2.muap];
 muap=muap_unsort(sortInd);
 
+% Remove unneccesary variables
 clearvars data1 data2 RT_unsort muap_unsort sortInd
 
-% If false, always draw MUAPs in a fixed order
-if rand_seed == false
-    rng(1,'twister')
-end
+% rng(1,'twister')
+% Select which of the MUAPs to include in the pool
 select_muaps=sort(randsample(size(muap,2),n_mn))';
-
 RT=RT(select_muaps);
 muap=muap(select_muaps);
 
-% Replace MU #24 with a similar MU as #25 (#49 and #50 instead)
+% If study similar MUAPs: Replace MU1 with MU2
 if similar_muaps==1
     muap_tmp=interp_muap_grid(muap{MU2},1);
     muap_tmp=muap_tmp([1:4:4*13],spat_transl+[1:4:4*5],:);
@@ -92,16 +110,9 @@ if similar_muaps==1
     muap{MU2}=scale_factor.*muap{MU2};
 end
 
+% If study non-stationary: randomly select MUAPs from interpolated grid
 if changing_muap==1
     muap_var={};
-    % amp_vary=movmean(CI(MU1,:),20000);
-    % amp_vary(length(amp_vary))=amp_vary(1);
-    % amp_vary=abs(amp_vary-amp_vary(1));
-    % amp_vary=12*amp_vary./max(amp_vary);
-    % amp_vary=round(amp_vary);
-    % indx=find(amp_vary==12);
-    % new_amps=randi(13,1,length(indx))-1;%randi(5,1,length(indx))+7;
-    % amp_vary(indx)=new_amps;
     amp_vary=randi(13,1,length(time_param.T));
     for i=min(amp_vary):max(amp_vary)
         muap_tmp=interp_muap_grid(muap{MU1},1);
@@ -110,35 +121,32 @@ if changing_muap==1
 
         muap_var{i}=zeros(size(muap{MU1}));
         muap_var{i}(65:128,:)=muap_tmp_vec;
-        % muap_var{i+1}=zeros(size(muap{MU1}));
-        % muap_var{i+1}(65:128,:)=muap_tmp_vec;
     end
     muap{MU1}=muap_var;
 end
 
-% if identical_muaps==1
-%     muap{49}=muap{50};
-% end
-
+% Pre-define the matrix with EMG signals
 data=zeros(size(muap{1},1),size(t,2));
 
 % Loop through each motoneuron
-for i=1:size(spike_times,2)
-    % disp(['MU: ',num2str(i),'/',num2str(n_mn)])
-    
+for i=1:size(spike_times,2)    
     % Convolve spike train with MUAPs for each channel
     ST=zeros(size(t));
     ST(round(fs*spike_times{i}./time_param.fs))=1;
 
+    % If study non-stationarity and the index is the selected MU
     if changing_muap==1 && i==MU1
+        % Vary spatio-temporal MUAP for each firing
         for j=1:size(spike_times{i},2)
             ST=zeros(size(t));
             ST(round(fs*spike_times{i}(j)./time_param.fs))=1;
+            % Convolve each MUAP with the firing at each channel
             for ch=1:size(muap_var{1},1)
                 data(ch,:)=data(ch,:)+conv(ST,muap_var{amp_vary(spike_times{i}(j))}(ch,:),'same');
             end
         end
     else
+        % Stationary case
         for ch=1:size(muap{i},1)
             data(ch,:)=data(ch,:)+conv(ST,muap{i}(ch,:),'same');
         end
@@ -151,5 +159,5 @@ sig_noise=(std(data(:))*10^(-noise_dB/20)).*randn(size(data));
 for ch=1:size(sig_noise,1)
     sig_noise(ch,:)=filtfilt(b,a,sig_noise(ch,:));
 end
-data_unfilt=data;
+data_noisefree=data;
 data=data+sig_noise;

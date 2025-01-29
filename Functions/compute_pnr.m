@@ -1,5 +1,27 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Function to compute pulse-to-noise ratio (PNR) for a MU source
+% Translated from Python code obtained from openhdemg
+% See: https://github.com/GiacomoValliPhD/openhdemg
+%
+% Input:    ipts = MU source
+%           mupulses = time instants of identified MU source peaks
+%           constrain_pulses = 1 means the times of firing are considered
+%               those in mupulses +/- the number of samples specified in
+%               constrain_pulses (e.g., [1 3]). Otherwise, the times of
+%               firing are estimated via a heuristic penalty function.
+%           ignore_negative_ipts = 1 means normalising by ignoring negative
+%               values
+%           separate_paired_firings = Whether to treat differently paired
+%               and non-paired firings during the estimation of the
+%               signal/noise threshold
+%
+% Output:   pnr = Pulse-to-noise ratio (dB)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 function pnr = compute_pnr(ipts, mupulses, fsamp, constrain_pulses, ignore_negative_ipts, separate_paired_firings)
-    % Compute the pulse-to-noise ratio (PNR) for a single motor unit (MU).
 
     % Default values
     if nargin < 4

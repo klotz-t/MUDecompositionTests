@@ -28,10 +28,9 @@ if length(spikes) > 1
     [L,C,sumd,D] = kmeans(sig(spikes)',2);
 
     % Find cluster with largest peaks
-    [~, idx2] = max(C);
+    [~,idx2] = max(C);
 
     % Compute SIL
-    spikes2 = spikes(L==idx2);
     within = sumd(idx2);
     between = sum(D(L==idx2, setdiff([1 2],idx2)));
     sil = (between-within)/(max([within,between])+eps);
