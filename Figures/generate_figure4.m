@@ -9,7 +9,7 @@ cd '../LIF model/'
 addpath '../Functions/'
 
 % Use random seed to obtain identical results
-rng(0)
+rng(10)
 
 % EMG sample rate
 fs=2048;
@@ -87,7 +87,7 @@ end
 round(mean(FR,'omitnan'),1)
 round(std(FR,'omitnan'),1)
 
-%% Make figure
+% Generate figure
 t=tiledlayout(4,1);
 figure(1);set(gcf,'units','points','position',[498,61,678,804])
 time_win=[5 55];
@@ -141,7 +141,7 @@ hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU,'LineWidth',1.5);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
-xlim([27.95 28.07])%xlim([28.37 28.57]);
+xlim([27.97 28.09])%xlim([28.37 28.57]);
 set(gca,'visible','off');
 
 figure(3);set(gcf,'units','points','position',[781,458,337,306])
