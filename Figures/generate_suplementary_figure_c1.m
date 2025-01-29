@@ -22,7 +22,7 @@ noise_dB=20;
 I=7e-9;
 
 % Set inter-spike interval for doublet in samples at 10 kHz
-doublet_isi=40;
+doublet_isi=30;
 
 % Fix a MU
 MU=50;
@@ -90,6 +90,7 @@ hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
+axis tight;
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 set(gca,'XTickLabel',[]);
@@ -108,6 +109,7 @@ hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',24);
+axis tight;
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
 title('MU filter applied to the EMG signal (sum of all terms)','FontWeight','normal');
