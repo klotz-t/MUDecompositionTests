@@ -6,7 +6,7 @@
 clearvars; close all;
 
 % If load existing data
-useExistingData=1;
+useExistingData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -45,7 +45,7 @@ if useExistingData==0
     cd '../LIF model/'
     addpath '../Functions/'
 
-    for noise_dB=20
+    for noise_dB=[10 20]
         disp(num2str(noise_dB))
 
         for i=1:length(CCoV_vec)
