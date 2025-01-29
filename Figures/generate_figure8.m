@@ -1,19 +1,34 @@
-%clearvars; close all;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate figure 8 in "Revisiting convolutive blind source
+% separation for motor neuron identification: From theory to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-useExistingData=0;
+clearvars; close all;
 
+% If load existing data
+useExistingData=1;
+
+% Use random seed to obtain identical results
 rng(0)
 
+% EMG sample rate
 fs=2048;
 
+% Fixing to MU #1 and #50
 MU1=1;
 MU2=50;
 
-CCoV_vec=20;
-ICoV_vec=10;
+% Set the coefficient of variation for the common and independent noise (%)
+CCoV=20;
+ICoV=10;
 
+% Set the signal-to-noise ratio (dB)
+noise_dB = 20;
+
+% Vector of extension factors
 extF = [1 2 4 8 12 16 24];
 
+% Pre-define vectors
 MU1_norm = zeros(length(extF),1);
 MU50_norm = zeros(length(extF),1);
 c1 = zeros(length(extF),1);
@@ -24,11 +39,6 @@ s50 = zeros(length(extF),1);
 if useExistingData==0
     cd '../LIF model/'
     addpath '../Functions/'
-    noise_dB = 20;
-    disp(num2str(noise_dB))
-
-    CCoV=20;
-    ICoV=10;
 
     % Generate spike trains
     I=7e-9; % 7 nA input current
@@ -42,13 +52,15 @@ if useExistingData==0
     sig_noise=sig_noise(65:128,:);
     data_unfilt=data_unfilt(65:128,:);
 
+    % Loop through each extension factor
     for i=1:length(extF)
+        % Temporary extension factor R
         R=extF(i);
     
         % Extend and whiten
         eSIG = extension(data,R);
         [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
-        %%
+
         w = muap{1}(65:128,:);
         w = extension2(w,R);
         w = whitening_matrix*w;
@@ -96,6 +108,7 @@ if useExistingData==0
         s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
         s50(i) = max(s_cos);
     end
+    % Save data
     cd '../Figures/'
     save('extension_factor.mat','extF','MU1_norm','MU50_norm','c1','c50','s1','s50')
 end
@@ -104,8 +117,7 @@ clearvars;
 
 load('extension_factor.mat')
 
-%%
-
+% Generate figure
 cmap=lines(2);
 
 t=tiledlayout(1,3);
@@ -117,8 +129,6 @@ p1=plot(extF,MU1_norm./max([MU1_norm; MU50_norm]),'-o','Color',cmap(1,:),'Marker
 p2=plot(extF,MU50_norm./max([MU1_norm; MU50_norm]),'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 ylim([0 1])
-% set(gca,'YTickLabel',[]);
-% set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Spike amplitude');
@@ -134,8 +144,6 @@ p1=plot(extF,1-c1./MU1_norm,'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'
 p2=plot(extF,1-c50./MU50_norm,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 ylim([0 1])
-% set(gca,'YTickLabel',[]);
-% set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Separability metric');
@@ -151,8 +159,6 @@ p1=plot(extF,s1,'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',
 p2=plot(extF,s50,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
 hold off;
 ylim([0 1])
-% set(gca,'YTickLabel',[]);
-% set(gca,'YTick',[]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Cosine similarity');

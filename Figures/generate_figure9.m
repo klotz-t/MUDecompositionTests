@@ -1,5 +1,11 @@
-% Figure Separabilitymetric
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate figure 3 in "Revisiting convolutive blind source
+% separation for motor neuron identification: From theory to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+clearvars; close all;
+
+% Load signals and ground truth spikes
 load('separability_metric_example.mat')
 
 cd '../LIF model/'
@@ -30,10 +36,6 @@ yticks([0 1]);
 ylimtmp=ylim;
 ylimtmp(2)=1;
 ylim(ylimtmp);
-%set(gca,'YTickLabel',[])
-%set(gca,'YTick',[])
-%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
-% ylabel('Source amplitude (n.u.)');
 
 nexttile;
 [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig2./max(sig2),ground_truth_spikes);
@@ -52,8 +54,6 @@ set(gcf,'color','w');
 set(gca,'FontSize',20);
 xticks(20:5:40);
 yticks([0 1]);
-%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
-% ylabel('Source amplitude (n.u.)');
 set(gca,'XTickLabel',[])
 
 nexttile;
@@ -74,8 +74,6 @@ set(gca,'FontSize',20);
 xticks(20:5:40);
 yticks([0 1]);
 set(gca,'XTickLabel',[])
-%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
-% ylabel('Source amplitude (n.u.)');
 
 nexttile;
 [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig4./max(sig4),ground_truth_spikes);
@@ -95,8 +93,6 @@ set(gca,'FontSize',20);
 xticks(20:5:40);
 yticks([0 1]);
 set(gca,'XTickLabel',[])
-%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
-% ylabel('Source amplitude (n.u.)');
 
 nexttile;
 [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig5./max(sig5),ground_truth_spikes);
@@ -113,10 +109,7 @@ set(gca,'FontSize',20);
 xticks(20:5:40);
 yticks([0 1]);
 xlabel('Time (s)');
-%title({['Separability: ',num2str(round(val(1),2))];['False positive: ',num2str(round(val(2),2))];['False negative: ',num2str(round(val(3),2))]},'FontWeight','normal');
-% ylabel('Source amplitude (n.u.)');
 
-% t.TileSpacing='compact';
 t.Padding='compact';
 
 est_spikes=est_spike_times(sig1,2048);

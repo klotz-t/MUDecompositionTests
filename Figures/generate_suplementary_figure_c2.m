@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 6 in "Revisiting convolutive blind source
-% separation for motor neuron identification: From theory to practice"
+% Code to generate supplementary figure c2 in "Revisiting convolutive 
+% blind sourceseparation for motor neuron identification: From theory
+% to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clearvars; close all;
@@ -189,59 +190,24 @@ load('common_spikes_20dB.mat');
 
 % Generate figure
 
-t=tiledlayout(2,3);
-set(gcf,'units','points','position',[229,62,1459,893])
+t=tiledlayout(1,2);
+set(gcf,'units','points','position',[316,298,954,467])
 
 nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep1,4));
+imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],interp2(norm1,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-ylabel('Common CoV noise (%)');
-title({'Separability metric (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr1,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False positive rate (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr1,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False negative rate (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep2,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('Independent CoV noise (%)');
 ylabel('Common CoV noise (%)');
-title('MU #50','FontWeight','normal');
-xticks(0:5:20);
+title({'Norm whitened MUAP';'MU #1'},'FontWeight','normal');
 
 nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr2,4));
+imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],interp2(norm2,4));
 colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',18);
 xlabel('Independent CoV noise (%)');
 set(gca,'YTickLabel',[]);
-title('MU #50','FontWeight','normal');
-xticks(0:5:20);
-
-nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr2,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-set(gca,'YTickLabel',[]);
-title('MU #50','FontWeight','normal');
-xticks(0:5:20);
+title({'Norm whitened MUAP';'MU #50'},'FontWeight','normal');
 
 t.TileSpacing='compact';
 t.Padding='compact';

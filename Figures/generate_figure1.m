@@ -1,8 +1,9 @@
-%% Script to showcase the influecne of the contrast function 
-% 
-%% Define basic variables
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate figure 1 in "Revisiting convolutive blind source
+% separation for motor neuron identification: From theory to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clearvars; close all;
+%% Define colors
 mymap = zeros(3,101);
 mymap(1,1:51) = linspace(0.8510,0.5,51);
 mymap(2,1:51) = linspace(0.3255,0.5,51); 
@@ -10,13 +11,12 @@ mymap(3,1:51) = linspace(0.0980,0.5,51);
 mymap(3,51:end) = linspace(0.5,0.7412,51);
 mymap(2,51:end) = linspace(0.5,0.4471,51);
 mymap(1,51:end) = linspace(0.5,0,51);
-
 colororder(mymap(:,1:20:end)')
 
 color1 = mymap(:,1)';
 color2 = mymap(:,51)';
 color3 = mymap(:,end)';
-%% Non Linearity
+%% Non Linearity up to the forth derivative
 G   = @(x,n) x.^n;
 G_2 = @(x,n) n*(n-1).*x.^(n-2);
 G_3 = @(x,n) n*(n-1)*(n-2).*x.^(n-3);
@@ -36,12 +36,12 @@ for i=1:length(nvalues)
     end 
 end
 
-figure(11)
+% Generate figure
+% figure(11)
 t=tiledlayout(1,3);
 set(gcf,'units','points','position',[0,210,1511,556]);
 
 nexttile;
-
 hold on;
 plot(nvalues,cvals','LineWidth',2)
 colororder(mymap(:,[101 71 51 31 1])')
@@ -94,15 +94,12 @@ for i=1:length(nvalues)
     end  
 end
 
-%%
 % Weighting of zero-order term relative to the total cost (up to order 2)
 tmp1 = T0./(T0+T2);
 % Weighting of zero-order term relative to the total cost (up to order 4)
 tmp2 = T0./(T0+T2+T3+T4);
 
-
 nexttile;
-
 patch([nvalues, fliplr(nvalues)], [tmp1(1,:), fliplr(tmp2(1,:))], color1, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeColor', 'k')
 patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
@@ -115,11 +112,8 @@ xlabel('Exponent a')
 ylabel('Learning weight')
 set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
 
-%%
-
 tmp1 = cvals(3,:).*T0./(T0+T2);
 tmp2 = cvals(3,:).*T0./(T0+T2+T3+T4);
-
 
 nexttile;
 
@@ -137,7 +131,7 @@ set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
 
 t.TileSpacing='compact';
 t.Padding='compact';
-%%
+%% Get optimal non-linearities
 A = zeros(5,4);
 B = zeros(5,4);
 
