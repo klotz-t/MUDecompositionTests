@@ -13,6 +13,7 @@ rng(0)
 
 % EMG sample rate
 fs=2048;
+rand_seed = false; % Draw MUAPs in a fixed order
 
 % Fixing to MU #1 and #50
 MU1=49;
@@ -51,7 +52,7 @@ if useExistingData==0
                 similar_muaps_vec=[1 MU1 MU2 spat_transl scale_factor];
 
                 % Generate EMG signals
-                [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec);
+                [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec);
 
                 % Select 64 out of 256 channels
                 data=data(65:128,:);

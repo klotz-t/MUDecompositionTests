@@ -6,6 +6,7 @@ rng(0)
 useExistingData=1;
 
 nsim      = 200;
+rand_seed = true;
 
 drive     = (5 + rand(1,nsim)*5)*1e-9;
 CCoV_vec  = rand(1,nsim)*60;
@@ -33,7 +34,7 @@ if useExistingData == 0
         [spike_times,time_param,~,CI]=generate_spike_trains(I,CCoV,ICoV);
         
         % Generate EMG signals
-        [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);  
+        [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB, rand_seed);  
     
         % Select 64 out of 256 channels
         if grid_idx(idx) == 1

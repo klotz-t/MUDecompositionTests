@@ -6,7 +6,7 @@
 clearvars; close all;
 
 % If load existing data
-useExistingData=1;
+useExistingData=0;
 
 % Use random seed to obtain identical results
 rng(0)
