@@ -2,8 +2,10 @@
 % Code to generate figure 1 in "Revisiting convolutive blind source
 % separation for motor neuron identification: From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 clearvars; close all;
-%% Define colors
+
+% Define colors
 mymap = zeros(3,101);
 mymap(1,1:51) = linspace(0.8510,0.5,51);
 mymap(2,1:51) = linspace(0.3255,0.5,51); 
@@ -16,13 +18,14 @@ colororder(mymap(:,1:20:end)')
 color1 = mymap(:,1)';
 color2 = mymap(:,51)';
 color3 = mymap(:,end)';
-%% Non Linearity up to the forth derivative
+
+% Non Linearity up to the forth derivative
 G   = @(x,n) x.^n;
 G_2 = @(x,n) n*(n-1).*x.^(n-2);
 G_3 = @(x,n) n*(n-1)*(n-2).*x.^(n-3);
 G_4 = @(x,n) n*(n-1)*(n-2)*(n-3).*x.^(n-4);
 
-%% Influecne of the contrast function on the peak separation
+% Influecne of the contrast function on the peak separation
 % Vector of peak separation values
 ps_vals   = linspace(0.1,0.9,5); 
 % Exponents of the non-linearity
@@ -53,7 +56,8 @@ title('Contrast between sources')
 h1=legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast');
 h1.Box='off';
 set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
-%% Influecne of the contrast function on higher-order terms
+
+% Influecne of the contrast function on higher-order terms
 % Standard deviation
 sigma = 1;
 % Peak amplitude relative to the variance
@@ -131,7 +135,10 @@ set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
 
 t.TileSpacing='compact';
 t.Padding='compact';
-%% Get optimal non-linearities
+
+%% Calculations for the paper
+
+% Get optimal non-linearities
 A = zeros(5,4);
 B = zeros(5,4);
 
@@ -143,28 +150,12 @@ for i=1:5
     end
 end
 
-figure
-heatmap({'3*\sigma','5*\sigma','10*\sigma','20*\sigma'},{90,70,50,30,10},A)
-xlabel('Spike amplitude')
-ylabel('Seperability (%)')
-set(gcf,'color','w'); set(gca,'FontSize',14);
+plot_opt = false;
 
-% %% Number of spikes required to dominate an outlier
-% % Ratio of the expected spike value and the outlier amplitude
-% out2spike_values   = [0.01 0.05 0.1 0.25 0.5];
-% % Compute number of spikes needed to overweight the outlier
-% nspikes = zeros(length(out2spike_values),length(nvalues));
-% for i=1:length(nvalues)
-%     for j=1:length(out2spike_values)
-%         nspikes(j,i) = 1^nvalues(i) ./ out2spike_values(j)^nvalues(i); 
-%     end 
-% end
-% figure(12) 
-% semilogy(nvalues,nspikes','LineWidth',2)
-% set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
-% xlim([0 8])
-% ylim([0 10^5])
-% xlabel('Exponent a')
-% ylabel('Number of required spikes')
-% title('Effect of Outliers')
-% legend('r=100','r=20','r=10','r=4','r=2','Location','eastoutside')
+if plot_opt == true
+    figure
+    heatmap({'3*\sigma','5*\sigma','10*\sigma','20*\sigma'},{90,70,50,30,10},A)
+    xlabel('Spike amplitude')
+    ylabel('Seperability (%)')
+    set(gcf,'color','w'); set(gca,'FontSize',14);
+end
