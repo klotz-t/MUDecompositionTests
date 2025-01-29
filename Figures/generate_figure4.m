@@ -28,6 +28,7 @@ i=105;
 
 % Generate motor neuron spike trains
 [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
+disp(['The number of active MUs is: ', num2str(length(spike_times))])
 
 % Generate EMG signals
 [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
@@ -84,8 +85,8 @@ for ind=1:size(spike_times,2)
 end
 
 % Compute mean firing rate and its standard deviation across the pool
-round(mean(FR,'omitnan'),1)
-round(std(FR,'omitnan'),1)
+disp(['The mean firing rate is: ',num2str(round(mean(FR,'omitnan'),1))])
+disp(['The standard deviation of the firing rate is: ',num2str(round(std(FR,'omitnan'),1))])
 
 % Generate figure
 t=tiledlayout(4,1);
@@ -175,11 +176,21 @@ H = whitening_matrix*H;
 % col_idx = 5727;
 col_idx = (i-1)*(101+R-1) + maxInd;
 expected_amplitude = norm(H(:,col_idx));
+disp(['The expected spike amplitude is: ', num2str(expected_amplitude)])
 empirical_amplitude = max(w'*wMU,[],'all');
+disp(['The empirical spike amplitude is: ', num2str(empirical_amplitude)])
 % Values at plus/minus one sample 
 projected_amplitudes = w'*H;
 pm_one = [norm(projected_amplitudes(:,col_idx-1)) norm(projected_amplitudes(:,col_idx+1))]./expected_amplitude;
+disp(['The spike amplitude at plus / minus one sample from the peak is: ', num2str(mean(pm_one))])
 % Expected value of maximum background peak
 tmp = projected_amplitudes;
 tmp(:,(i-1)*(101+R-1)+1:i*(101+R-1)) = [];
 expected_amplitude_max_background_peak = max(tmp);
+disp(['The expected amplitude of the largest background peak is: ', num2str(expected_amplitude_max_background_peak)])
+% Empirical value of the maximum background peak
+empirical_amplitude_max_background_peak = max(w'*wPy);
+disp(['The amplitude of the largest background peak is: ', num2str(empirical_amplitude_max_background_peak)])
+% Variance of the projected noise
+noise_variance = std(w'*wNoise)^2;
+disp(['The variance of the projected noise is: ', num2str(noise_variance)])
