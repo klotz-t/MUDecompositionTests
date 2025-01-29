@@ -172,9 +172,14 @@ for idx2=2:length(spike_times)
 end
 H = whitening_matrix*H;
 % Compute the expected spike amplitude 
-col_idx = 5727;
+% col_idx = 5727;
+col_idx = (i-1)*(101+R-1) + maxInd;
 expected_amplitude = norm(H(:,col_idx));
 empirical_amplitude = max(w'*wMU,[],'all');
 % Values at plus/minus one sample 
 projected_amplitudes = w'*H;
 pm_one = [norm(projected_amplitudes(:,col_idx-1)) norm(projected_amplitudes(:,col_idx+1))]./expected_amplitude;
+% Expected value of maximum background peak
+tmp = projected_amplitudes;
+tmp(:,(i-1)*(101+R-1)+1:i*(101+R-1)) = [];
+expected_amplitude_max_background_peak = max(tmp);
