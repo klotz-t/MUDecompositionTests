@@ -13,6 +13,7 @@ rng(1)
 
 % EMG sample rate
 fs=2048;
+rand_seed = false; % Draw MUAPs in a fixed order
 
 % Fixing to MU #1 and #50
 MU1=50;
@@ -32,7 +33,7 @@ if useExistingData==0
     similar_muaps_vec=[0 MU1 MU1+1 0 1];
     changing_muap_vec=[1 MU1];
     % Generate EMG signals
-    [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI);
+    [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec,changing_muap_vec,CI);
 
     % Compute mean MUAP
     muap_stacked=zeros(64,size(muap{MU1}{1},2),size(muap{MU1},2));

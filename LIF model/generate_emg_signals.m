@@ -1,4 +1,4 @@
-function [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI)
+function [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec,changing_muap_vec, CI)
 
 if nargin < 2
     error('Incorrect input')
@@ -9,6 +9,10 @@ if nargin < 3
 end
 
 if nargin < 4
+   rand_seed = false;
+end
+
+if nargin < 5
     similar_muaps=0;
 else
     try
@@ -22,7 +26,7 @@ else
     end
 end
 
-if nargin < 5
+if nargin < 6
     changing_muap=0;
     amp_vary=0;
 else
@@ -32,7 +36,7 @@ else
     catch
         error('Incorrect changing_muap input')
     end
-    if nargin < 6
+    if nargin < 7
         error('Incorrect input, need cortical input as well');
     end
 end
@@ -68,7 +72,10 @@ muap=muap_unsort(sortInd);
 
 clearvars data1 data2 RT_unsort muap_unsort sortInd
 
-%rng(1,'twister')
+% If false, always draw MUAPs in a fixed order
+if rand_seed == false
+    rng(1,'twister')
+end
 select_muaps=sort(randsample(size(muap,2),n_mn))';
 
 RT=RT(select_muaps);
