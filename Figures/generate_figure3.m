@@ -1,214 +1,133 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 9 in "Revisiting convolutive blind source
+% Code to generate figure 3 in "Revisiting convolutive blind source
 % separation for motor neuron identification: From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clearvars; close all;
 
-% If load existing data
-useExistingData=1;
+% Load signals and ground truth spikes
+load('separability_metric_example.mat')
 
-% Use random seed to obtain identical results
-rng(0)
+cd '../LIF model/'
+addpath '../Functions/'
 
-% EMG sample rate
-fs=2048;
-
-% Set the signal-to-noise ratio (dB)
-noise_dB=20;
-
-if useExistingData==0
-    cd '../LIF model/'
-    addpath '../Functions/'
-
-    % Set maximum input current of the trapezoid curve (nA)
-    I=7e-9;
-
-    % Generate spike trains
-    [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
-    
-    % Generate EMG signals
-    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
-
-    % Select 64 out of 256 channels
-    data=data(65:128,:);
-    sig_noise=sig_noise(65:128,:);
-    data_unfilt=data_unfilt(65:128,:);
-
-    % Set extension factor
-    R=16;
-
-    % Pre-define vectors for storing metrics
-    sil=zeros(1,size(spike_times,2));
-    pnr=zeros(1,size(spike_times,2));
-    skew=zeros(1,size(spike_times,2));
-    kurt=zeros(1,size(spike_times,2));
-    sep=zeros(4,size(spike_times,2));
-
-    % For each spike train
-    for i=1:size(spike_times,2)
-        disp([num2str(i),'/',num2str(size(spike_times,2))]);
-
-        % Extend and whiten
-        eSIG = extension(data,R);
-        [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
-
-        % Compute MU filter
-        w = muap{i}(65:128,:);
-        w = extension(w,R);
-        w = whitening_matrix * w;
-
-        % Reconstruction
-        sig=w'*wSIG;
-
-        % Select the source with highest skewness
-        save_skew=zeros(1,size(sig,1));
-        for ind=1:size(sig,1)
-            save_skew(ind)=skewness(sig(ind,:));
-        end
-        [~,maxInd]=max(save_skew);
-        w = w(:,maxInd);
-        w = w./norm(w);
-
-        % Reconstruction
-        sig=w'*wSIG;
-
-        % Estimated spike times
-        est_spikes=est_spike_times(sig,fs);
-
-        % Compute SIL, PNR, skewness, kurtosis and separability metrics
-        [~,~,sil(i)] = calcSIL(wSIG, w, fs);
-        pnr(i)=compute_pnr(sig,est_spikes,fs,[true,3],1);
-        skew(i)=skewness(sig);
-        kurt(i)=kurtosis(sig);
-        sep(:,i)=separability_metric(sig,spike_times{i});
-    end
-    % Save data
-    cd '../Figures/'
-    save('quality_source_metric.mat','sep','pnr','sil','skew','kurt')
-end
-
-clearvars
-
-load('quality_source_metric.mat')
-
-% Generate figure
 cmap=lines(4);
 
-t=tiledlayout(3,3);
-set(gcf,'units','points','position',[338,124,1251,799])
+t=tiledlayout(5,1);
+figure(1);set(gcf,'units','points','position',[530,131,803,801]);
 
 nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig1./max(sig1),ground_truth_spikes);
 hold on;
-scatter(100*sep(1,:),pnr,150,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
+plot(linspace(0,length(sig1)/2048,length(sig1)),sig1./max(sig1))
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,25) prctile(matched_amps,25)],'--','Color','k','LineWidth',1);
+plot(unmatched_indx/2048,unmatched_amps,'o','Color',cmap(3,:),'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(unmatched_amps,75) prctile(unmatched_amps,75)],'--','Color','k','LineWidth',1);
 hold off;
-xlim([0 100]);
-ylim([15 40]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',20);
 set(gca,'XTickLabel',[]);
-ylabel('PNR (dB)');
-xticks(0:25:100);
+xticks(20:5:40);
+yticks([0 1]);
+ylimtmp=ylim;
+ylimtmp(2)=1;
+ylim(ylimtmp);
 
 nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig2./max(sig2),ground_truth_spikes);
 hold on;
-scatter(100*sep(2,:),pnr,150,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
+plot(linspace(0,length(sig2)/2048,length(sig2)),sig2./max(sig2));
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,50) prctile(matched_amps,50)],'--','Color','k','LineWidth',1);
+plot(unmatched_indx/2048,unmatched_amps,'o','Color',cmap(3,:),'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],'--','Color','k','LineWidth',1);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],':','Color',cmap(3,:),'LineWidth',1);
 hold off;
-xlim([0 100]);
-ylim([15 40]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'XTickLabel',[]);
-set(gca,'YTickLabel',[]);
-xticks(0:25:100);
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',20);
+xticks(20:5:40);
+yticks([0 1]);
+set(gca,'XTickLabel',[])
 
 nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig3./max(sig3),ground_truth_spikes);
 hold on;
-scatter(100*sep(3,:),pnr,150,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
+plot(linspace(0,length(sig3)/2048,length(sig3)),sig3./max(sig3));
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,50) prctile(matched_amps,50)],'--','Color','k','LineWidth',1);
+plot(unmatched_indx/2048,unmatched_amps,'o','Color',cmap(3,:),'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],'--','Color','k','LineWidth',1);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],':','Color',cmap(3,:),'LineWidth',1);
 hold off;
-xlim([0 100]);
-ylim([15 40]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'XTickLabel',[]);
-set(gca,'YTickLabel',[]);
-xticks(0:25:100);
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',20);
+xticks(20:5:40);
+yticks([0 1]);
+set(gca,'XTickLabel',[])
 
 nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig4./max(sig4),ground_truth_spikes);
 hold on;
-scatter(100*sep(1,:),sil,150,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
+plot(linspace(0,length(sig4)/2048,length(sig4)),sig4./max(sig4));
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,50) prctile(matched_amps,50)],'--','Color','k','LineWidth',1);
+plot(unmatched_indx/2048,unmatched_amps,'o','Color',cmap(3,:),'MarkerFaceColor',cmap(3,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],'--','Color','k','LineWidth',1);
+plot(xlim,[prctile(unmatched_amps,50) prctile(unmatched_amps,50)],':','Color',cmap(3,:),'LineWidth',1);
 hold off;
-xlim([0 100]);
-ylim([0.75 1]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'XTickLabel',[]);
-ylabel('SIL (n.u.)');
-xticks(0:25:100);
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',20);
+xticks(20:5:40);
+yticks([0 1]);
+set(gca,'XTickLabel',[])
 
 nexttile;
+[val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig5./max(sig5),ground_truth_spikes);
 hold on;
-scatter(100*sep(2,:),sil,150,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
+plot(linspace(0,length(sig5)/2048,length(sig5)),sig5./max(sig5));
+plot(matched_indx/2048,matched_amps,'o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor','k','MarkerSize',6);
+plot(xlim,[prctile(matched_amps,50) prctile(matched_amps,50)],'--','Color','k','LineWidth',1);
 hold off;
-xlim([0 100]);
-ylim([0.75 1]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'XTickLabel',[]);
-set(gca,'YTickLabel',[]);
-xticks(0:25:100);
+axis tight;
+xlim([20 40]);
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',20);
+xticks(20:5:40);
+yticks([0 1]);
+xlabel('Time (s)');
 
-nexttile;
-hold on;
-scatter(100*sep(3,:),sil,150,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
-hold off;
-xlim([0 100]);
-ylim([0.75 1]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'XTickLabel',[]);
-set(gca,'YTickLabel',[]);
-xticks(0:25:100);
-
-nexttile;
-hold on;
-scatter(100*sep(1,:),skew,150,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
-hold off;
-xlim([0 100]);
-ylim([0 4]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Separability (%)');
-ylabel('Skewness');
-xticks(0:25:100);
-
-nexttile;
-hold on;
-scatter(100*sep(2,:),skew,150,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
-hold off;
-xlim([0 100]);
-ylim([0 4]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-xlabel('False positive rate (%)');
-xticks(0:25:100);
-
-nexttile;
-hold on;
-scatter(100*sep(3,:),skew,150,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
-hold off;
-xlim([0 100]);
-ylim([0 4]);
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-xlabel('False negative rate (%)');
-xticks(0:25:100);
-
-t.TileSpacing='compact';
 t.Padding='compact';
 
-[rho,pval] = corr(pnr',sep(1,:)')
-[rho,pval] = corr(sil',sep(1,:)')
-[rho,pval] = corr(skew',sep(1,:)')
+est_spikes=est_spike_times(sig1,2048);
+sil=round(compute_sil(sig1./max(sig1),est_spikes),2)
+pnr=round(compute_pnr(sig1./max(sig1),est_spikes,2048,[true,3],1))
 
-[rho,pval] = corr(skew',pnr')
-[rho,pval] = corr(skew',sil')
+est_spikes=est_spike_times(sig2,2048);
+sil=round(compute_sil(sig2./max(sig2),est_spikes),2)
+pnr=round(compute_pnr(sig2./max(sig2),est_spikes,2048,[true,3],1))
 
-[rho,pval] = corr(kurt',pnr')
-[rho,pval] = corr(kurt',sil')
+est_spikes=est_spike_times(sig3,2048);
+sil=round(compute_sil(sig3./max(sig3),est_spikes),2)
+pnr=round(compute_pnr(sig3./max(sig3),est_spikes,2048,[true,3],1))
 
-corr(skew(find(sil>=0.9))',sil(find(sil>=0.9))')
-corr(kurt(find(sil>=0.9))',sil(find(sil>=0.9))')
+est_spikes=est_spike_times(sig4,2048);
+sil=round(compute_sil(sig4./max(sig4),est_spikes),2)
+pnr=round(compute_pnr(sig4./max(sig4),est_spikes,2048,[true,3],1))
+
+est_spikes=est_spike_times(sig5,2048);
+sil=round(compute_sil(sig5./max(sig5),est_spikes),2)
+pnr=round(compute_pnr(sig5./max(sig5),est_spikes,2048,[true,3],1))
