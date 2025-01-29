@@ -5,12 +5,16 @@
 
 clearvars; close all;
 
+% Use random seed to obtain identical outputs
+rng(0)
+
 % Load signals and ground truth spikes
 load('separability_metric_example.mat')
 
 cd '../LIF model/'
 addpath '../Functions/'
 
+% Generate figure
 cmap=lines(4);
 
 t=tiledlayout(5,1);
@@ -37,6 +41,11 @@ ylimtmp=ylim;
 ylimtmp(2)=1;
 ylim(ylimtmp);
 
+est_spikes=est_spike_times(sig1,2048);
+sil=round(compute_sil(sig1./max(sig1),2048),2);
+pnr=round(compute_pnr(sig1./max(sig1),est_spikes,2048,[true,3],1));
+disp(['(SEP,FPR,FNR,PNR,SIL)=',num2str([round([100.*val(1:3) pnr]) round(sil,2)])]);
+
 nexttile;
 [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig2./max(sig2),ground_truth_spikes);
 hold on;
@@ -55,6 +64,11 @@ set(gca,'FontSize',20);
 xticks(20:5:40);
 yticks([0 1]);
 set(gca,'XTickLabel',[])
+
+est_spikes=est_spike_times(sig2,2048);
+sil=round(compute_sil(sig2./max(sig2),2048),2);
+pnr=round(compute_pnr(sig2./max(sig2),est_spikes,2048,[true,3],1));
+disp(['(SEP,FPR,FNR,PNR,SIL)=',num2str([round([100.*val(1:3) pnr]) round(sil,2)])]);
 
 nexttile;
 [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig3./max(sig3),ground_truth_spikes);
@@ -75,6 +89,11 @@ xticks(20:5:40);
 yticks([0 1]);
 set(gca,'XTickLabel',[])
 
+est_spikes=est_spike_times(sig3,2048);
+sil=round(compute_sil(sig3./max(sig3),2048),2);
+pnr=round(compute_pnr(sig3./max(sig3),est_spikes,2048,[true,3],1));
+disp(['(SEP,FPR,FNR,PNR,SIL)=',num2str([round([100.*val(1:3) pnr]) round(sil,2)])]);
+
 nexttile;
 [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig4./max(sig4),ground_truth_spikes);
 hold on;
@@ -94,6 +113,11 @@ xticks(20:5:40);
 yticks([0 1]);
 set(gca,'XTickLabel',[])
 
+est_spikes=est_spike_times(sig4,2048);
+sil=round(compute_sil(sig4./max(sig4),2048),2);
+pnr=round(compute_pnr(sig4./max(sig4),est_spikes,2048,[true,3],1));
+disp(['(SEP,FPR,FNR,PNR,SIL)=',num2str([round([100.*val(1:3) pnr]) round(sil,2)])]);
+
 nexttile;
 [val,matched_amps,matched_indx,unmatched_amps,unmatched_indx]=separability_metric(sig5./max(sig5),ground_truth_spikes);
 hold on;
@@ -110,24 +134,9 @@ xticks(20:5:40);
 yticks([0 1]);
 xlabel('Time (s)');
 
-t.Padding='compact';
-
-est_spikes=est_spike_times(sig1,2048);
-sil=round(compute_sil(sig1./max(sig1),est_spikes),2)
-pnr=round(compute_pnr(sig1./max(sig1),est_spikes,2048,[true,3],1))
-
-est_spikes=est_spike_times(sig2,2048);
-sil=round(compute_sil(sig2./max(sig2),est_spikes),2)
-pnr=round(compute_pnr(sig2./max(sig2),est_spikes,2048,[true,3],1))
-
-est_spikes=est_spike_times(sig3,2048);
-sil=round(compute_sil(sig3./max(sig3),est_spikes),2)
-pnr=round(compute_pnr(sig3./max(sig3),est_spikes,2048,[true,3],1))
-
-est_spikes=est_spike_times(sig4,2048);
-sil=round(compute_sil(sig4./max(sig4),est_spikes),2)
-pnr=round(compute_pnr(sig4./max(sig4),est_spikes,2048,[true,3],1))
-
 est_spikes=est_spike_times(sig5,2048);
-sil=round(compute_sil(sig5./max(sig5),est_spikes),2)
-pnr=round(compute_pnr(sig5./max(sig5),est_spikes,2048,[true,3],1))
+sil=round(compute_sil(sig5./max(sig5),2048),2);
+pnr=round(compute_pnr(sig5./max(sig5),est_spikes,2048,[true,3],1));
+disp(['(SEP,FPR,FNR,PNR,SIL)=',num2str([round([100.*val(1:3) pnr]) round(sil,2)])]);
+
+t.Padding='compact';
