@@ -117,6 +117,14 @@ end
 % Generate figure
 cmap=lines(2);
 
+mymap2 = zeros(3,101);
+mymap2(1,1:51) = linspace(0.8510,1,51);
+mymap2(2,1:51) = linspace(0.3255,1,51); 
+mymap2(3,1:51) = linspace(0.0980,1,51); 
+mymap2(3,51:end) = linspace(1,0.7412,51);
+mymap2(2,51:end) = linspace(1,0.4471,51);
+mymap2(1,51:end) = linspace(1,0,51);
+
 t=tiledlayout(3,2);
 set(gcf,'units','points','position',[397,201,925,888])
 
@@ -142,7 +150,7 @@ yticks(1:2:13)
 cb.Ticks=[0 5 10];
 set(gca,'YTickLabel',[flip(1:2:13)]);
 
-colormap(flip(turbo))
+colormap(flip(mymap2'))
 
 nexttile;
 hold on;

@@ -186,7 +186,7 @@ clearvars;
 
 cd '../Figures/'
 
-load('common_spikes_20dB.mat');
+load('common_spikes_15dB.mat');
 
 % Generate figure
 
@@ -212,5 +212,13 @@ title({'Norm whitened MUAP';'MU #50'},'FontWeight','normal');
 t.TileSpacing='compact';
 t.Padding='compact';
 
+mymap2 = zeros(3,101);
+mymap2(1,1:51) = linspace(0.8510,1,51);
+mymap2(2,1:51) = linspace(0.3255,1,51); 
+mymap2(3,1:51) = linspace(0.0980,1,51); 
+mymap2(3,51:end) = linspace(1,0.7412,51);
+mymap2(2,51:end) = linspace(1,0.4471,51);
+mymap2(1,51:end) = linspace(1,0,51);
+
 cmap=turbo;
-colormap(flip(cmap))
+colormap(mymap2')

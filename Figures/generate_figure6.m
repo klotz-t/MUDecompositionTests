@@ -11,6 +11,7 @@ useExistingData=1;
 % Use random seed to obtain identical results
 rng(0)
 
+% Fix the size of the active MN pool
 truncate=1;
 
 % EMG sample rate
@@ -45,7 +46,7 @@ if useExistingData==0
     cd '../LIF model/'
     addpath '../Functions/'
 
-    for noise_dB=[20]
+    for noise_dB=[15]
         disp(num2str(noise_dB))
 
         for i=1:length(CCoV_vec)
@@ -191,55 +192,82 @@ cd '../Figures/'
 load('common_spikes_20dB.mat');
 
 % Generate figure
+mymap = zeros(3,101);
+mymap(1,1:81) = linspace(0.8510,1,81);
+mymap(2,1:81) = linspace(0.3255,1,81); 
+mymap(3,1:81) = linspace(0.0980,1,81); 
+mymap(3,81:end) = linspace(1,0.7412,21);
+mymap(2,81:end) = linspace(1,0.4471,21);
+mymap(1,81:end) = linspace(1,0,21);
+
+mymap2 = zeros(3,101);
+mymap2(1,1:51) = linspace(0.8510,1,51);
+mymap2(2,1:51) = linspace(0.3255,1,51); 
+mymap2(3,1:51) = linspace(0.0980,1,51); 
+mymap2(3,51:end) = linspace(1,0.7412,51);
+mymap2(2,51:end) = linspace(1,0.4471,51);
+mymap2(1,51:end) = linspace(1,0,51);
+
 
 t=tiledlayout(2,3);
 set(gcf,'units','points','position',[229,62,1459,893])
 
-nexttile;
+ax1 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep1,4));
 colorbar;
+%clim([0 100])
+colormap(ax1,mymap2')
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 ylabel('Common CoV noise (%)');
 title({'Separability metric (%)';'MU #1'},'FontWeight','normal');
 xticks(0:5:20);
 
-nexttile;
+ax2 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr1,4));
+clim([0 50])
 colorbar;
+colormap(ax2,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'YTickLabel',[]);
 title({'False positive rate (%)';'MU #1'},'FontWeight','normal');
 xticks(0:5:20);
 
-nexttile;
+ax3 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr1,4));
+clim([0 50])
 colorbar;
+colormap(ax3,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'YTickLabel',[]);
 title({'False negative rate (%)';'MU #1'},'FontWeight','normal');
 xticks(0:5:20);
 
-nexttile;
+ax4 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep2,4));
 colorbar;
+colormap(ax4,mymap2')
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 ylabel('Common CoV noise (%)');
 title('MU #50','FontWeight','normal');
 xticks(0:5:20);
 
-nexttile;
+ax5 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr2,4));
+clim([0 50])
 colorbar;
+colormap(ax5,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 set(gca,'YTickLabel',[]);
 title('MU #50','FontWeight','normal');
 xticks(0:5:20);
 
-nexttile;
+ax6 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr2,4));
+clim([0 50])
 colorbar;
+colormap(ax6,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 set(gca,'YTickLabel',[]);
@@ -250,4 +278,5 @@ t.TileSpacing='compact';
 t.Padding='compact';
 
 cmap=turbo;
-colormap(flip(cmap))
+%colormap(flip(cmap))
+%colormap(flip(mymap'))

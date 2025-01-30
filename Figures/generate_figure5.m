@@ -112,11 +112,26 @@ data20db=load('similar_muaps_20dB.mat');
 data10db=load('similar_muaps_10dB.mat');
 
 % Generate figure
+mymap = zeros(3,101);
+mymap(1,1:91) = linspace(0.8510,1,91);
+mymap(2,1:91) = linspace(0.3255,1,91); 
+mymap(3,1:91) = linspace(0.0980,1,91); 
+mymap(3,91:end) = linspace(1,0.7412,11);
+mymap(2,91:end) = linspace(1,0.4471,11);
+mymap(1,91:end) = linspace(1,0,11);
+
+mymap2 = zeros(3,101);
+mymap2(1,1:51) = linspace(0.8510,1,51);
+mymap2(2,1:51) = linspace(0.3255,1,51); 
+mymap2(3,1:51) = linspace(0.0980,1,51); 
+mymap2(3,51:end) = linspace(1,0.7412,51);
+mymap2(2,51:end) = linspace(1,0.4471,51);
+mymap2(1,51:end) = linspace(1,0,51);
 
 t=tiledlayout(2,3);
 set(gcf,'units','points','position',[216,62,1491,893])
 
-nexttile;
+ax1 = nexttile;
 imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.sep,4));
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 ylabel('Scaled amplitude (a.u.)');
@@ -124,17 +139,21 @@ title({'Separability metric (%)';'20 dB'},'FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data20db.es(:,1)',1))))
 clim([0 100]);
+colorbar;
+colormap(ax1,mymap2')
 
-nexttile;
+ax2 = nexttile;
 imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.fpr,4));
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'YTickLabel',[]);
 title({'False positive rate (%)';'20 dB'},'FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data20db.es(:,1)',1))))
-clim([0 100]);
+clim([0 100])
+colorbar;
+colormap(ax2,flip(mymap'))
 
-nexttile;
+ax3 = nexttile;
 imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.fnr,4));
 colorbar;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
@@ -142,9 +161,11 @@ set(gca,'YTickLabel',[]);
 title({'False negative rate (%)';'20 dB'},'FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data20db.es(:,1)',1))))
-clim([0 100]);
+clim([0 100])
+colorbar;
+colormap(ax3,flip(mymap'))
 
-nexttile;
+ax4 = nexttile;
 imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.sep,4));
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Energy similarity (%)');
@@ -153,8 +174,10 @@ title('10 dB','FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data10db.es(:,1)',1))))
 clim([0 100]);
+colorbar;
+colormap(ax4,mymap2')
 
-nexttile;
+ax5 = nexttile;
 imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.fpr,4));
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Energy similarity (%)');
@@ -163,8 +186,10 @@ title('10 dB','FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data10db.es(:,1)',1))))
 clim([0 100]);
+colorbar;
+colormap(ax5,flip(mymap'))
 
-nexttile;
+ax6 = nexttile;
 imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.fnr,4));
 colorbar;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
@@ -174,9 +199,11 @@ title('10 dB','FontWeight','normal');
 xticks(1:12)
 set(gca,'XTickLabels',split(num2str(round(100*data10db.es(:,1)',1))))
 clim([0 100]);
+colorbar;
+colormap(ax6,flip(mymap'))
 
 t.TileSpacing='compact';
 t.Padding='compact';
 
-cmap=turbo;
-colormap(flip(cmap))
+% cmap=turbo;
+% colormap(flip(cmap))
