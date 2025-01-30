@@ -25,7 +25,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data,data_noisefree,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,similar_muaps_vec,changing_muap_vec,CI)
+function [data,data_noisefree,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec,changing_muap_vec,CI)
 
 % Set folder and add path for loading data and accessing functions
 addpath '../experimental-simulation'
@@ -41,8 +41,12 @@ if nargin < 3
     noise_dB=20;
 end
 
-% If using the interpolation to study identifiability wrt similar MUAPs
 if nargin < 4
+   rand_seed = false;
+end
+
+% If using the interpolation to study identifiability wrt similar MUAPs
+if nargin < 5
     similar_muaps=0;
 else
     try
@@ -57,7 +61,7 @@ else
 end
 
 % To study non-stationarity
-if nargin < 5
+if nargin < 6
     changing_muap=0;
     amp_vary=0;
 else
@@ -67,7 +71,7 @@ else
     catch
         error('Incorrect changing_muap input')
     end
-    if nargin < 6
+    if nargin < 7
         error('Incorrect input, need cortical input as well');
     end
 end
@@ -93,7 +97,11 @@ muap=muap_unsort(sortInd);
 % Remove unneccesary variables
 clearvars data1 data2 RT_unsort muap_unsort sortInd
 
-% rng(1,'twister')
+% If false, always draw MUAPs in a fixed order
+if rand_seed == false
+    rng(1,'twister')
+end
+
 % Select which of the MUAPs to include in the pool
 select_muaps=sort(randsample(size(muap,2),n_mn))';
 RT=RT(select_muaps);
