@@ -26,12 +26,15 @@ R=16;
 % Set MU number
 i=105;
 
+% Random Seed for drawing MUAPs
+random_seed = true;
+
 % Generate motor neuron spike trains
 [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
 disp(['The number of active MUs is: ', num2str(length(spike_times))])
 
 % Generate EMG signals
-[data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
+[data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,random_seed);
 
 % Select 64 out of 256 channels
 data=data(65:128,:);
