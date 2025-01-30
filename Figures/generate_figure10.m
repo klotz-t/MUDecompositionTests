@@ -171,7 +171,7 @@ data(isnan(data(:,13)), 13) = 0;
 %% Correlation matrix
 [cvals, pvals] = corr(data(:,1:16),Type="Pearson");
 names = {'spike amplitude', 'max. cosine similarity','rel. peak separation','false positive rate','false negative rate', ...
-    'spike interaction','min. energy similarity','rel. MUAP amplitude','extension factor','recruited MUs', ...
+    'spike independence coeff.','min. energy similarity','rel. MUAP amplitude','extension factor','recruited MUs', ...
     'signal-to-noise ratio', 'SIL', 'PNR', 'skew', 'kurt', 'N_{spikes}'};
 %%
 mymap = zeros(3,101);
@@ -243,7 +243,7 @@ set(gca,'FontSize',12);
 axis equal tight;
 
 %% PNR
-th = 25;
+th = 30;
 true_class = data(:,4) < 0.1 & data(:,5)<0.1;
 pred_class = data(:,13) > th;
 
@@ -263,13 +263,11 @@ set(gcf,'color','w');
 set(gca,'FontSize',12);
 
 %% SIL
-th = 0.87;
+th = 0.9;
 true_class = data(:,4) < 0.1 & data(:,5)<0.1;
 pred_class = data(:,12) > th;
 
 C = confusionmat(true_class,pred_class);
-
-%figure, confusionchart(C,'Normalization','absolute','ColumnSummary','column-normalized','RowSummary','row-normalized')
 
 figure(201)
 subplot(5,3,9), confusionchart(C,{'ND','D'},'Normalization','row-normalized','GridVisible','off','XLabel','')
@@ -282,45 +280,6 @@ title('SIL > 0.9 (column normalized)')
 set(gcf,'color','w');
 set(gca,'FontSize',12);
 
-% %%
-% th = 30;
-% 
-% idx_gt    = find(data(:,4) < 0.1 & data(:,5)<0.1);
-% idx_pnr = find(data(:,13) > th);
-% 
-% TP = length(intersect(idx_pnr,idx_gt));
-% FP = length(setdiff(idx_pnr,idx_gt));
-% FN = length(setdiff(idx_gt,idx_pnr));
-% TN = length(intersect(setdiff(1:length(data),idx_pnr), setdiff(1:length(data),idx_gt))); 
-% 
-% confusion(1,1) = TP/(TP+FP); % TPR
-% confusion(1,2) = FP/(TN+FP); % FPR
-% confusion(2,1) = FN/(TP+FN); % FNR
-% confusion(2,2) = TN/(TN+FP); % TNR
-% 
-% 
-% figure(102)
-% subplot(121), heatmap(confusion)
-% 
-% %%
-% th = .9;
-% 
-% idx_gt    = find(data(:,4) < 0.1 & data(:,5)<0.1);
-% idx_sil = find(data(:,12) > th);
-% 
-% TP = length(intersect(idx_sil,idx_gt));
-% FP = length(setdiff(idx_sil,idx_gt));
-% FN = length(setdiff(idx_gt,idx_sil));
-% TN = length(intersect(setdiff(1:length(data),idx_sil), setdiff(1:length(data),idx_gt))); 
-% 
-% confusion(1,1) = TP/(TP+FP); % TPR
-% confusion(1,2) = FP/(TN+FP); % FPR
-% confusion(2,1) = FN/(TP+FN); % FNR
-% confusion(2,2) = TN/(TN+FP); % TNR
-% 
-% 
-% figure(102)
-% subplot(122), heatmap(confusion)
 
 
 
