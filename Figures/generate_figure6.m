@@ -45,7 +45,7 @@ if useExistingData==0
     cd '../LIF model/'
     addpath '../Functions/'
 
-    for noise_dB=[10 20]
+    for noise_dB=[20]
         disp(num2str(noise_dB))
 
         for i=1:length(CCoV_vec)
@@ -177,7 +177,10 @@ if useExistingData==0
             end
         end
         % Save data
-        save(['../Figures/common_spikes_',num2str(noise_dB),'dB.mat'])
+        save(['../Figures/common_spikes_',num2str(noise_dB),'dB.mat'], ...
+            'ICoV_vec','CCoV_vec','sep1','sep2','fpr1','fpr2','fnr1','fnr2', ...
+            'scos1', 'scos2','norm1','norm2','noise_dB','fs','MU1','MU2','I',...
+            'spike_times','time_param')
     end
 end
 
