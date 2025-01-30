@@ -19,28 +19,29 @@ color1 = mymap(:,1)';
 color2 = mymap(:,51)';
 color3 = mymap(:,end)';
 
-% Non Linearity up to the forth derivative
+% Non-linearity up to the forth derivative
 G   = @(x,n) x.^n;
 G_2 = @(x,n) n*(n-1).*x.^(n-2);
 G_3 = @(x,n) n*(n-1)*(n-2).*x.^(n-3);
 G_4 = @(x,n) n*(n-1)*(n-2)*(n-3).*x.^(n-4);
+% Exponents of the tested non-linearities
+nvalues = linspace(0.1,20,100);
 
-% Influecne of the contrast function on the peak separation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Influecne of the contrast function on the source contrast:
+
 % Vector of peak separation values
 ps_vals   = linspace(0.1,0.9,5); 
-% Exponents of the non-linearity
-nvalues = linspace(0.1,20,100);
-% Compute the peak seperation values after applying the non linearity
+% Compute the rsource contrast values after applying the non-linearity
 cvals = zeros(length(ps_vals),length(nvalues));
 for i=1:length(nvalues)
     for j=1:length(ps_vals)
-        %cvals(j,i) = (1^nvalues(i) - (1*yvals(j))^nvalues(i))./1^nvalues(i); 
         cvals(j,i) = G(1,nvalues(i)) - G(ps_vals(j),nvalues(i))./G(1,nvalues(i));
     end 
 end
 
 % Generate figure
-% figure(11)
+% Subplot 1
 t=tiledlayout(1,3);
 set(gcf,'units','points','position',[0,210,1511,556]);
 
@@ -57,10 +58,12 @@ h1=legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast');
 h1.Box='off';
 set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Influecne of the contrast function on higher-order terms
+
 % Standard deviation
 sigma = 1;
-% Peak amplitude relative to the variance
+% Peak amplitude relative to the spike amplitude standard deviation
 ps_vals = sigma*[3 5 10 20 30];
 % Compute higher order moments
 skew    = zeros(size(ps_vals));
@@ -75,8 +78,7 @@ for j=1:length(ps_vals)
     kurt(j) = kurtosis(tmp);%25;   
 end
 
-% Exponents of the non-linearity
-nvalues = linspace(0.1,20,100);
+% Approximate the objective function through a Taylor series:
 % Zero-order terms
 T0 = zeros(length(ps_vals),length(nvalues));
 % Second-order terms (Variance)
@@ -91,16 +93,16 @@ for i=1:length(nvalues)
         T2(j,i) = 1/2  * G_2(ps_vals(j),nvalues(i)) * sigma^2;
         T3(j,i) = 1/6  * G_3(ps_vals(j),nvalues(i)) * sigma^3*skew(j);
         T4(j,i) = 1/24 * G_4(ps_vals(j),nvalues(i)) * sigma^4*(kurt(j)+3);
-        % T0(j,i) = yvals(j)^nvalues(i); 
-        % T2(j,i) = 1/2*nvalues(i)*(nvalues(i)-1)*yvals(j)^(nvalues(i)-2)*sigma^2;
-        % T3(j,i) = 1/6*nvalues(i)*(nvalues(i)-1)*(nvalues(i)-2)*yvals(j)^(nvalues(i)-3)*sigma^3*skew;
-        % T4(j,i) = 1/24*nvalues(i)*(nvalues(i)-1)*(nvalues(i)-2)*(nvalues(i)-3)*yvals(j)^(nvalues(i)-4)*(kurt+3)*sigma^4;
     end  
 end
 
-% Weighting of zero-order term relative to the total cost (up to order 2)
+
+% Generate figure
+% Subplot 2
+
+% Weighting of zero-order term relative to the total objective function (up to order 2)
 tmp1 = T0./(T0+T2);
-% Weighting of zero-order term relative to the total cost (up to order 4)
+% Weighting of zero-order term relative to the total objective function (up to order 4)
 tmp2 = T0./(T0+T2+T3+T4);
 
 nexttile;
@@ -116,7 +118,13 @@ xlabel('Exponent a')
 ylabel('Learning weight')
 set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
 
+
+% Generate figure
+% Subplot 3
+
+% Loss function to obtain the optimal non-linearity (up to order 2)
 tmp1 = cvals(3,:).*T0./(T0+T2);
+% Loss function to obtain the optimal non-linearity (up to order 4)
 tmp2 = cvals(3,:).*T0./(T0+T2+T3+T4);
 
 nexttile;
