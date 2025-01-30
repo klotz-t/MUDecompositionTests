@@ -13,7 +13,8 @@ rng(0)
 
 % EMG sample rate
 fs=2048;
-rand_seed = false; % Draw MUAPs in a fixed order
+% Always draw MUAPs in a fixed order
+rand_seed = false; 
 
 % Fixing to MU #1 and #50
 MU1=49;

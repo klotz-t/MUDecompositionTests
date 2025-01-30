@@ -6,7 +6,7 @@
 clearvars; close all;
 
 % If load existing data
-useExistingData=1;
+useExistingData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -16,6 +16,9 @@ fs=2048;
 
 % Set the signal-to-noise ratio (dB)
 noise_dB=20;
+
+% Define order for drawing MUAPs
+rand_seed = true;
 
 if useExistingData==0
     cd '../LIF model/'
@@ -28,7 +31,7 @@ if useExistingData==0
     [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
     
     % Generate EMG signals
-    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
+    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed);
 
     % Select 64 out of 256 channels
     data=data(65:128,:);
