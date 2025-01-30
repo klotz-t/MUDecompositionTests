@@ -173,3 +173,21 @@ t.Padding='compact';
 
 g=gcf;
 g.Renderer='painters';
+
+%% Calculations for the paper
+
+% Spike amplitude at R=8 (relative to R=24)
+disp(['The relativ norm of MU1 with R=8 is ', num2str(MU1_norm(4)/MU1_norm(end))])
+disp(['The relativ norm of MU50 with R=8 is ', num2str(MU50_norm(4)/MU50_norm(end))])
+
+% Relative peak separation at R=2 (relative to R=24)
+C_1  = 1-c1./MU1_norm;
+C_50 = 1-c50./MU50_norm;
+disp(['The relativ peak separation of MU1 with R=2 is ', num2str(C_1(2)/C_1(end))])
+disp(['The relativ peak separation of MU50 with R=2 is ', num2str(C_50(2)/C_50(end))])
+
+% Decrease in cosine similarity 
+disp(['MU1: the max. cosine similarity at R=8 is ', num2str(s1(4))])
+disp(['MU1: the max. cosine similarity at R=24 is ', num2str(s1(end))])
+disp(['MU50: the max. cosine similarity at R=8 is ', num2str(s50(4))])
+disp(['MU50: the max. cosine similarity at R=24 is ', num2str(s50(end))])

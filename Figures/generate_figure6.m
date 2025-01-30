@@ -6,12 +6,12 @@
 clearvars; close all;
 
 % If load existing data
-useExistingData=0;
+useExistingData=1;
 
 % Use random seed to obtain identical results
 rng(0)
 
-truncate=0;
+truncate=1;
 
 % EMG sample rate
 fs=2048;
