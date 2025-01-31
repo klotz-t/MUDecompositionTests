@@ -6,7 +6,7 @@
 clearvars; close all;
 
 % If load existing data
-useExistingData=0;
+useExistingData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -93,7 +93,7 @@ end
 
 clearvars
 
-load('quality_source_metric.mat')
+load('replication_data/quality_source_metric.mat')
 
 % Generate figure
 cmap=lines(4);

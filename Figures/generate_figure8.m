@@ -6,7 +6,7 @@
 clearvars; close all;
 
 % If load existing data
-useExistingData=0;
+useExistingData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -115,7 +115,7 @@ end
 
 clearvars;
 
-load('extension_factor.mat')
+load('replication_data/extension_factor.mat')
 
 % Generate figure
 cmap=lines(2);
