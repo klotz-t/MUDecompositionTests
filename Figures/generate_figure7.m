@@ -216,7 +216,7 @@ histogram(amp_vary(spike_times{MU1}), 'FaceColor', cmap(1,:),'FaceAlpha',1)
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Spatio-temporal MUAP #');
 ylabel('Number of events');
-title('MUAP statistics')
+title('MUAP statistics','FontWeight','normal')
 
 nexttile;
 imagesc([1 13],[13 1],100.*interp2(es_mat,4));
@@ -225,7 +225,7 @@ cb=colorbar;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Spatio-temporal MUAP #');
 ylabel('Spatio-temporal MUAP #');
-title('Energy similarity')
+title('Energy similarity','FontWeight','normal')
 xticks(1:2:13)
 yticks(1:2:13)
 cb.Ticks=[0 5 10];
@@ -239,7 +239,7 @@ plot(1:13,100*fpr,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize
 plot(1:13,100*fnr,'-o','Color',[0.5 0.5 0.5],'MarkerFaceColor',[0.5 0.5 0.5],'MarkerSize',12,'LineWidth',2);
 hold off;
 legend('Separability','FPR', 'FNR', 'Location','eastoutside')
-title('Performance metrics')
+title('Performance metrics','FontWeight','normal')
 xlim([1 13]);
 xticks(1:2:13);
 ylim([0 100]);

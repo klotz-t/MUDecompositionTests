@@ -43,7 +43,8 @@ end
 % Generate figure
 % Subplot 1
 t=tiledlayout(1,3);
-set(gcf,'units','points','position',[0,210,1511,556]);
+%set(gcf,'units','points','position',[0,210,1511,556]);
+set(gcf,'units','points','position',[143,371,1630,499])
 
 nexttile;
 hold on;
@@ -53,10 +54,11 @@ hold off;
 xlim([0 8]), ylim([0 1.2])
 xlabel('Exponent a')
 ylabel('Source contrast')
-title('Contrast between sources')
-h1=legend('C=0.9','C=0.7','C=0.5','C=0.3','C=0.1','Location','southeast');
-h1.Box='off';
-set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
+title('Contrast between sources','FontWeight','normal')
+h1=legend('SEP=0.9','SEP=0.7','SEP=0.5','SEP=0.3','SEP=0.1','Location','southoutside','Orientation','horizontal');
+fontsize(h1,18,'points')
+h1.Box='on';
+set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Influecne of the contrast function on higher-order terms
@@ -111,12 +113,13 @@ patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeC
 patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
 alpha(0.8)
 xlim([0 8]), ylim([0 1.2])
-title('Zero- vs Higher-order terms')
-h2=legend('3*\sigma','5*\sigma','10*\sigma');
-h2.Box='off';
+title('Zero- vs Higher-order terms','FontWeight','normal')
+h2=legend('3\cdot\sigma','5\cdot\sigma','10\cdot\sigma','Location','southoutside','Orientation','horizontal');
+fontsize(h2,18,'points')
+h2.Box='on';
 xlabel('Exponent a')
 ylabel('Learning weight')
-set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
+set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 
 
 % Generate figure
@@ -134,12 +137,13 @@ patch([nvalues, fliplr(nvalues)], [tmp1(2,:), fliplr(tmp2(2,:))], color2, 'EdgeC
 patch([nvalues, fliplr(nvalues)], [tmp1(3,:), fliplr(tmp2(3,:))], color3, 'EdgeColor', 'k')
 alpha(0.8)
 xlim([0 8]), ylim([0 1.2])
-title('Optimal non-linearity')
-h3=legend('3*\sigma','5*\sigma','10*\sigma');
-h3.Box='off';
+title('Optimal non-linearity','FontWeight','normal')
+h3=legend('3\cdot\sigma','5\cdot\sigma','10\cdot\sigma','Location','southoutside','Orientation','horizontal');
+fontsize(h3,18,'points')
+h3.Box='on';
 xlabel('Exponent a')
 ylabel('Loss')
-set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',24);
+set(gca,'TickDir','out'); set(gcf,'color','w'); set(gca,'FontSize',28);
 
 t.TileSpacing='compact';
 t.Padding='compact';
@@ -158,7 +162,7 @@ for i=1:5
     end
 end
 
-plot_opt = false;
+plot_opt = true;
 
 if plot_opt == true
     figure
