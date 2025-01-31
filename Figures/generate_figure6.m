@@ -6,7 +6,7 @@
 clearvars; close all;
 
 % If load existing data
-useExistingData=1;
+useExistingData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -17,30 +17,19 @@ truncate=1;
 % EMG sample rate
 fs=2048;
 
-% Fixing to MU #1 and #50
-MU1=1;
-MU2=50;
+% Select MUs of interest
+MUs = [1 24 36 50];
 
 % Vector of coefficient of variations for the common and independent noise (%)
 CCoV_vec=10:5:60;
 ICoV_vec=0:2:20;
 
 % Pre-define matrices for saving metrics
-sep1=zeros(length(CCoV_vec),length(ICoV_vec));
-fpr1=zeros(length(CCoV_vec),length(ICoV_vec));
-fnr1=zeros(length(CCoV_vec),length(ICoV_vec));
-norm1=zeros(length(CCoV_vec),length(ICoV_vec));
-
-sep2=zeros(length(CCoV_vec),length(ICoV_vec));
-fpr2=zeros(length(CCoV_vec),length(ICoV_vec));
-fnr2=zeros(length(CCoV_vec),length(ICoV_vec));
-norm2=zeros(length(CCoV_vec),length(ICoV_vec));
-
-wnorm1=zeros(length(CCoV_vec),length(ICoV_vec));
-scos1 =zeros(length(CCoV_vec),length(ICoV_vec));
-
-wnorm2=zeros(length(CCoV_vec),length(ICoV_vec));
-scos2 =zeros(length(CCoV_vec),length(ICoV_vec));
+SEP   = zeros(length(MUs),length(CCoV_vec),length(ICoV_vec));
+FPR   = zeros(length(MUs),length(CCoV_vec),length(ICoV_vec));
+FNR   = zeros(length(MUs),length(CCoV_vec),length(ICoV_vec));
+wNorm = zeros(length(MUs),length(CCoV_vec),length(ICoV_vec));
+sCos  = zeros(length(MUs),length(CCoV_vec),length(ICoV_vec));
 
 if useExistingData==0
     cd '../LIF model/'
@@ -80,9 +69,11 @@ if useExistingData==0
 
                 % Extend
                 eSIG = extension(data,R);
-                eNoise = extension(sig_noise,R);
 
-                % Compute the true covariance matrix
+                % Whiten data
+                [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+
+                % Compute the extended and whitened mixing matrix
                 w = muap{1}(65:128,:);
                 w = extension2(w,R);
                 H = w;
@@ -91,107 +82,71 @@ if useExistingData==0
                     w = extension2(w,R);
                     H = cat(2,H,w);
                 end
-                ST = zeros(length(spike_times),size(data,2));
-                for idx3=1:length(spike_times)
-                    ST(idx3,round(2048.*spike_times{idx3}./10000)) = 1; 
-                end
-                eST = extension2(ST,size(muap{1},2)+R-1);
-                cST = cov(eST');
-                ceSIG = H*cST*H';
-                
-                [V,S] = eig(ceSIG + eNoise*eNoise'./length(eNoise), 'vector');
-                reg_val = mean(mink(S,round(length(S)/2)));
-
-                % Compute the whitening matrix
-                SI = 1./sqrt(S + reg_val);
-                whitening_matrix = V * diag(SI) * V';
-                wSIG = whitening_matrix*eSIG;
                 wH   = whitening_matrix*H;
-
-                % MU1
-                w = muap{MU1}(65:128,:);
-                w = extension(w,R);
-                w = whitening_matrix * w;
-
-                % Reconstruction
-                sig=w'*wSIG;
-
-                % Select the source with highest skewness
-                save_skew=zeros(1,size(sig,1));
-                for ind=1:size(sig,1)
-                    save_skew(ind)=skewness(sig(ind,:));
+                
+                for k=1:length(MUs)
+                    % Select MUAP
+                    mu_idx = MUs(k);
+                    w = muap{mu_idx}(65:128,:);
+                    w = extension(w,R);
+                    w = whitening_matrix * w;
+    
+                    % Reconstruction
+                    sig=w'*wSIG;
+    
+                    % Select the source with highest skewness
+                    save_skew=zeros(1,size(sig,1));
+                    for ind=1:size(sig,1)
+                        save_skew(ind)=skewness(sig(ind,:));
+                    end
+                    [~,maxInd]=max(save_skew);
+                    w = w(:,maxInd);
+                    wNorm(k,i,j) = norm(w);
+                    w = w./norm(w);
+    
+                    % Reconstruction
+                    sig=w'*wSIG;
+                    
+                    % Compute the cosine similarity of the most similar
+                    % extended and whitened MUAP
+                    tmp = wH;
+                    tmp(:,(mu_idx-1)*(101+R-1)+1:mu_idx*(101+R-1)) = [];
+                    s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
+                    sCos(k,i,j) = max(s_cos);
+    
+                    % Compute separability metrics
+                    tmp=separability_metric(sig,spike_times{mu_idx});
+    
+                    % Store metrics
+                    SEP(k,i,j) = tmp(1);
+                    FPR(k,i,j) = tmp(2);
+                    FNR(k,i,j) = tmp(3);
                 end
-                [~,maxInd]=max(save_skew);
-                w = w(:,maxInd);
-                norm1(i,j)=norm(w);
-                w = w./norm(w);
-
-                % Reconstruction
-                sig=w'*wSIG;
-
-                tmp = wH;
-                tmp(:,1:101+R-1) = [];
-                s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
-                scos1(i,j) = max(s_cos);
-
-                % Compute separability metrics
-                tmp=separability_metric(sig,spike_times{MU1});
-
-                % Store metrics
-                sep1(i,j)=tmp(1);
-                fpr1(i,j)=tmp(2);
-                fnr1(i,j)=tmp(3);
-
-                % Repeat for MU2
-                w = muap{MU2}(65:128,:);
-                w = extension(w,R);
-                w = whitening_matrix * w;
-
-                % Reconstruction
-                sig=w'*wSIG;
-
-                % Select the source with highest skewness
-                save_skew=zeros(1,size(sig,1));
-                for ind=1:size(sig,1)
-                    save_skew(ind)=skewness(sig(ind,:));
-                end
-                [~,maxInd]=max(save_skew);
-                w = w(:,maxInd);
-                norm2(i,j)=norm(w);
-                w = w./norm(w);
-
-                % Reconstruction
-                sig=w'*wSIG;
-
-                tmp = wH;
-                tmp(:,49*(101+R-1)+1:50*(101+R-1)) = [];
-                s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
-                scos2(i,j) = max(s_cos);
-
-                % Compute separability metrics
-                tmp=separability_metric(sig,spike_times{MU2});
-
-                % Store metrics
-                sep2(i,j)=tmp(1);
-                fpr2(i,j)=tmp(2);
-                fnr2(i,j)=tmp(3);
             end
         end
         % Save data
         save(['../Figures/common_spikes_',num2str(noise_dB),'dB.mat'], ...
-            'ICoV_vec','CCoV_vec','sep1','sep2','fpr1','fpr2','fnr1','fnr2', ...
-            'scos1', 'scos2','norm1','norm2','noise_dB','fs','MU1','MU2','I',...
-            'spike_times','time_param')
+            'ICoV_vec','CCoV_vec', 'SEP', 'FNR', 'FPR', 'wNorm', 'sCos', ...
+            'noise_dB','fs','MUs','I','spike_times','time_param')
     end
 end
 
 clearvars;
 
+%% Generate Figure
 cd '../Figures/'
 
-load('common_spikes_20dB.mat');
+% Load the data and select MUs to be visualised
+load('common_spikes_15dB.mat');
 
-% Generate figure
+sep1 = squeeze(SEP(1,:,:));
+fpr1 = squeeze(FPR(1,:,:));
+fnr1 = squeeze(FNR(1,:,:));
+sep2 = squeeze(SEP(2,:,:));
+fpr2 = squeeze(FPR(2,:,:));
+fnr2 = squeeze(FNR(2,:,:));
+
+% Define color maps
 mymap = zeros(3,101);
 mymap(1,1:81) = linspace(0.8510,1,81);
 mymap(2,1:81) = linspace(0.3255,1,81); 
@@ -201,12 +156,12 @@ mymap(2,81:end) = linspace(1,0.4471,21);
 mymap(1,81:end) = linspace(1,0,21);
 
 mymap2 = zeros(3,101);
-mymap2(1,1:51) = linspace(0.8510,1,51);
-mymap2(2,1:51) = linspace(0.3255,1,51); 
-mymap2(3,1:51) = linspace(0.0980,1,51); 
-mymap2(3,51:end) = linspace(1,0.7412,51);
-mymap2(2,51:end) = linspace(1,0.4471,51);
-mymap2(1,51:end) = linspace(1,0,51);
+mymap2(1,1:61) = linspace(0.8510,1,61);
+mymap2(2,1:61) = linspace(0.3255,1,61); 
+mymap2(3,1:61) = linspace(0.0980,1,61); 
+mymap2(3,61:end) = linspace(1,0.7412,41);
+mymap2(2,61:end) = linspace(1,0.4471,41);
+mymap2(1,61:end) = linspace(1,0,41);
 
 
 t=tiledlayout(2,3);
@@ -215,7 +170,7 @@ set(gcf,'units','points','position',[229,62,1459,893])
 ax1 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep1,4));
 colorbar;
-%clim([0 100])
+clim([35 60])
 colormap(ax1,mymap2')
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 ylabel('Common CoV noise (%)');
@@ -245,11 +200,12 @@ xticks(0:5:20);
 ax4 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep2,4));
 colorbar;
+clim([35 60])
 colormap(ax4,mymap2')
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 ylabel('Common CoV noise (%)');
-title('MU #50','FontWeight','normal');
+title('MU #24','FontWeight','normal');
 xticks(0:5:20);
 
 ax5 = nexttile;
@@ -260,7 +216,7 @@ colormap(ax5,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 set(gca,'YTickLabel',[]);
-title('MU #50','FontWeight','normal');
+title('MU #24','FontWeight','normal');
 xticks(0:5:20);
 
 ax6 = nexttile;
@@ -271,12 +227,8 @@ colormap(ax6,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 set(gca,'YTickLabel',[]);
-title('MU #50','FontWeight','normal');
+title('MU #24','FontWeight','normal');
 xticks(0:5:20);
 
 t.TileSpacing='compact';
 t.Padding='compact';
-
-cmap=turbo;
-%colormap(flip(cmap))
-%colormap(flip(mymap'))
