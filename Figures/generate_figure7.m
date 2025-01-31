@@ -43,9 +43,9 @@ if useExistingData==0
     mean_muap=mean(muap_stacked,3);
 
     % Pre-define vectors for saving metrics
-    sep=zeros(1,size(muap{MU1},2));
-    fpr=zeros(1,size(muap{MU1},2));
-    fnr=zeros(1,size(muap{MU1},2));
+    sep  =zeros(1,size(muap{MU1},2));
+    fpr  =zeros(1,size(muap{MU1},2));
+    fnr  =zeros(1,size(muap{MU1},2));
     es1=zeros(1,size(muap{MU1},2));
     es2=zeros(1,size(muap{MU1},2));
 
@@ -206,3 +206,43 @@ t.Padding='compact';
 
 g=gcf;
 g.Renderer='painters';
+
+%%
+t=tiledlayout(1,3);
+set(gcf,'units','points','position',[143,371,1630,499])
+
+nexttile;
+histogram(amp_vary(spike_times{MU1}), 'FaceColor', cmap(1,:),'FaceAlpha',1)
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xlabel('Spatio-temporal MUAP #');
+ylabel('Number of events');
+title('MUAP statistics')
+
+nexttile;
+imagesc([1 13],[13 1],100.*interp2(es_mat,4));
+clim([0 10])
+cb=colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xlabel('Spatio-temporal MUAP #');
+ylabel('Spatio-temporal MUAP #');
+title('Energy similarity')
+xticks(1:2:13)
+yticks(1:2:13)
+cb.Ticks=[0 5 10];
+set(gca,'YTickLabel',[flip(1:2:13)]);
+colormap(flip(mymap2'))
+
+nexttile;
+hold on;
+plot(1:13,100*sep,'-o','Color',cmap(1,:),'MarkerFaceColor',cmap(1,:),'MarkerSize',12,'LineWidth',2);
+plot(1:13,100*fpr,'-o','Color',cmap(2,:),'MarkerFaceColor',cmap(2,:),'MarkerSize',12,'LineWidth',2);
+plot(1:13,100*fnr,'-o','Color',[0.5 0.5 0.5],'MarkerFaceColor',[0.5 0.5 0.5],'MarkerSize',12,'LineWidth',2);
+hold off;
+legend('Separability','FPR', 'FNR', 'Location','eastoutside')
+title('Performance metrics')
+xlim([1 13]);
+xticks(1:2:13);
+ylim([0 100]);
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+xlabel('Spatio-temporal MUAP #');
+ylabel('Metric (%)');
