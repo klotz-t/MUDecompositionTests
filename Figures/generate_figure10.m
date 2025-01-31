@@ -5,6 +5,8 @@ rng(0)
 
 useExistingData=1;
 
+useReplicationData=1;
+
 nsim      = 200;
 rand_seed = true;
 
@@ -160,8 +162,18 @@ if useExistingData == 0
             decomp_out{idx}(mu_idx,16)=length(find(ST(mu_idx,:) == 1));
         end   
     end
+end
+
+data = [];
+for i=1:nsim
+    data = cat(1,data,decomp_out{i}); 
+end 
+save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
+%% Import data for plotting
+if useReplicationData
+    load('replication_data/decomp_summary_200runs.mat');
 else
-    load decomp_summary_200C.mat
+    load('my_data/decomp_summary_200runs.mat')
 end
 %% Fix NaNs
 data(isnan(data(:,3)), 3) = 0;
