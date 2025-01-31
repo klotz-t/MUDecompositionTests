@@ -103,7 +103,7 @@ clearvars;
 
 cd '../Figures/'
 
-load('changing_muap.mat');
+load('replication_data/changing_muap.mat');
 
 % Compute energy similarity between each spatio-temporal MUAP
 es_mat=zeros(size(muap{MU1},2),size(muap{MU1},2));
