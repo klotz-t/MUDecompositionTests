@@ -137,7 +137,7 @@ clearvars;
 cd '../Figures/'
 
 % Load the data and select MUs to be visualised
-load('common_spikes_15dB.mat');
+load('./replication_data/common_spikes_15dB.mat')
 
 sep1 = squeeze(SEP(1,:,:));
 fpr1 = squeeze(FPR(1,:,:));
