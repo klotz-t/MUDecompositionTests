@@ -9,7 +9,7 @@ clearvars; close all;
 rng(0)
 
 % Load signals and ground truth spikes
-load('separability_metric_example.mat')
+load('./replication_data/separability_metric_example.mat')
 
 cd '../LIF model/'
 addpath '../Functions/'
