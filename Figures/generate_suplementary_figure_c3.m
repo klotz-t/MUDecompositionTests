@@ -6,8 +6,10 @@
 
 clearvars; close all;
 
-% If load existing data
+% If 0 rerun simulation
 useExistingData=1;
+% If 1 plot the replication data
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -93,12 +95,15 @@ if useExistingData==0
     end
     % Save data
     cd '../Figures/'
-    save('delayed_spike_train.mat','transl_spikes','sep','fpr','fnr','whitened_muap_norm')
+    save('my_data/delayed_spike_train.mat','transl_spikes','sep','fpr','fnr','whitened_muap_norm')
 end
 
 clearvars;
-
-load('delayed_spike_train.mat') 
+if useReplicationData
+    load('replication_data/delayed_spike_train.mat') 
+else
+    load('my_data/delayed_spike_train.mat') 
+end
 
 % Generate figure
 cmap=lines(2);

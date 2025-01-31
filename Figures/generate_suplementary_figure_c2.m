@@ -8,7 +8,14 @@
 
 clearvars; close all;
 
-load('common_spikes_15dB.mat');
+% If 1 plot the replication data
+useReplicationData=1;
+
+if useReplicationData
+    load('replication_data/common_spikes_15dB.mat');
+else
+    load('my_data/common_spikes_15dB.mat');
+end
 
 norm1 = squeeze(wNorm(1,:,:));
 norm2 = squeeze(wNorm(2,:,:));
