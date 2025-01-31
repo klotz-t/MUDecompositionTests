@@ -5,8 +5,10 @@
 
 clearvars; close all;
 
-% If load existing data
-useExistingData=0;
+% If 0 rerun simulation
+useExistingData=1;
+% If 1 plot the replication data
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -125,7 +127,7 @@ if useExistingData==0
             end
         end
         % Save data
-        save(['../Figures/common_spikes_',num2str(noise_dB),'dB.mat'], ...
+        save(['../Figures/my_data/common_spikes_',num2str(noise_dB),'dB.mat'], ...
             'ICoV_vec','CCoV_vec', 'SEP', 'FNR', 'FPR', 'wNorm', 'sCos', ...
             'noise_dB','fs','MUs','I','spike_times','time_param')
     end
@@ -137,7 +139,11 @@ clearvars;
 cd '../Figures/'
 
 % Load the data and select MUs to be visualised
-load('./replication_data/common_spikes_15dB.mat')
+if useReplicationData
+    load('./replication_data/common_spikes_15dB.mat')
+else
+    load('./my_data/common_spikes_15dB.mat')
+end
 
 sep1 = squeeze(SEP(1,:,:));
 fpr1 = squeeze(FPR(1,:,:));

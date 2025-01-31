@@ -5,8 +5,10 @@
 
 clearvars; close all;
 
-% If load existing data
+% If 0 rerun simulation
 useExistingData=1;
+% If 1 plot the replication data
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -99,7 +101,7 @@ if useExistingData==0
             end
         end
         % Save data
-        save(['similar_muaps_',num2str(noise_dB),'dB.mat'])
+        save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'])
     end
 end
 
@@ -108,8 +110,13 @@ clearvars;
 cd '../Figures/'
 
 % Load data
-data20db=load('replication_data/similar_muaps_10dB.mat');
-data10db=load('replication_data/similar_muaps_10dB.mat');
+if useReplicationData
+    data20db=load('replication_data/similar_muaps_10dB.mat');
+    data10db=load('replication_data/similar_muaps_10dB.mat');
+else
+    data20db=load('my_data/similar_muaps_10dB.mat');
+    data10db=load('my_data/similar_muaps_10dB.mat');
+end
 
 % Generate figure
 mymap = zeros(3,101);

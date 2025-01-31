@@ -5,8 +5,10 @@
 
 clearvars; close all;
 
-% If load existing data
+% If 0 rerun simulation
 useExistingData=1;
+% If 1 plot the replication data
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -110,12 +112,16 @@ if useExistingData==0
     end
     % Save data
     cd '../Figures/'
-    save('extension_factor.mat','extF','MU1_norm','MU50_norm','c1','c50','s1','s50')
+    save('my_data/extension_factor.mat','extF','MU1_norm','MU50_norm','c1','c50','s1','s50')
 end
 
 clearvars;
 
-load('replication_data/extension_factor.mat')
+if useReplicationData
+    load('replication_data/extension_factor.mat')
+else
+    load('my_data/extension_factor.mat')
+end
 
 % Generate figure
 cmap=lines(2);

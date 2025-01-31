@@ -3,8 +3,9 @@ addpath ../Functions/
 %clearvars; close all;
 rng(0)
 
+% If 0 rerun simulation
 useExistingData=1;
-
+% If 1 plot the replication data
 useReplicationData=1;
 
 nsim      = 200;

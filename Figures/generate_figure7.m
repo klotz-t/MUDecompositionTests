@@ -5,8 +5,10 @@
 
 clearvars; close all;
 
-% If load existing data
+% If 0 rerun simulation
 useExistingData=1;
+% If 1 plot the replication data
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(1)
@@ -96,14 +98,18 @@ if useExistingData==0
         es2(i)=energy_similarity2;
     end
     % Save data
-    save('../Figures/changing_muap.mat','muap','MU1','spike_times','time_param','amp_vary','sep','fpr','fnr','es1','es2'); 
+    save('../Figures/my_data/changing_muap.mat','muap','MU1','spike_times','time_param','amp_vary','sep','fpr','fnr','es1','es2'); 
 end
 
 clearvars;
 
 cd '../Figures/'
 
-load('replication_data/changing_muap.mat');
+if useReplicationData
+    load('replication_data/changing_muap.mat');
+else
+    load('my_data/changing_muap.mat');
+end
 
 % Compute energy similarity between each spatio-temporal MUAP
 es_mat=zeros(size(muap{MU1},2),size(muap{MU1},2));

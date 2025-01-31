@@ -5,8 +5,10 @@
 
 clearvars; close all;
 
-% If load existing data
+% If 0 rerun simulation
 useExistingData=1;
+% If 1 plot the replication data
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -88,12 +90,16 @@ if useExistingData==0
     end
     % Save data
     cd '../Figures/'
-    save('quality_source_metric.mat','sep','pnr','sil','skew','kurt')
+    save('my_data/quality_source_metric.mat','sep','pnr','sil','skew','kurt')
 end
 
 clearvars
 
-load('replication_data/quality_source_metric.mat')
+if useReplicationData
+    load('replication_data/quality_source_metric.mat')
+else
+    load('my_data/quality_source_metric.mat')
+end
 
 % Generate figure
 cmap=lines(4);
