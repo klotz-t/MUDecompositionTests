@@ -108,8 +108,8 @@ clearvars;
 cd '../Figures/'
 
 % Load data
-data20db=load('similar_muaps_20dB.mat');
-data10db=load('similar_muaps_10dB.mat');
+data20db=load('replication_data/similar_muaps_10dB.mat');
+data10db=load('replication_data/similar_muaps_10dB.mat');
 
 % Generate figure
 mymap = zeros(3,101);
