@@ -99,11 +99,14 @@ if useExistingData==0
         es2(i)=energy_similarity2;
     end
     % Save data
-    save('../Figures/my_data/changing_muap.mat','muap','MU1','spike_times','time_param','amp_vary','sep','fpr','fnr','es1','es2'); 
+    cd '../Figures/'
+    if not(isfolder('my_data/'))
+        mkdir('my_data/')
+    end
+    save('/my_data/changing_muap.mat','muap','MU1','spike_times','time_param','amp_vary','sep','fpr','fnr','es1','es2'); 
 end
 
 
-cd '../Figures/'
 
 if useReplicationData == 1
     load('replication_data/changing_muap.mat');

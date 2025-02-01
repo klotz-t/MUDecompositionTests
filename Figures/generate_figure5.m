@@ -102,11 +102,14 @@ if useExistingData==0
             end
         end
         % Save data
+        cd '../Figures/'
+        if not(isfolder('my_data/'))
+            mkdir('my_data/')
+        end
         save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'])
     end
 end
 
-cd '../Figures/'
 
 % Load data
 if useReplicationData == 1

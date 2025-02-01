@@ -113,6 +113,9 @@ if useExistingData==0
     end
     % Save data
     cd '../Figures/'
+    if not(isfolder('my_data/'))
+        mkdir('my_data/')
+    end
     save('my_data/extension_factor.mat','extF','MU1_norm','MU50_norm','c1','c50','s1','s50')
 end
 

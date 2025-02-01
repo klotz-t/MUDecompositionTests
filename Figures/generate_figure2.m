@@ -65,6 +65,9 @@ if useExistingData==0
     end
     % Save data
     cd '../Figures/'
+    if not(isfolder('my_data/'))
+        mkdir('my_data/')
+    end
     save('my_data/frequency_current_relation.mat','current_range','firing_rates')
 end
 

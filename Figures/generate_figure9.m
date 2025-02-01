@@ -91,6 +91,9 @@ if useExistingData==0
     end
     % Save data
     cd '../Figures/'
+    if not(isfolder('my_data/'))
+        mkdir('my_data/')
+    end
     save('my_data/quality_source_metric.mat','sep','pnr','sil','skew','kurt')
 end
 

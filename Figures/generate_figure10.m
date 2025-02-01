@@ -7,6 +7,7 @@
 clearvars; close all;
 
 addpath ../Functions/
+addpath ../'LIF model'/
 
 % Reproducible random numbers
 rng(0)
@@ -180,7 +181,10 @@ end
 data = [];
 for i=1:nsim
     data = cat(1,data,decomp_out{i}); 
-end 
+end
+if not(isfolder('my_data/'))
+    mkdir('my_data/')
+end
 save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
 %% Import data for plotting
 if useReplicationData == 1
