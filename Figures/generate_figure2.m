@@ -7,9 +7,9 @@
 clearvars; close all;
 
 % If 0 rerun simulation
-useExistingData=0;
+useExistingData=1;
 % If 1 plot the replication data
-useReplicationData=0;
+useReplicationData=1;
 
 % Set number of motor neurons in the pool
 n_mn=300;
@@ -69,7 +69,7 @@ if useExistingData==0
 end
 
 % Load data
-if useReplicationData
+if useReplicationData == 1
     load('replication_data/frequency_current_relation.mat');
 else
     load('my_data/frequency_current_relation.mat');
