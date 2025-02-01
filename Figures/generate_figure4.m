@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 4 in "Revisiting convolutive blind source
-% separation for motor neuron identification: From theory to practice"
+% Code to generate figure 4 in "Revisiting convolutive blind source 
+% separation for identifying spiking motor neuron activity: 
+% From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clearvars; close all;

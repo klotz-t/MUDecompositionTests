@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 7 in "Revisiting convolutive blind source
-% separation for motor neuron identification: From theory to practice"
+% Code to generate figure 7 in "Revisiting convolutive blind source 
+% separation for identifying spiking motor neuron activity: 
+% From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clearvars; close all;
@@ -101,11 +102,10 @@ if useExistingData==0
     save('../Figures/my_data/changing_muap.mat','muap','MU1','spike_times','time_param','amp_vary','sep','fpr','fnr','es1','es2'); 
 end
 
-clearvars;
 
 cd '../Figures/'
 
-if useReplicationData
+if useReplicationData == 1
     load('replication_data/changing_muap.mat');
 else
     load('my_data/changing_muap.mat');

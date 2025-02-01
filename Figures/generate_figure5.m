@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 5 in "Revisiting convolutive blind source
-% separation for motor neuron identification: From theory to practice"
+% Code to generate figure 5 in "Revisiting convolutive blind source 
+% separation for identifying spiking motor neuron activity: 
+% From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clearvars; close all;
@@ -105,12 +106,10 @@ if useExistingData==0
     end
 end
 
-clearvars;
-
 cd '../Figures/'
 
 % Load data
-if useReplicationData
+if useReplicationData == 1
     data20db=load('replication_data/similar_muaps_10dB.mat');
     data10db=load('replication_data/similar_muaps_10dB.mat');
 else

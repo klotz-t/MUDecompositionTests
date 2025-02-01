@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 6 in "Revisiting convolutive blind source
-% separation for motor neuron identification: From theory to practice"
+% Code to generate figure 6 in "Revisiting convolutive blind source 
+% separation for identifying spiking motor neuron activity: 
+% From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clearvars; close all;
@@ -133,13 +134,12 @@ if useExistingData==0
     end
 end
 
-clearvars;
 
 %% Generate Figure
 cd '../Figures/'
 
 % Load the data and select MUs to be visualised
-if useReplicationData
+if useReplicationData == 1
     load('./replication_data/common_spikes_15dB.mat')
 else
     load('./my_data/common_spikes_15dB.mat')

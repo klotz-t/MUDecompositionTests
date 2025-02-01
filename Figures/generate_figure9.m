@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 9 in "Revisiting convolutive blind source
-% separation for motor neuron identification: From theory to practice"
+% Code to generate figure 9 in "Revisiting convolutive blind source 
+% separation for identifying spiking motor neuron activity: 
+% From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clearvars; close all;
@@ -93,9 +94,8 @@ if useExistingData==0
     save('my_data/quality_source_metric.mat','sep','pnr','sil','skew','kurt')
 end
 
-clearvars
 
-if useReplicationData
+if useReplicationData == 1
     load('replication_data/quality_source_metric.mat')
 else
     load('my_data/quality_source_metric.mat')

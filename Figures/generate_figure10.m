@@ -1,6 +1,14 @@
-% figure common spikes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code to generate figure 10 in "Revisiting convolutive blind source 
+% separation for identifying spiking motor neuron activity: 
+% From theory to practice"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clearvars; close all;
+
 addpath ../Functions/
-%clearvars; close all;
+
+% Reproducible random numbers
 rng(0)
 
 % If 0 rerun simulation
@@ -8,9 +16,12 @@ useExistingData=1;
 % If 1 plot the replication data
 useReplicationData=1;
 
+% Number of simulations
 nsim      = 200;
+% Each simulation should use different combinations of MUAPs
 rand_seed = true;
 
+% Randomly generate simulation parameters
 drive     = (5 + rand(1,nsim)*5)*1e-9;
 CCoV_vec  = rand(1,nsim)*60;
 ICoV_vec  = rand(1,nsim)*20;
@@ -165,13 +176,14 @@ if useExistingData == 0
     end
 end
 
+% Restructure data in one matrix
 data = [];
 for i=1:nsim
     data = cat(1,data,decomp_out{i}); 
 end 
 save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
 %% Import data for plotting
-if useReplicationData
+if useReplicationData == 1
     load('replication_data/decomp_summary_200runs.mat');
 else
     load('my_data/decomp_summary_200runs.mat')
