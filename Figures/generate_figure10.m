@@ -6,16 +6,16 @@
 
 clearvars; close all;
 
-addpath ../Functions/
-addpath ../'LIF model'/
+addpath '../LIF model/'
+addpath '../Functions/'
 
 % Reproducible random numbers
 rng(0)
 
-% If 0 rerun simulation
+% 0: Run simulation, 1: Plot data
 useExistingData=1;
-% If 1 plot the replication data
-useReplicationData=1;
+% 1: plot the replication data, 0: Plot your own data
+useReplicationData=0;
 
 % Number of simulations
 nsim      = 200;
@@ -186,6 +186,7 @@ if not(isfolder('my_data/'))
     mkdir('my_data/')
 end
 save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
+return
 %% Import data for plotting
 if useReplicationData == 1
     load('replication_data/decomp_summary_200runs.mat');

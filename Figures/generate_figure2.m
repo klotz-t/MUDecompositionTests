@@ -9,9 +9,9 @@ clearvars; close all;
 addpath '../LIF model/'
 addpath '../Functions/'
 
-% If 0 rerun simulation
+% 0: Run simulation, 1: Plot data
 useExistingData=1;
-% If 1 plot the replication data
+% 1: plot the replication data, 0: Plot your own data
 useReplicationData=0;
 
 % Set number of motor neurons in the pool
@@ -70,6 +70,7 @@ if useExistingData==0
         mkdir('my_data/')
     end
     save('my_data/frequency_current_relation.mat','current_range','firing_rates')
+    return
 end
 
 % Load data

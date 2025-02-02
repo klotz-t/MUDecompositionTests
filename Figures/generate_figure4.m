@@ -6,7 +6,7 @@
 
 clearvars; close all;
 
-cd '../LIF model/'
+addpath '../LIF model/'
 addpath '../Functions/'
 
 % Use random seed to obtain identical results

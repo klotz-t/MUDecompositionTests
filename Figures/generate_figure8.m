@@ -6,12 +6,12 @@
 
 clearvars; close all;
 
+addpath '../LIF model/'
 addpath '../Functions/'
-addpath '..'/'LIF model'/
 
-% If 0 rerun simulation
+% 0: Run simulation, 1: Plot data
 useExistingData=1;
-% If 1 plot the replication data
+% 1: plot the replication data, 0: Plot your own data
 useReplicationData=0;
 
 % Use random seed to obtain identical results
@@ -117,6 +117,7 @@ if useExistingData==0
         mkdir('my_data/')
     end
     save('my_data/extension_factor.mat','extF','MU1_norm','MU50_norm','c1','c50','s1','s50')
+    return
 end
 
 

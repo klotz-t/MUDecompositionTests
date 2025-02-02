@@ -12,7 +12,7 @@ rng(0)
 % Load signals and ground truth spikes
 load('./replication_data/separability_metric_example.mat')
 
-cd '../LIF model/'
+addpath '../LIF model/'
 addpath '../Functions/'
 
 % Generate figure

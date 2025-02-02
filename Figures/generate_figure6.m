@@ -6,12 +6,12 @@
 
 clearvars; close all;
 
+addpath '../LIF model/'
 addpath '../Functions/'
-addpath '..'/'LIF model'/
 
-% If 0 rerun simulation
+% 0: Run simulation, 1: Plot data
 useExistingData=1;
-% If 1 plot the replication data
+% 1: plot the replication data, 0: Plot your own data
 useReplicationData=0;
 
 % Use random seed to obtain identical results
@@ -134,6 +134,7 @@ if useExistingData==0
         save(['my_data/common_spikes_',num2str(noise_dB),'dB.mat'], ...
             'ICoV_vec','CCoV_vec', 'SEP', 'FNR', 'FPR', 'wNorm', 'sCos', ...
             'noise_dB','fs','MUs','I','spike_times','time_param')
+        return
     end
 end
 

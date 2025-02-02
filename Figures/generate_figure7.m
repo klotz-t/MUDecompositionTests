@@ -6,8 +6,8 @@
 
 clearvars; close all;
 
+addpath '../LIF model/'
 addpath '../Functions/'
-addpath '..'/'LIF model'/
 
 % If 0 rerun simulation
 useExistingData=1;

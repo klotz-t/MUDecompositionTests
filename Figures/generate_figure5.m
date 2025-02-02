@@ -9,9 +9,9 @@ clearvars; close all;
 addpath '../LIF model/'
 addpath '../Functions/'
 
-% If 0 rerun simulation
+% 0: Run simulation, 1: Plot data
 useExistingData=1;
-% If 1 plot the replication data
+% 1: plot the replication data, 0: Plot your own data
 useReplicationData=0;
 
 % Use random seed to obtain identical results
