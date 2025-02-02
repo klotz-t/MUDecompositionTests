@@ -12,7 +12,7 @@ addpath '..'/'LIF model'/
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
-useReplicationData=1;
+useReplicationData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -124,6 +124,16 @@ if useReplicationData == 1
     load('replication_data/extension_factor.mat')
 else
     load('my_data/extension_factor.mat')
+    % Check for consistency
+    ref_data = load('replication_data/extension_factor.mat');
+    check_val = isApproxEqual(ref_data.c1,c1) & isApproxEqual(ref_data.c50,c50) & ...
+        isApproxEqual(ref_data.MU1_norm,MU1_norm) & isApproxEqual(ref_data.MU50_norm,MU50_norm) & ...
+        isApproxEqual(ref_data.s1,s1) & isApproxEqual(ref_data.s50,s50);
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
 end
 
 % Generate figure
