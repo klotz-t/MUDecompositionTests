@@ -6,6 +6,9 @@
 
 clearvars; close all;
 
+addpath '../Functions/'
+addpath '..'/'LIF model'/
+
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
@@ -24,8 +27,6 @@ noise_dB=20;
 rand_seed = true;
 
 if useExistingData==0
-    cd '../LIF model/'
-    addpath '../Functions/'
 
     % Set maximum input current of the trapezoid curve (nA)
     I=7e-9;
@@ -90,7 +91,6 @@ if useExistingData==0
         sep(:,i)=separability_metric(sig,spike_times{i});
     end
     % Save data
-    cd '../Figures/'
     if not(isfolder('my_data/'))
         mkdir('my_data/')
     end

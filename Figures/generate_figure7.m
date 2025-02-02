@@ -6,6 +6,9 @@
 
 clearvars; close all;
 
+addpath '../Functions/'
+addpath '..'/'LIF model'/
+
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
@@ -25,9 +28,6 @@ MU1=50;
 noise_dB = 20;
 
 if useExistingData==0
-    cd '../LIF model/'
-    addpath '../Functions/'
-
     % Generate spike trains
     I=7e-9; % 7 nA input current
     [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
@@ -99,7 +99,6 @@ if useExistingData==0
         es2(i)=energy_similarity2;
     end
     % Save data
-    cd '../Figures/'
     if not(isfolder('my_data/'))
         mkdir('my_data/')
     end

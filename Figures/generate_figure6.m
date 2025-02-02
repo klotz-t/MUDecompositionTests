@@ -6,6 +6,9 @@
 
 clearvars; close all;
 
+addpath '../Functions/'
+addpath '..'/'LIF model'/
+
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
@@ -35,13 +38,10 @@ wNorm = zeros(length(MUs),length(CCoV_vec),length(ICoV_vec));
 sCos  = zeros(length(MUs),length(CCoV_vec),length(ICoV_vec));
 
 if useExistingData==0
-    cd '../LIF model/'
-    addpath '../Functions/'
-
     for noise_dB=[15]
         disp(num2str(noise_dB))
 
-        for i=1:length(CCoV_vec)
+        parfor i=1:length(CCoV_vec)
             for j=1:length(ICoV_vec)
                 disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
 
@@ -128,7 +128,6 @@ if useExistingData==0
             end
         end
         % Save data
-        cd '../Figures/'
         if not(isfolder('my_data/'))
             mkdir('my_data/')
         end

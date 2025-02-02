@@ -36,7 +36,7 @@ decomp_out = cell(nsim,1);
 
 if useExistingData == 0
     % Generate EMG signals
-    for idx=1:nsim
+    parfor idx=1:nsim
         disp(num2str(idx))
         
         % Select parameters
@@ -101,7 +101,7 @@ if useExistingData == 0
             mu_responses(mu_idx,:,:) = muap{mu_idx}(65:128,:);
         end
         [~, energy_similarity] = compute_cosine_similarity2(mu_responses);
-        clear mu_responses
+        %clear mu_responses
     
         % Initalize output
         decomp_out{idx} = zeros(length(spike_times),15);

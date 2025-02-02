@@ -6,6 +6,9 @@
 
 clearvars; close all;
 
+addpath '../Functions/'
+addpath '..'/'LIF model'/
+
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
@@ -40,8 +43,6 @@ s1 = zeros(length(extF),1);
 s50 = zeros(length(extF),1);
 
 if useExistingData==0
-    cd '../LIF model/'
-    addpath '../Functions/'
 
     % Generate spike trains
     I=7e-9; % 7 nA input current
@@ -112,7 +113,6 @@ if useExistingData==0
         s50(i) = max(s_cos);
     end
     % Save data
-    cd '../Figures/'
     if not(isfolder('my_data/'))
         mkdir('my_data/')
     end
