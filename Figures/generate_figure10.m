@@ -13,7 +13,7 @@ addpath '../Functions/'
 rng(0)
 
 % 0: Run simulation, 1: Plot data
-useExistingData=1;
+useExistingData=0;
 % 1: plot the replication data, 0: Plot your own data
 useReplicationData=0;
 
@@ -36,7 +36,7 @@ decomp_out = cell(nsim,1);
 
 if useExistingData == 0
     % Generate EMG signals
-    parfor idx=1:nsim
+    for idx=1:nsim
         disp(num2str(idx))
         
         % Select parameters
@@ -186,7 +186,7 @@ if useExistingData == 0
     end
     save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
     return
-    
+
 end
 
 
