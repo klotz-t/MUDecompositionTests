@@ -11,7 +11,7 @@ clearvars; close all;
 % If 1 plot the replication data
 useReplicationData=1;
 
-if useReplicationData
+if useReplicationData == 1
     load('replication_data/common_spikes_15dB.mat');
 else
     load('my_data/common_spikes_15dB.mat');

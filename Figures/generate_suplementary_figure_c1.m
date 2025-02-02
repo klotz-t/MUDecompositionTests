@@ -9,7 +9,7 @@ clearvars; close all;
 % Use random seed to obtain identical results
 rng(0)
 
-cd '../LIF model/'
+addpath '../LIF model/'
 addpath '../Functions/'
 
 % EMG sample rate

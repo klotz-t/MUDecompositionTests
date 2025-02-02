@@ -6,6 +6,9 @@
 
 clearvars; close all;
 
+addpath '../Functions/'
+addpath '..'/'LIF model'/
+
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
@@ -31,8 +34,6 @@ MU2=50;
 R=16;
 
 if useExistingData==0
-    cd '../LIF model/'
-    addpath '../Functions/'
 
     % Generate spike trains
     [spike_times,time_param,membr_param]=generate_spike_trains(I);
@@ -98,8 +99,7 @@ if useExistingData==0
     save('my_data/delayed_spike_train.mat','transl_spikes','sep','fpr','fnr','whitened_muap_norm')
 end
 
-clearvars;
-if useReplicationData
+if useReplicationData == 1
     load('replication_data/delayed_spike_train.mat') 
 else
     load('my_data/delayed_spike_train.mat') 
