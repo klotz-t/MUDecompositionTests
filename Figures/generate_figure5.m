@@ -7,7 +7,7 @@
 clearvars; close all;
 
 % If 0 rerun simulation
-useExistingData=1;
+useExistingData=0;
 % If 1 plot the replication data
 useReplicationData=1;
 
@@ -106,17 +106,19 @@ if useExistingData==0
         if not(isfolder('my_data/'))
             mkdir('my_data/')
         end
-        save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'])
+        save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'], ...
+            'spat_transl','scale_factor_vec', 'sep', 'fnr', 'fpr', 'cs', 'es', ...
+            'noise_dB','fs','I','spike_times','time_param','MU1','MU2')
     end
 end
 
 
 % Load data
 if useReplicationData == 1
-    data20db=load('replication_data/similar_muaps_10dB.mat');
+    data20db=load('replication_data/similar_muaps_20dB.mat');
     data10db=load('replication_data/similar_muaps_10dB.mat');
 else
-    data20db=load('my_data/similar_muaps_10dB.mat');
+    data20db=load('my_data/similar_muaps_20dB.mat');
     data10db=load('my_data/similar_muaps_10dB.mat');
 end
 
