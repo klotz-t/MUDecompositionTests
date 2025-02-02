@@ -12,7 +12,7 @@ addpath '..'/'LIF model'/
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
-useReplicationData=1;
+useReplicationData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -101,7 +101,16 @@ end
 if useReplicationData == 1
     load('replication_data/quality_source_metric.mat')
 else
+    ref_data = load('replication_data/quality_source_metric.mat');
     load('my_data/quality_source_metric.mat')
+    check_val = isApproxEqual(ref_data.sil,sil) & isApproxEqual(ref_data.pnr,pnr) & ...
+        isApproxEqual(ref_data.sep,sep) & isApproxEqual(ref_data.skew,skew) & ...
+        isApproxEqual(ref_data.kurt,kurt);
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
 end
 
 % Generate figure

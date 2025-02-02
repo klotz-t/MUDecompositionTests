@@ -6,6 +6,9 @@
 
 clearvars; close all;
 
+addpath '../LIF model/'
+addpath '../Functions/'
+
 % If 0 rerun simulation
 useExistingData=0;
 % If 1 plot the replication data
@@ -24,8 +27,6 @@ MU1=49;
 MU2=50;
 
 if useExistingData==0
-    cd '../LIF model/'
-    addpath '../Functions/'
 
     % Generate spike trains
     I=7e-9; % 7 nA input current
@@ -107,7 +108,7 @@ if useExistingData==0
             mkdir('my_data/')
         end
         save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'], ...
-            'spat_transl','scale_factor_vec', 'sep', 'fnr', 'fpr', 'cs', 'es', ...
+            'spat_transl_vec','scale_factor_vec', 'sep', 'fnr', 'fpr', 'cs', 'es', ...
             'noise_dB','fs','I','spike_times','time_param','MU1','MU2')
     end
 end

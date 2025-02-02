@@ -110,7 +110,16 @@ end
 if useReplicationData == 1
     load('replication_data/changing_muap.mat');
 else
+    ref_data = load('replication_data/quality_source_metric.mat');
     load('my_data/changing_muap.mat');
+    check_val = isApproxEqual(ref_data.fnr,fnr) & ...
+        isApproxEqual(ref_data.fpr,fpr) & ...
+        isApproxEqual(ref_data.sep,sep);
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
 end
 
 % Compute energy similarity between each spatio-temporal MUAP
