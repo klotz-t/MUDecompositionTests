@@ -6,13 +6,13 @@
 
 clearvars; close all;
 
+addpath '../LIF model/'
 addpath '../Functions/'
-addpath '..'/'LIF model'/
 
-% If 0 rerun simulation
+% 0: Run simulation, 1: Plot data
 useExistingData=1;
-% If 1 plot the replication data
-useReplicationData=1;
+% 1: plot the replication data, 0: Plot your own data
+useReplicationData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -95,8 +95,8 @@ if useExistingData==0
         end
     end
     % Save data
-    cd '../Figures/'
     save('my_data/delayed_spike_train.mat','transl_spikes','sep','fpr','fnr','whitened_muap_norm')
+    return
 end
 
 if useReplicationData == 1

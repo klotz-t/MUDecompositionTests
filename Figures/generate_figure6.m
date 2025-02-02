@@ -146,7 +146,6 @@ if useReplicationData == 1
     load('./replication_data/common_spikes_15dB.mat')
 else
     % Check if data is consitent with the reference data
-    TOL = 1e-9;
     data1 = load('./replication_data/common_spikes_15dB.mat');
     data2 = load('./my_data/common_spikes_15dB.mat');
     check_val = isApproxEqual(data1.SEP, data2.SEP) & ...
