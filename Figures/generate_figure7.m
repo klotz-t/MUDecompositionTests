@@ -113,7 +113,7 @@ if useReplicationData == 1
     load('replication_data/changing_muap.mat');
 else
     % Load data and compare to reference data
-    ref_data = load('replication_data/quality_source_metric.mat');
+    ref_data = load('replication_data/changing_muap.mat');
     load('my_data/changing_muap.mat');
     check_val = isApproxEqual(ref_data.fnr,fnr) & ...
         isApproxEqual(ref_data.fpr,fpr) & ...
