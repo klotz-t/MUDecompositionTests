@@ -12,7 +12,7 @@ addpath '..'/'LIF model'/
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
-useReplicationData=1;
+useReplicationData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -41,7 +41,7 @@ if useExistingData==0
     for noise_dB=[15]
         disp(num2str(noise_dB))
 
-        parfor i=1:length(CCoV_vec)
+        for i=1:length(CCoV_vec)
             for j=1:length(ICoV_vec)
                 disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
 
@@ -144,6 +144,19 @@ end
 if useReplicationData == 1
     load('./replication_data/common_spikes_15dB.mat')
 else
+    % Check if data is consitent with the reference data
+    TOL = 1e-9;
+    data1 = load('./replication_data/common_spikes_15dB.mat');
+    data2 = load('./my_data/common_spikes_15dB.mat');
+    check_val = max(data1.SEP - data2.SEP,[],'all') < TOL & ...
+        max(data1.FPR - data2.FPR,[],'all') < TOL & ...
+        max(data1.FNR - data2.FNR,[],'all') < TOL;
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
+    clear data1 data2
     load('./my_data/common_spikes_15dB.mat')
 end
 
