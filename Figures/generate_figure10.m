@@ -190,7 +190,15 @@ save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
 if useReplicationData == 1
     load('replication_data/decomp_summary_200runs.mat');
 else
+    ref_data = load('replication_data/decomp_summary_200runs.mat');
     load('my_data/decomp_summary_200runs.mat')
+    check_val = isApproxEqual(ref_data.data,data);
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
+    clear ref_data
 end
 %% Fix NaNs
 data(isnan(data(:,3)), 3) = 0;
