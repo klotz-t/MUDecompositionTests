@@ -10,9 +10,9 @@ addpath '../LIF model/'
 addpath '../Functions/'
 
 % If 0 rerun simulation
-useExistingData=0;
+useExistingData=1;
 % If 1 plot the replication data
-useReplicationData=1;
+useReplicationData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -110,6 +110,7 @@ if useExistingData==0
         save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'], ...
             'spat_transl_vec','scale_factor_vec', 'sep', 'fnr', 'fpr', 'cs', 'es', ...
             'noise_dB','fs','I','spike_times','time_param','MU1','MU2')
+        return
     end
 end
 
@@ -119,8 +120,24 @@ if useReplicationData == 1
     data20db=load('replication_data/similar_muaps_20dB.mat');
     data10db=load('replication_data/similar_muaps_10dB.mat');
 else
+    ref_data20db=load('replication_data/similar_muaps_20dB.mat');
+    ref_data10db=load('replication_data/similar_muaps_10dB.mat');
     data20db=load('my_data/similar_muaps_20dB.mat');
     data10db=load('my_data/similar_muaps_10dB.mat');
+    % 
+    TOL = 5e-3;
+    check_val = isApproxEqual(ref_data10db.sep, data10db.sep,TOL) & ...
+        isApproxEqual(ref_data20db.sep, data20db.sep,TOL) & ...
+        isApproxEqual(ref_data10db.fpr, data10db.fpr,TOL) & ...
+        isApproxEqual(ref_data20db.fpr, data20db.fpr,TOL) & ...
+        isApproxEqual(ref_data10db.fnr, data10db.fnr,TOL) & ...
+        isApproxEqual(ref_data20db.fnr, data20db.fnr,TOL);
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
+    clear ref_data10db ref_data20db
 end
 
 % Generate figure

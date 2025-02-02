@@ -103,13 +103,16 @@ if useExistingData==0
         mkdir('my_data/')
     end
     save('/my_data/changing_muap.mat','muap','MU1','spike_times','time_param','amp_vary','sep','fpr','fnr','es1','es2'); 
+    return
 end
 
 
 
 if useReplicationData == 1
+    % Load reference data
     load('replication_data/changing_muap.mat');
 else
+    % Load data and compare to reference data
     ref_data = load('replication_data/quality_source_metric.mat');
     load('my_data/changing_muap.mat');
     check_val = isApproxEqual(ref_data.fnr,fnr) & ...
