@@ -6,10 +6,13 @@
 
 clearvars; close all;
 
+addpath '../LIF model/'
+addpath '../Functions/'
+
 % If 0 rerun simulation
 useExistingData=1;
 % If 1 plot the replication data
-useReplicationData=1;
+useReplicationData=0;
 
 % Set number of motor neurons in the pool
 n_mn=300;
@@ -51,7 +54,6 @@ time_param.dt = 1/time_param.fs; % Time step (s)
 time_param.T = 0:time_param.dt:time_param.T_dur; % Time vector
 
 if useExistingData==0
-    cd '../LIF model/'
     current_range=linspace(5e-9,45e-9,1000);
     firing_rates=zeros(length(current_range),n_mn);
 
@@ -64,7 +66,6 @@ if useExistingData==0
         end
     end
     % Save data
-    cd '../Figures/'
     if not(isfolder('my_data/'))
         mkdir('my_data/')
     end
@@ -75,7 +76,15 @@ end
 if useReplicationData == 1
     load('replication_data/frequency_current_relation.mat');
 else
+    ref_data = load('replication_data/frequency_current_relation.mat');
     load('my_data/frequency_current_relation.mat');
+    check_val = isApproxEqual(ref_data.firing_rates,firing_rates);
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
+    clear ref_data
 end
 
 % Generate figure
