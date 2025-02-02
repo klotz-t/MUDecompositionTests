@@ -12,7 +12,7 @@ addpath '../Functions/'
 % 0: Run simulation, 1: Plot data
 useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
-useReplicationData=0;
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -158,7 +158,7 @@ hold on;
 scatter(100*sep(1,:),sil,150,'MarkerFaceColor',cmap(1,:),'MarkerEdgeColor',cmap(1,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
-ylim([0.75 1]);
+ylim([0.5 1]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
 ylabel('SIL (n.u.)');
@@ -169,7 +169,7 @@ hold on;
 scatter(100*sep(2,:),sil,150,'MarkerFaceColor',cmap(2,:),'MarkerEdgeColor',cmap(2,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
-ylim([0.75 1]);
+ylim([0.5 1]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
@@ -180,7 +180,7 @@ hold on;
 scatter(100*sep(3,:),sil,150,'MarkerFaceColor',cmap(4,:),'MarkerEdgeColor',cmap(4,:),'MarkerFaceAlpha',0.5)
 hold off;
 xlim([0 100]);
-ylim([0.75 1]);
+ylim([0.5 1]);
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'XTickLabel',[]);
 set(gca,'YTickLabel',[]);
