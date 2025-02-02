@@ -175,18 +175,21 @@ if useExistingData == 0
             decomp_out{idx}(mu_idx,16)=length(find(ST(mu_idx,:) == 1));
         end   
     end
+
+    % Restructure data in one matrix
+    data = [];
+    for i=1:nsim
+        data = cat(1,data,decomp_out{i}); 
+    end
+    if not(isfolder('my_data/'))
+        mkdir('my_data/')
+    end
+    save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
+    return
+    
 end
 
-% Restructure data in one matrix
-data = [];
-for i=1:nsim
-    data = cat(1,data,decomp_out{i}); 
-end
-if not(isfolder('my_data/'))
-    mkdir('my_data/')
-end
-save('my_data/decomp_summary_200runs.mat', 'decomp_out', 'data')
-return
+
 %% Import data for plotting
 if useReplicationData == 1
     load('replication_data/decomp_summary_200runs.mat');

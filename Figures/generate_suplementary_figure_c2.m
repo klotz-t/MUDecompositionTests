@@ -14,7 +14,19 @@ useReplicationData=1;
 if useReplicationData == 1
     load('replication_data/common_spikes_15dB.mat');
 else
-    load('my_data/common_spikes_15dB.mat');
+    % Check if data is consitent with the reference data
+    data1 = load('./replication_data/common_spikes_15dB.mat');
+    data2 = load('./my_data/common_spikes_15dB.mat');
+    check_val = isApproxEqual(data1.SEP, data2.SEP) & ...
+        isApproxEqual(data1.FPR, data2.FPR) & ...
+        isApproxEqual(data1.FNR, data2.FNR);
+    if check_val == 1
+        disp('Simulated data and reference data are identical')
+    else
+        disp('Simulated data and reference data are not identical')
+    end
+    clear data1 data2
+    load('./my_data/common_spikes_15dB.mat')
 end
 
 norm1 = squeeze(wNorm(1,:,:));
