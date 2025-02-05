@@ -1,15 +1,15 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-  - family-names: Klotz
-    given-names: Thomas
-    orcid: https://orcid.org/0000-0002-0503-9815
   - family-names: Rohl{\'e}n
     given-names: Robin
     orcid: https://orcid.org/0000-0003-4328-5467
+  - family-names: Klotz
+    given-names: Thomas
+    orcid: https://orcid.org/0000-0002-0503-9815
 title: "Replication data for Revisiting convolutive blind source separation for identifying spiking motor neuron activity: From theory to practice"
 version: 1.0.0
 identifiers:
   - type: doi
     value: 10.5281/zenodo.14755491
-date-released: 2024-02-05
+date-released: 2025-02-05
