@@ -1,9 +1,12 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-  - family-names: Klotz, Rohlen
-    given-names: Thomas, Robin
-    orcid: 
+  - family-names: Klotz
+    given-names: Thomas
+    orcid: https://orcid.org/0000-0002-0503-9815
+  - family-names: Rohl{\'e}n
+    given-names: Robin
+    orcid: https://orcid.org/0000-0003-4328-5467
 title: "Replication data for Revisiting convolutive blind source separation for identifying spiking motor neuron activity: From theory to practice"
 version: 1.0.0
 identifiers:
