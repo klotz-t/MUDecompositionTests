@@ -13,7 +13,7 @@ out(1)           = max(abs(d1-d2),[],'all');
 out(2)           = norm(d1-d2)/norm(d1);
 % Linear correlation coefficient
 [out(3), out(4)] = corr(d1,d2);
-disp(['The max. absolute error comapred to the reference_data is ', num2str(out(1))])
+disp(['The max. absolute error compared to the reference_data is ', num2str(out(1))])
 disp(['The normalized Euclidian distance to the reference_data is ', num2str(out(2))])
 disp(['The linear correlation with the reference data is ', num2str(out(3)), ' (p=', num2str(out(4)),')'])
 end
