@@ -12,7 +12,7 @@ addpath '../Functions/'
 % 0: Run simulation, 1: Plot data
 useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
-useReplicationData=0;
+useReplicationData=1;
 
 % Set number of motor neurons in the pool
 n_mn=300;
@@ -79,12 +79,10 @@ if useReplicationData == 1
 else
     ref_data = load('replication_data/frequency_current_relation.mat');
     load('my_data/frequency_current_relation.mat');
-    check_val = isApproxEqual(ref_data.firing_rates,firing_rates);
-    if check_val == 1
-        disp('Simulated data and reference data are identical')
-    else
-        disp('Simulated data and reference data are not identical')
-    end
+    % Compare to reference data
+    d1 = ref_data.firing_rates(:);
+    d2 = firing_rates(:);
+    out = compareResults(d1,d2);
     clear ref_data
 end
 

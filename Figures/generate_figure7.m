@@ -115,14 +115,10 @@ else
     % Load data and compare to reference data
     ref_data = load('replication_data/changing_muap.mat');
     load('my_data/changing_muap.mat');
-    check_val = isApproxEqual(ref_data.fnr,fnr) & ...
-        isApproxEqual(ref_data.fpr,fpr) & ...
-        isApproxEqual(ref_data.sep,sep);
-    if check_val == 1
-        disp('Simulated data and reference data are identical')
-    else
-        disp('Simulated data and reference data are not identical')
-    end
+    % Check if data is consitent with the reference data
+    d1 = [ref_data.sep(:); ref_data.fpr(:); ref_data.fnr(:)];
+    d2 = [sep(:); fpr(:); fnr(:)];
+    out = compareResults(d1,d2);
 end
 
 % Compute energy similarity between each spatio-temporal MUAP

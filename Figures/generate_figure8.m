@@ -12,7 +12,7 @@ addpath '../Functions/'
 % 0: Run simulation, 1: Plot data
 useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
-useReplicationData=0;
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -130,11 +130,12 @@ else
     check_val = isApproxEqual(ref_data.c1,c1) & isApproxEqual(ref_data.c50,c50) & ...
         isApproxEqual(ref_data.MU1_norm,MU1_norm) & isApproxEqual(ref_data.MU50_norm,MU50_norm) & ...
         isApproxEqual(ref_data.s1,s1) & isApproxEqual(ref_data.s50,s50);
-    if check_val == 1
-        disp('Simulated data and reference data are identical')
-    else
-        disp('Simulated data and reference data are not identical')
-    end
+    % Check if data is consitent with the reference data
+    d1 = [ref_data.c1(:); ref_data.c50(:); ref_data.MU1_norm(:);...
+        ref_data.MU50_norm(:); ref_data.s1(:); ref_data.s50(:)];
+    d2 = [c1(:); c50(:); MU1_norm(:);...
+        MU50_norm(:); s1(:); s50(:)];
+    out = compareResults(d1,d2);
 end
 
 % Generate figure

@@ -12,7 +12,7 @@ addpath '../Functions/'
 % 0: Run simulation, 1: Plot data
 useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
-useReplicationData=0;
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -102,7 +102,17 @@ end
 if useReplicationData == 1
     load('replication_data/delayed_spike_train.mat') 
 else
-    load('my_data/delayed_spike_train.mat') 
+    ref_data = load('replication_data/delayed_spike_train.mat');
+    load('my_data/delayed_spike_train.mat')
+    check_val = isApproxEqual(ref_data.fnr,fnr) & ...
+        isApproxEqual(ref_data.fpr,fpr) & ...
+        isApproxEqual(ref_data.sep,sep) & ...
+        isApproxEqual(ref_data.whitened_muap_norm,whitened_muap_norm);
+    d1 = [ref_data.sep(:); ref_data.fpr(:); ...
+        ref_data.fnr(:); ref_data.whitened_muap_norm(:)];
+    d2 = [sep(:); fpr(:); ...
+        fnr(:); whitened_muap_norm(:)];
+    out = compareResults(d1,d2);
 end
 
 % Generate figure

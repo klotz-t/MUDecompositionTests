@@ -17,14 +17,10 @@ else
     % Check if data is consitent with the reference data
     data1 = load('./replication_data/common_spikes_15dB.mat');
     data2 = load('./my_data/common_spikes_15dB.mat');
-    check_val = isApproxEqual(data1.SEP, data2.SEP) & ...
-        isApproxEqual(data1.FPR, data2.FPR) & ...
-        isApproxEqual(data1.FNR, data2.FNR);
-    if check_val == 1
-        disp('Simulated data and reference data are identical')
-    else
-        disp('Simulated data and reference data are not identical')
-    end
+    % Check if data is consitent with the reference data
+    d1 = [data1.SEP(:); data1.FPR(:); data1.FNR(:)];
+    d2 = [data2.SEP(:); data2.FPR(:); data2.FNR(:)];
+    out = compareResults(d1,d2);
     clear data1 data2
     load('./my_data/common_spikes_15dB.mat')
 end

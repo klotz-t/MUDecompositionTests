@@ -12,7 +12,7 @@ addpath '../Functions/'
 % 0: Run simulation, 1: Plot data
 useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
-useReplicationData=0;
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -48,7 +48,7 @@ if useExistingData==0
         es=zeros(length(spat_transl_vec),length(scale_factor_vec));
 
         for i=1:length(spat_transl_vec)
-            parfor j=1:length(scale_factor_vec)
+            for j=1:length(scale_factor_vec)
                 disp(['i: ',num2str(i),'/',num2str(length(spat_transl_vec)),' j: ',num2str(j),'/',num2str(length(scale_factor_vec))]);
 
                 % Set up MUAPs vector
@@ -124,20 +124,15 @@ else
     ref_data10db=load('replication_data/similar_muaps_10dB.mat');
     data20db=load('my_data/similar_muaps_20dB.mat');
     data10db=load('my_data/similar_muaps_10dB.mat');
-    % 
-    TOL = 5e-3;
-    check_val = isApproxEqual(ref_data10db.sep, data10db.sep,TOL) & ...
-        isApproxEqual(ref_data20db.sep, data20db.sep,TOL) & ...
-        isApproxEqual(ref_data10db.fpr, data10db.fpr,TOL) & ...
-        isApproxEqual(ref_data20db.fpr, data20db.fpr,TOL) & ...
-        isApproxEqual(ref_data10db.fnr, data10db.fnr,TOL) & ...
-        isApproxEqual(ref_data20db.fnr, data20db.fnr,TOL);
-    if check_val == 1
-        disp('Simulated data and reference data are identical')
-    else
-        disp('Simulated data and reference data are not identical')
-    end
-    clear ref_data10db ref_data20db
+    % Check if data is consitent with the reference data
+    d1 = [ref_data10db.sep(:); ref_data20db.sep(:); ...
+        ref_data10db.fpr(:); ref_data20db.fpr(:); ...
+        ref_data10db.fnr(:); ref_data20db.fnr(:)];
+    d2 = [data10db.sep(:); data20db.sep(:); ...
+        data10db.fpr(:); data20db.fpr(:); ...
+        data10db.fnr(:); data20db.fnr(:)];
+    out = compareResults(d1,d2);
+    clear ref_data10db ref_data20db d1 d2
 end
 
 % Generate figure
