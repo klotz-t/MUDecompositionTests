@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Klotz, Rohlen
+    given-names: Thomas, Robin
+    orcid: 
+title: "Replication data for Revisiting convolutive blind source separation for identifying spiking motor neuron activity: From theory to practice"
+version: 1.0.0
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.14755491
+date-released: 2024-02-05
