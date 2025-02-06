@@ -316,6 +316,42 @@ title('SIL > 0.9 (column normalized)')
 set(gcf,'color','w');
 set(gca,'FontSize',12);
 
+%% Skewness
+th = 1.0;
+true_class = data(:,4) < 0.1 & data(:,5)<0.1;
+pred_class = data(:,14) > th;
+
+C = confusionmat(true_class,pred_class);
+
+figure(1001)
+subplot(1,2,1), confusionchart(C,{'ND','D'},'Normalization','row-normalized','GridVisible','off','XLabel','')
+title('Skew > 0.9 (row normalized)')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
+%
+subplot(1,2,2), confusionchart(C,{'ND','D'},'Normalization','column-normalized','GridVisible','off')
+title('Skew > 0.9 (column normalized)')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
+
+%% Kurtosis
+th = 7.5;
+true_class = data(:,4) < 0.1 & data(:,5)<0.1;
+pred_class = data(:,15) > th;
+
+C = confusionmat(true_class,pred_class);
+
+figure(1002)
+subplot(1,2,1), confusionchart(C,{'ND','D'},'Normalization','row-normalized','GridVisible','off','XLabel','')
+title('Kurt > 0.9 (row normalized)')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
+%
+subplot(1,2,2), confusionchart(C,{'ND','D'},'Normalization','column-normalized','GridVisible','off')
+title('Kurt > 0.9 (column normalized)')
+set(gcf,'color','w');
+set(gca,'FontSize',12);
+
 
 
 
