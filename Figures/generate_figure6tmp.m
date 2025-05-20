@@ -34,8 +34,8 @@ noise_vec = [15, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
     18.14, 25.14, 17.21, 16.41, 18.94, 15.8432787781082];
 
 % Vector of coefficient of variations for the common and independent noise (%)
-CCoV_vec=10:5:60;
-ICoV_vec=0:2:20;
+CCoV_vec=10:10:60;
+ICoV_vec=0:4:20;
 
 all_SEP = cell(length(active_pool),1);
 all_FPR = cell(length(active_pool),1);
