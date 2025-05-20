@@ -100,6 +100,8 @@ clearvars data1 data2 RT_unsort muap_unsort sortInd
 % If false, always draw MUAPs in a fixed order
 if rand_seed == false
     rng(1,'twister')
+elseif isnumeric(rand_seed)
+    rng(rand_seed, 'twister')
 end
 
 % Select which of the MUAPs to include in the pool
