@@ -109,6 +109,14 @@ if useExistingData==0
     
                     % Reconstruction
                     sig=w'*wSIG;
+
+                    if CCoV == 10 && ICoV==15 && mu_idx==1
+                        ex_sig1 = sig;
+                        [TP1, FP1] = match_spikes(sig, spike_times{mu_idx});
+                    elseif CCoV == 50 && ICoV==15 && mu_idx==1
+                        ex_sig2 = sig;
+                        [TP2, FP2] = match_spikes(sig, spike_times{mu_idx});
+                    end
                     
                     % Compute the cosine similarity of the most similar
                     % extended and whitened MUAP
@@ -138,6 +146,66 @@ if useExistingData==0
     end
 end
 
+%%
+%% Exampe spike trains
+rng(0)
+
+CCoV_vec = [0, 50];
+sources = zeros(length(CCoV_vec), 122880);
+matched_idx = cell(length(CCoV_vec),1);
+unmatched_idx = cell(length(CCoV_vec),1);
+
+
+noise_dB = 15;
+I=7e-9; % 7 nA input current
+
+for i=1:length(CCoV_vec)
+    CCoV = CCoV_vec(i);
+    ICoV = 15;
+    [spike_times,time_param,~,CI]=generate_spike_trains(I,CCoV,ICoV);
+    spike_times = spike_times(1:58);
+    
+    % Generate EMG signals
+    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
+    
+    % Select 64 out of 256 channels
+    data=data(65:128,:);
+    sig_noise=sig_noise(65:128,:);
+    data_unfilt=data_unfilt(65:128,:);
+    
+    % Set extension factor
+    R=16;
+    
+    % Extend
+    eSIG = extension(data,R);
+    
+    % Whiten data
+    [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+    
+    mu_idx = 1;
+    w = muap{mu_idx}(65:128,:);
+    w = extension(w,R);
+    w = whitening_matrix * w;
+    
+    % Reconstruction
+    sig=w'*wSIG;
+    
+    % Select the source with highest skewness
+    save_skew=zeros(1,size(sig,1));
+    for ind=1:size(sig,1)
+        save_skew(ind)=skewness(sig(ind,:));
+    end
+    [~,maxInd]=max(save_skew);
+    w = w(:,maxInd);
+    w = w./norm(w);
+    
+    % Reconstruction
+    sources(i,:) = w'*wSIG;
+
+    [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{1});
+
+end
+
 
 %% Generate Figure
 
@@ -154,13 +222,16 @@ else
     clear data1 data2 d1 d2
     load('./my_data/common_spikes_15dB.mat')
 end
-
+%%
 sep1 = squeeze(SEP(1,:,:));
 fpr1 = squeeze(FPR(1,:,:));
 fnr1 = squeeze(FNR(1,:,:));
-sep2 = squeeze(SEP(2,:,:));
-fpr2 = squeeze(FPR(2,:,:));
-fnr2 = squeeze(FNR(2,:,:));
+wnorm1 = squeeze(wNorm(1,:,:));
+
+t_vec = linspace(0,length(sources)/fs, length(sources));
+% sep2 = squeeze(SEP(2,:,:));
+% fpr2 = squeeze(FPR(2,:,:));
+% fnr2 = squeeze(FNR(2,:,:));
 
 % Define color maps
 mymap = zeros(3,101);
@@ -179,72 +250,88 @@ mymap2(3,61:end) = linspace(1,0.7412,41);
 mymap2(2,61:end) = linspace(1,0.4471,41);
 mymap2(1,61:end) = linspace(1,0,41);
 
+cmap=lines(4);
+
 
 t=tiledlayout(2,3);
 set(gcf,'units','points','position',[229,62,1459,893])
 
 ax1 = nexttile;
+hold on
+plot(t_vec, sources(1,:))
+plot(t_vec(matched_idx{1}),sources(1,matched_idx{1}), 'o', 'MarkerFaceColor', cmap(2,:), 'MarkerEdgeColor', cmap(2,:)) 
+plot(t_vec(unmatched_idx{1}),sources(1,unmatched_idx{1}), 'o', 'MarkerFaceColor', cmap(3,:), 'MarkerEdgeColor', cmap(3,:))
+yline(median(sources(1,matched_idx{1})),'--')
+yline(median(sources(1,unmatched_idx{1})),'--')
+hold off
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+ylabel('Amplitude (-)');
+%xlabel('Time Sample')
+title({'CCoV=0%, ICoV=15%'; '#MU1'},'FontWeight','normal');
+xlim([30 40])
+ylim([-4 10])
+%xticks(0:5:20);
+
+ax2 = nexttile;
 imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep1,4));
 colorbar;
 clim([35 60])
-colormap(ax1,mymap2')
+colormap(ax2,mymap2')
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 ylabel('Common CoV noise (%)');
 title({'Separability metric (%)';'MU #1'},'FontWeight','normal');
 xticks(0:5:20);
 
-ax2 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr1,4));
-clim([0 50])
-colorbar;
-colormap(ax2,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False positive rate (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
 ax3 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr1,4));
+imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr1,4));
 clim([0 50])
 colorbar;
 colormap(ax3,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 set(gca,'YTickLabel',[]);
-title({'False negative rate (%)';'MU #1'},'FontWeight','normal');
+title({'False positive rate (%)';'MU #1'},'FontWeight','normal');
 xticks(0:5:20);
 
 ax4 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep2,4));
+hold on
+plot(t_vec,sources(2,:))
+plot(t_vec(matched_idx{2}),sources(2,matched_idx{2}), 'o', 'MarkerFaceColor', cmap(2,:), 'MarkerEdgeColor', cmap(2,:)) 
+plot(t_vec(unmatched_idx{2}),sources(2,unmatched_idx{2}), 'o', 'MarkerFaceColor', cmap(3,:), 'MarkerEdgeColor', cmap(3,:))
+yline(median(sources(2,matched_idx{2})),'--')
+yline(median(sources(2,unmatched_idx{2})),'--')
+hold off
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+ylabel('Amplitude (-)');
+xlabel('Time (s)')
+xlim([30 40])
+ylim([-4 10])
+title({'CCoV=50%, ICoV=15%'; '#MU1'},'FontWeight','normal');
+%xticks(0:5:20);
+
+ax5 = nexttile;
+imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],interp2(wnorm1,4));
 colorbar;
-clim([35 60])
-colormap(ax4,mymap2')
+clim([4 6])
+colormap(ax5,mymap2')
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xlabel('Independent CoV noise (%)');
 ylabel('Common CoV noise (%)');
-title('MU #24','FontWeight','normal');
-xticks(0:5:20);
-
-ax5 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr2,4));
-clim([0 50])
-colorbar;
-colormap(ax5,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-set(gca,'YTickLabel',[]);
-title('MU #24','FontWeight','normal');
+title({'Whitened MUAP norm';'MU #1'},'FontWeight','normal');
 xticks(0:5:20);
 
 ax6 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr2,4));
+imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr1,4));
 clim([0 50])
 colorbar;
 colormap(ax6,flip(mymap'))
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
 set(gca,'YTickLabel',[]);
-title('MU #24','FontWeight','normal');
+title({'False negative rate (%)';'MU #1'},'FontWeight','normal');
+xlabel('Independent CoV noise (%)');
 xticks(0:5:20);
+
+
+
 
 t.TileSpacing='compact';
 t.Padding='compact';
