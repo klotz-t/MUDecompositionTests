@@ -68,6 +68,7 @@ else
     try
         changing_muap=changing_muap_vec(1);
         MU1=changing_muap_vec(2);
+        changing_type = changing_muap_vec(3); 
     catch
         error('Incorrect changing_muap input')
     end
@@ -123,7 +124,13 @@ end
 % If study non-stationary: randomly select MUAPs from interpolated grid
 if changing_muap==1
     muap_var={};
-    amp_vary=randi(13,1,length(time_param.T));
+
+    if changing_type == 0
+        amp_vary=randi(13,1,length(time_param.T));
+    else
+        amp_vary=floor(linspace(1,13,length(time_param.T)));
+    end
+
     for i=min(amp_vary):max(amp_vary)
         muap_tmp=interp_muap_grid(muap{MU1},1);
         muap_tmp=muap_tmp([1:4:4*13],i+[1:4:4*5],:);
