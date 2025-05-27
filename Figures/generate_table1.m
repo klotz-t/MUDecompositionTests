@@ -151,112 +151,27 @@ end
 
 
 
-%% Generate Figure
+%% Generate Table
 
-% Load the data and select MUs to be visualised
-if useReplicationData == 1
-    load('./replication_data/common_spikes_15dB.mat')
-else
-    % Check if data is consitent with the reference data
-    data1 = load('./replication_data/common_spikes_15dB.mat');
-    data2 = load('./my_data/common_spikes_15dB.mat');
-    d1 = [data1.SEP(:); data1.FPR(:); data1.FNR(:)];
-    d2 = [data2.SEP(:); data2.FPR(:); data2.FNR(:)];
-    out = compareResults(d1,d2);
-    clear data1 data2 d1 d2
-    load('./my_data/common_spikes_15dB.mat')
+fprs = zeros(21,7,4);
+es_vals = zeros(21,7,4);
+rel_amps = zeros(21,7,4);
+for i=1:21
+    fprs(i,:,:) = all_FPR{i};
+    rel_amps(i,:,:) = all_amp{i};
+    es_vals(i,:,:) = all_es{i};
 end
+fprs = reshape(fprs,[],1);
+rel_amps = reshape(rel_amps,[],1);
+es_vals = reshape(es_vals,[],1);
 
-sep1 = squeeze(SEP(1,:,:));
-fpr1 = squeeze(FPR(1,:,:));
-fnr1 = squeeze(FNR(1,:,:));
-sep2 = squeeze(SEP(2,:,:));
-fpr2 = squeeze(FPR(2,:,:));
-fnr2 = squeeze(FNR(2,:,:));
+idx = find(fprs < 0.1);
 
-% Define color maps
-mymap = zeros(3,101);
-mymap(1,1:81) = linspace(0.8510,1,81);
-mymap(2,1:81) = linspace(0.3255,1,81); 
-mymap(3,1:81) = linspace(0.0980,1,81); 
-mymap(3,81:end) = linspace(1,0.7412,21);
-mymap(2,81:end) = linspace(1,0.4471,21);
-mymap(1,81:end) = linspace(1,0,21);
+xedge = [0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 1];
+yedge = [0, 0.1, 0.2, 0.3, 0.4, 1];
 
-mymap2 = zeros(3,101);
-mymap2(1,1:61) = linspace(0.8510,1,61);
-mymap2(2,1:61) = linspace(0.3255,1,61); 
-mymap2(3,1:61) = linspace(0.0980,1,61); 
-mymap2(3,61:end) = linspace(1,0.7412,41);
-mymap2(2,61:end) = linspace(1,0.4471,41);
-mymap2(1,61:end) = linspace(1,0,41);
+[N,Xedges,Yedges] = histcounts2(es_vals(idx), rel_amps(idx), xedge, yedge);
 
+table_vals = cumsum(N,1);
+table_vals = round((cumsum(table_vals,2)./length(idx))',3).*100
 
-t=tiledlayout(2,3);
-set(gcf,'units','points','position',[229,62,1459,893])
-
-ax1 = nexttile;
-imagesc([scale_fac_vec(1) scale_fac_vec(end)],[space_trans_vec(1) space_trans_vec(end)],100*interp2(sep1,4));
-colorbar;
-clim([35 60])
-colormap(ax1,mymap2')
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-ylabel('Common CoV noise (%)');
-title({'Separability metric (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-ax2 = nexttile;
-imagesc([scale_fac_vec(1) scale_fac_vec(end)],[space_trans_vec(1) space_trans_vec(end)],100*interp2(fpr1,4));
-clim([0 50])
-colorbar;
-colormap(ax2,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False positive rate (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-ax3 = nexttile;
-imagesc([scale_fac_vec(1) scale_fac_vec(end)],[space_trans_vec(1) space_trans_vec(end)],100*interp2(fnr1,4));
-clim([0 50])
-colorbar;
-colormap(ax3,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False negative rate (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-ax4 = nexttile;
-imagesc([scale_fac_vec(1) scale_fac_vec(end)],[space_trans_vec(1) space_trans_vec(end)],100*interp2(sep2,4));
-colorbar;
-clim([35 60])
-colormap(ax4,mymap2')
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-ylabel('Common CoV noise (%)');
-title('MU #24','FontWeight','normal');
-xticks(0:5:20);
-
-ax5 = nexttile;
-imagesc([scale_fac_vec(1) scale_fac_vec(end)],[space_trans_vec(1) space_trans_vec(end)],100*interp2(fpr2,4));
-clim([0 50])
-colorbar;
-colormap(ax5,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-set(gca,'YTickLabel',[]);
-title('MU #24','FontWeight','normal');
-xticks(0:5:20);
-
-ax6 = nexttile;
-imagesc([scale_fac_vec(1) scale_fac_vec(end)],[space_trans_vec(1) space_trans_vec(end)],100*interp2(fnr2,4));
-clim([0 50])
-colorbar;
-colormap(ax6,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-set(gca,'YTickLabel',[]);
-title('MU #24','FontWeight','normal');
-xticks(0:5:20);
-
-t.TileSpacing='compact';
-t.Padding='compact';
