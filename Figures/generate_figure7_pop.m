@@ -44,6 +44,8 @@ amp =zeros(length(mean_drive)*10, length(nl_range));
 
 idx = 1;
 
+job_idx = 1;
+
 if useExistingData==0
 
     for sub_idx=1:length(mean_drive)
@@ -129,6 +131,9 @@ if useExistingData==0
                 es1(idx,range_idx)=energy_similarity1;
                 es2(idx,range_idx)=energy_similarity2;
                 amp(idx,range_idx)=rms(muap_i,'all')./rms_sig;
+
+                disp(['finished_job ', num2str(job_idx)])
+                job_idx = job_idx + 1;
             end
             idx = idx + 1;
         end
