@@ -112,6 +112,9 @@ select_muaps=sort(randsample(size(muap,2),n_mn))';
 RT=RT(select_muaps);
 muap=muap(select_muaps);
 
+% Pre-define the matrix with EMG signals
+data=zeros(size(muap{1},1),size(t,2));
+
 % If study similar MUAPs: Replace MU1 with MU2
 if similar_muaps==1
     muap_tmp=interp_muap_grid(muap{MU2},1);
@@ -147,9 +150,6 @@ if changing_muap==1
     end
     muap{MU1}=muap_var;
 end
-
-% Pre-define the matrix with EMG signals
-data=zeros(size(muap{1},1),size(t,2));
 
 % Loop through each motoneuron
 for i=1:size(spike_times,2)    
