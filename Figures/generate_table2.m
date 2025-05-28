@@ -170,112 +170,28 @@ end
 
 
 
-%% Generate Figure
+%% Generate Table
 
-% Load the data and select MUs to be visualised
-if useReplicationData == 1
-    load('./replication_data/common_spikes_15dB.mat')
-else
-    % Check if data is consitent with the reference data
-    data1 = load('./replication_data/common_spikes_15dB.mat');
-    data2 = load('./my_data/common_spikes_15dB.mat');
-    d1 = [data1.SEP(:); data1.FPR(:); data1.FNR(:)];
-    d2 = [data2.SEP(:); data2.FPR(:); data2.FNR(:)];
-    out = compareResults(d1,d2);
-    clear data1 data2 d1 d2
-    load('./my_data/common_spikes_15dB.mat')
+load my_data/common_spikes_pop.mat
+
+for i=1:21 
+    n_mu(i,:,:) = squeeze(sum(all_FPR{i} < 0.1,1)); 
+end
+p10=squeeze(prctile(n_mu,10,1));
+p50=squeeze(prctile(n_mu,50,1));
+p90=squeeze(prctile(n_mu,90,1));
+
+tab_data = cell(6,6);
+
+for i=1:6
+    for j=1:6
+        tab_data{i,j} = [p10(i,j), p50(i,j), p90(i,j)];
+    end
 end
 
-sep1 = squeeze(SEP(1,:,:));
-fpr1 = squeeze(FPR(1,:,:));
-fnr1 = squeeze(FNR(1,:,:));
-sep2 = squeeze(SEP(2,:,:));
-fpr2 = squeeze(FPR(2,:,:));
-fnr2 = squeeze(FNR(2,:,:));
-
-% Define color maps
-mymap = zeros(3,101);
-mymap(1,1:81) = linspace(0.8510,1,81);
-mymap(2,1:81) = linspace(0.3255,1,81); 
-mymap(3,1:81) = linspace(0.0980,1,81); 
-mymap(3,81:end) = linspace(1,0.7412,21);
-mymap(2,81:end) = linspace(1,0.4471,21);
-mymap(1,81:end) = linspace(1,0,21);
-
-mymap2 = zeros(3,101);
-mymap2(1,1:61) = linspace(0.8510,1,61);
-mymap2(2,1:61) = linspace(0.3255,1,61); 
-mymap2(3,1:61) = linspace(0.0980,1,61); 
-mymap2(3,61:end) = linspace(1,0.7412,41);
-mymap2(2,61:end) = linspace(1,0.4471,41);
-mymap2(1,61:end) = linspace(1,0,41);
+table2=cell2table(tab_data,...
+    'RowNames',{'CCoV=10%', 'CCoV=20%', 'CCoV=30%', 'CCoV=40%', 'CCoV=50%', 'CCoV=60%'}, ...
+    'VariableNames',{'ICoV=0%', 'ICoV=4%', 'ICoV=8%', 'ICoV=12%', 'ICoV=16%', 'ICoV=20%'})
 
 
-t=tiledlayout(2,3);
-set(gcf,'units','points','position',[229,62,1459,893])
 
-ax1 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep1,4));
-colorbar;
-clim([35 60])
-colormap(ax1,mymap2')
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-ylabel('Common CoV noise (%)');
-title({'Separability metric (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-ax2 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr1,4));
-clim([0 50])
-colorbar;
-colormap(ax2,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False positive rate (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-ax3 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr1,4));
-clim([0 50])
-colorbar;
-colormap(ax3,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False negative rate (%)';'MU #1'},'FontWeight','normal');
-xticks(0:5:20);
-
-ax4 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(sep2,4));
-colorbar;
-clim([35 60])
-colormap(ax4,mymap2')
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-ylabel('Common CoV noise (%)');
-title('MU #24','FontWeight','normal');
-xticks(0:5:20);
-
-ax5 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fpr2,4));
-clim([0 50])
-colorbar;
-colormap(ax5,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-set(gca,'YTickLabel',[]);
-title('MU #24','FontWeight','normal');
-xticks(0:5:20);
-
-ax6 = nexttile;
-imagesc([ICoV_vec(1) ICoV_vec(end)],[CCoV_vec(1) CCoV_vec(end)],100*interp2(fnr2,4));
-clim([0 50])
-colorbar;
-colormap(ax6,flip(mymap'))
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Independent CoV noise (%)');
-set(gca,'YTickLabel',[]);
-title('MU #24','FontWeight','normal');
-xticks(0:5:20);
-
-t.TileSpacing='compact';
-t.Padding='compact';

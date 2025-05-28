@@ -173,5 +173,9 @@ yedge = [0, 0.1, 0.2, 0.3, 0.4, 1];
 [N,Xedges,Yedges] = histcounts2(es_vals(idx), rel_amps(idx), xedge, yedge);
 
 table_vals = cumsum(N,1);
-table_vals = round((cumsum(table_vals,2)./length(idx))',3).*100
+table_vals = round((cumsum(table_vals,2)./length(idx))',3).*100;
+
+table1 = array2table(table_vals,...
+    'RowNames',{'Amplitude <10%', 'Amplitude <20%', 'Amplitude <30%', 'Amplitude <40%', 'Amplitude <100%'},...
+    'VariableNames',{'ES < 2.5%', 'ES < 5%', 'ES < 7.5%', 'ES < 10%', 'ES < 15%', 'ES < 20%', 'ES < 100%'})
 
