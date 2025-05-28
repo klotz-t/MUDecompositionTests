@@ -34,7 +34,7 @@ if useExistingData==0
 
     % Set up param vector for non-stationary spatio-temporal MUAP
     similar_muaps_vec=[0 MU1 MU1+1 0 1];
-    changing_muap_vec=[1 MU1 0];
+    changing_muap_vec=[1 MU1 0 13 1];
     % Generate EMG signals
     [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec,changing_muap_vec,CI);
 
