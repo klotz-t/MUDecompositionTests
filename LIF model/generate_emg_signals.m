@@ -70,7 +70,8 @@ else
         MU1=changing_muap_vec(2);
         changing_type = changing_muap_vec(3);
         spat_transl_range = changing_muap_vec(4);
-        scale_muap = changing_muap_vec(5);
+        center_idx = changing_muap_vec(5);
+        scale_muap = changing_muap_vec(6);
     catch
         error('Incorrect changing_muap input')
     end
@@ -141,8 +142,9 @@ if changing_muap==1
     end
 
     for i=min(amp_vary):max(amp_vary)
+        offset_idx = -floor(spat_transl_range/2)+center_idx;
         muap_tmp=interp_muap_grid(muap{MU1},1);
-        muap_tmp=muap_tmp(i+[1:4:4*13],[1:4:4*5],:);
+        muap_tmp=muap_tmp(offset_idx+i+[1:4:4*13],[1:4:4*5],:);
         muap_tmp_vec=muap_vectorise(rot90(rot90(muap_tmp)));
 
         muap_var{i}=zeros(size(muap{MU1}));
