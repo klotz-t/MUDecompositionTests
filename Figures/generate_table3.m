@@ -53,6 +53,7 @@ parpool('local',9)
 
 if useExistingData==0
     for sub_idx=1:length(mean_drive)
+        disp(['Model configuration ', num2str(sub_idx), ' out of ', num2str(length(mean_drive))])
 
         noise_dB = noise_vec(sub_idx);
         MU1 = ref_MU(sub_idx);
@@ -104,7 +105,7 @@ if useExistingData==0
         
                 rms_sig = rms(data_unfilt,'all');
             
-                idx2 = ceil(nl_range(j)/2);
+                idx2 = ceil(nl_range_vec(j)/2);
     
                 % Compute MU filter
                 muap_i = muap{MU1}{idx2}(65:128,:);
@@ -132,7 +133,7 @@ if useExistingData==0
                 [~,energy_similarity1]=compute_cosine_similarity(mean_muap,muap{MU1}{i}(65:128,:));
                 energy_similarity2 = 0;
                 corr_val = 1;
-                for muap_idx=1:nl_range(range_idx)
+                for muap_idx=1:nl_range_vec(j)
                     [~,tmp_similarity]=compute_cosine_similarity(muap{MU1}{muap_idx}(65:128,:),muap{MU1}{i}(65:128,:));
                     tmp_corr = max(xcorr(reshape(muap{MU1}{muap_idx}(65:128,:),[],1), reshape(muap{MU1}{i}(65:128,:),[],1),'normalized'));
                     if tmp_similarity > energy_similarity2
