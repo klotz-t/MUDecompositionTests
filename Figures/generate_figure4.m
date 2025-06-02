@@ -21,6 +21,10 @@ I=10e-9;
 % Set the signal-to-noise ratio (dB)
 noise_dB=20;
 
+% Set common and independent noises (%)
+CCoV=30;
+ICoV=3;
+
 % Set extension factor
 R=16;
 
@@ -31,7 +35,7 @@ i=105;
 random_seed = true;
 
 % Generate motor neuron spike trains
-[spike_times,time_param,membr_param,CI]=generate_spike_trains(I);
+[spike_times,time_param,membr_param,CI]=generate_spike_trains(I,CCoV,ICoV);
 disp(['The number of active MUs is: ', num2str(length(spike_times))])
 
 % Generate EMG signals
@@ -99,6 +103,16 @@ time_win=[5 55];
 
 nexttile;
 hold on;
+plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG);
+hold off;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
+xlim(time_win);
+xticks(time_win(1):10:time_win(2));
+set(gca,'XTickLabel',[]);
+title('MU filter applied to the EMG signal (sum of all terms)','FontWeight','normal');
+
+nexttile;
+hold on;
 plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
@@ -124,17 +138,7 @@ hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim(time_win);
 xticks(time_win(1):10:time_win(2));
-set(gca,'XTickLabel',[]);
 title('MU filter applied to the additive noise signal','FontWeight','normal');
-
-nexttile;
-hold on;
-plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG);
-hold off;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
-xlim(time_win);
-xticks(time_win(1):10:time_win(2));
-title('MU filter applied to the EMG signal (sum of all terms)','FontWeight','normal');
 xlabel('Time (s)');
 
 t.TileSpacing='compact';
@@ -143,31 +147,31 @@ t.Padding='compact';
 % Make zoomed-in figures
 figure(2);set(gcf,'units','points','position',[781,458,337,306])
 hold on;
-plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU,'LineWidth',1.5);
+plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG,'LineWidth',1.5);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
-xlim([27.97 28.09])%xlim([28.37 28.57]);
+xlim([41.9 43.4]);
 set(gca,'visible','off');
 
 figure(3);set(gcf,'units','points','position',[781,458,337,306])
 hold on;
-plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wPy,'LineWidth',1.5);
+plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wMU,'LineWidth',1.5);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
-xlim([16.5 18.0]);
+xlim([38.93 39.05])%xlim([28.37 28.57]);
 set(gca,'visible','off');
 
 figure(4);set(gcf,'units','points','position',[781,458,337,306])
 hold on;
-plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG,'LineWidth',1.5);
+plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wPy,'LineWidth',1.5);
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
-xlim([16.5 18.0]);
+xlim([41.9 43.4]);
 set(gca,'visible','off');
 
 %% Calculations for paper
 %  Construct the extended and whitened mixing matrix
-wp = muap{1}(65:128,:);
+wp = muap{i}(65:128,:);
 wp = extension2(wp,R);
 H = wp;
 for idx2=2:length(spike_times)
