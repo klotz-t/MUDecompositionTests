@@ -71,6 +71,7 @@ if useExistingData==0
         corr = zeros(length(nl_range_vec), length(scale_fac_vec));
 
         for i=1:length(scale_fac_vec)
+            disp(['i: ',num2str(i),'/',num2str(length(scale_fac_vec))]);
             scale_factor = scale_fac_vec(i);
             parfor j=1:length(nl_range_vec)
                 %disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
@@ -86,8 +87,8 @@ if useExistingData==0
 
                 % Compute mean MUAP
                 muap_stacked=zeros(64,size(muap{MU1}{1},2),size(muap{MU1},2));
-                for ind=1:size(muap{MU1},2)
-                    muap_stacked(:,:,ind)=muap{MU1}{ind}(65:128,:);
+                for delay_idx=1:size(muap{MU1},2)
+                    muap_stacked(:,:,delay_idx)=muap{MU1}{delay_idx}(65:128,:);
                 end
                 mean_muap=mean(muap_stacked,3);
             
@@ -105,10 +106,11 @@ if useExistingData==0
         
                 rms_sig = rms(data_unfilt,'all');
             
-                idx2 = ceil(nl_range_vec(j)/2);
+                % Get the representative MUAP
+                k = ceil(nl_range_vec(j)/2);
     
                 % Compute MU filter
-                muap_i = muap{MU1}{idx2}(65:128,:);
+                muap_i = muap{MU1}{k}(65:128,:);
                 w = muap_i;
                 w = extension(w,R);
                 w = whitening_matrix * w;
@@ -118,8 +120,8 @@ if useExistingData==0
         
                 % Select the source with highest skewness
                 save_skew=zeros(1,size(sig,1));
-                for ind=1:size(sig,1)
-                    save_skew(ind)=skewness(sig(ind,:));
+                for delay_idx=1:size(sig,1)
+                    save_skew(delay_idx)=skewness(sig(delay_idx,:));
                 end
                 [~,maxInd]=max(save_skew);
                 w = w(:,maxInd);
@@ -130,12 +132,12 @@ if useExistingData==0
         
                 % Compute separability and MUAP similarity metrics
                 tmp=separability_metric(sig,spike_times{MU1});
-                [~,energy_similarity1]=compute_cosine_similarity(mean_muap,muap{MU1}{i}(65:128,:));
+                [~,energy_similarity1]=compute_cosine_similarity(mean_muap,muap{MU1}{k}(65:128,:));
                 energy_similarity2 = 0;
                 corr_val = 1;
                 for muap_idx=1:nl_range_vec(j)
-                    [~,tmp_similarity]=compute_cosine_similarity(muap{MU1}{muap_idx}(65:128,:),muap{MU1}{i}(65:128,:));
-                    tmp_corr = max(xcorr(reshape(muap{MU1}{muap_idx}(65:128,:),[],1), reshape(muap{MU1}{i}(65:128,:),[],1),'normalized'));
+                    [~,tmp_similarity]=compute_cosine_similarity(muap{MU1}{muap_idx}(65:128,:),muap{MU1}{k}(65:128,:));
+                    tmp_corr = max(xcorr(reshape(muap{MU1}{muap_idx}(65:128,:),[],1), reshape(muap{MU1}{k}(65:128,:),[],1),'normalized'));
                     if tmp_similarity > energy_similarity2
                         energy_similarity2 = tmp_similarity;
                     end
@@ -193,15 +195,15 @@ fprs = reshape(fprs,[],1);
 rel_amps = reshape(rel_amps,[],1);
 es_vals = reshape(es_vals,[],1);
 
-idx = find(fprs < 0.1);
+k = find(fprs < 0.1);
 
 xedge = [0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 1];
 yedge = [0, 0.1, 0.2, 0.3, 0.4, 1];
 
-[N,Xedges,Yedges] = histcounts2(es_vals(idx), rel_amps(idx), xedge, yedge);
+[N,Xedges,Yedges] = histcounts2(es_vals(k), rel_amps(k), xedge, yedge);
 
 table_vals = cumsum(N,1);
-table_vals = round((cumsum(table_vals,2)./length(idx))',3).*100;
+table_vals = round((cumsum(table_vals,2)./length(k))',3).*100;
 
 table1 = array2table(table_vals,...
     'RowNames',{'Amplitude <10%', 'Amplitude <20%', 'Amplitude <30%', 'Amplitude <40%', 'Amplitude <100%'},...
