@@ -36,7 +36,7 @@ noise_vec = [15, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
 % Vector of coefficient of variations for the common and independent noise (%)
 nl_range_vec=[1 5 7 9 11 13 15 17 19];
 %nl_range = [1 5 7 9 11 13 15 17];
-scale_fac_vec=[0.25 0.5 0.75 1.0];
+scale_fac_vec=0.2:0.2:2;
 
 all_SEP = cell(length(ref_MU),1);
 all_FPR = cell(length(ref_MU),1);
@@ -216,5 +216,5 @@ table_vals = fliplr(table_vals);
 
 table1 = array2table(table_vals,...
     'RowNames',{'Amplitude <10%', 'Amplitude <20%', 'Amplitude <30%', 'Amplitude <40%', 'Amplitude <100%'},...
-    'VariableNames',{'ES < 100%', 'ES < 20%', 'ES < 15%', 'ES < 10%', 'ES < 7.5%', 'ES < 5%', 'ES < 2.5%'})
+    'VariableNames',{'ES > 20%', 'ES > 15%', 'ES > 10%', 'ES > 7.5%', 'ES > 5%', 'ES > 2.5%', 'ES > 0%'})
 
