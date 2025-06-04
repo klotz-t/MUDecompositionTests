@@ -35,7 +35,7 @@ noise_vec = [15, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
 
 % Vector of coefficient of variations for the common and independent noise (%)
 space_trans_vec=[3,4,5,6,7,8,10];
-scale_fac_vec=[0.25 0.5 0.75 1.0];
+scale_fac_vec=0.2:0.2:2;
 
 all_SEP = cell(length(ref_MU),1);
 all_FPR = cell(length(ref_MU),1);
@@ -47,6 +47,8 @@ all_es = cell(length(ref_MU),1);
 MU1 = 1;
 
 job_idx = 1;
+
+parpool('local',10)
 
 if useExistingData==0
     for sub_idx=1:length(mean_drive)
@@ -66,11 +68,11 @@ if useExistingData==0
         es  = zeros(length(space_trans_vec), length(scale_fac_vec));
 
         for i=1:length(space_trans_vec)
-            for j=1:length(scale_fac_vec)
+            spat_transl=space_trans_vec(i);
+            parfor j=1:length(scale_fac_vec)
                 %disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
 
                 % Set up MUAPs vector
-                spat_transl=space_trans_vec(i);
                 scale_factor=scale_fac_vec(j);
                 similar_muaps_vec=[1 MU1 MU2 spat_transl scale_factor];
                 
@@ -124,8 +126,8 @@ if useExistingData==0
                 es(i,j)=energy_similarity;
 
 
-                disp(['finished_job ', num2str(job_idx)])
-                job_idx = job_idx + 1;
+                %disp(['finished_job ', num2str(job_idx)])
+                %job_idx = job_idx + 1;
             end
         end
         all_SEP{sub_idx} = SEP;
