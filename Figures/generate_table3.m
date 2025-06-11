@@ -184,10 +184,10 @@ load my_data/changing_muaps_pop.mat
 
 %% Generate Table
 
-fprs = zeros(21,9,4);
-es_vals = zeros(21,9,4);
-rel_amps = zeros(21,9,4);
-corr_vals = zeros(21,9,4);
+fprs = zeros(21,9,10);
+es_vals = zeros(21,9,10);
+rel_amps = zeros(21,9,10);
+corr_vals = zeros(21,9,10);
 for i=1:21
     fprs(i,:,:) = all_FPR{i};
     rel_amps(i,:,:) = all_amp{i};
@@ -198,23 +198,23 @@ fprs = reshape(fprs,[],1);
 rel_amps = reshape(rel_amps,[],1);
 es_vals = reshape(es_vals,[],1);
 
-k = find(fprs < 0.1);
+k = find(fprs < 0.05);
 
 %xedge = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 1];
-xedge = [0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 1];
-yedge = [0, 0.1, 0.2, 0.3, 0.4, 1];
+xedge = [0, 0.025, 0.05, 0.1, 0.15, 0.2];
+yedge = [0, 0.1, 0.15, 0.2, 0.25];
 
 [N,Xedges,Yedges] = histcounts2(es_vals(k), rel_amps(k), xedge, yedge);
+[N2,Xedges2,Yedges2] = histcounts2(es_vals, rel_amps, xedge, yedge);
 
 %N = rot90(N);
 %N = flipud(N);
 %N = fliplr(N);
 
-table_vals = cumsum(N,1,'reverse');
-table_vals = round((cumsum(table_vals,2,'forward')./length(k))',3).*100;
-table_vals = fliplr(table_vals);
+table_vals = N./N2;
+table_vals = round(table_vals,3)'.*100;
 
 table1 = array2table(table_vals,...
-    'RowNames',{'Amplitude <10%', 'Amplitude <20%', 'Amplitude <30%', 'Amplitude <40%', 'Amplitude <100%'},...
-    'VariableNames',{'ES > 20%', 'ES > 15%', 'ES > 10%', 'ES > 7.5%', 'ES > 5%', 'ES > 2.5%', 'ES > 0%'})
+    'RowNames',{'Amplitude: 0 - 10%', 'Amplitude: 10 - 15%', 'Amplitude: 15 - 20%',  'Amplitude: 20 - 25%'},...
+    'VariableNames',{'0 - 2.5%', '2.5 - 5%', '5 - 10%', '10 - 15%', '15 - 20%'})
 

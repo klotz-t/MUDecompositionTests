@@ -10,7 +10,7 @@ addpath '../LIF model/'
 addpath '../Functions/'
 
 % 0: Run simulation, 1: Plot data
-useExistingData=1;
+useExistingData=0;
 % 1: plot the replication data, 0: Plot your own data
 useReplicationData=1;
 
@@ -46,9 +46,10 @@ if useExistingData==0
         fnr=zeros(length(spat_transl_vec),length(scale_factor_vec));
         cs=zeros(length(spat_transl_vec),length(scale_factor_vec));
         es=zeros(length(spat_transl_vec),length(scale_factor_vec));
+        amp=zeros(length(spat_transl_vec),length(scale_factor_vec));
 
         for i=1:length(spat_transl_vec)
-            for j=1:length(scale_factor_vec)
+            parfor j=1:length(scale_factor_vec)
                 disp(['i: ',num2str(i),'/',num2str(length(spat_transl_vec)),' j: ',num2str(j),'/',num2str(length(scale_factor_vec))]);
 
                 % Set up MUAPs vector
@@ -100,6 +101,7 @@ if useExistingData==0
                 fnr(i,j)=tmp(3);
                 cs(i,j)=cosine_similarity;
                 es(i,j)=energy_similarity;
+                amp(i,j)=rms(muap{MU2}(65:128,:),'all') / rms(data_unfilt,'all');
             end
         end
         % Save data
@@ -108,22 +110,93 @@ if useExistingData==0
             mkdir('my_data/')
         end
         save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'], ...
-            'spat_transl_vec','scale_factor_vec', 'sep', 'fnr', 'fpr', 'cs', 'es', ...
+            'spat_transl_vec','scale_factor_vec', 'sep', 'fnr', 'fpr', 'cs', 'es', 'amp', ...
             'noise_dB','fs','I','spike_times','time_param','MU1','MU2')
         return
     end
 end
+
+%% Exampe spike trains
+rng(0)
+
+spat_transl_vec = [2 12];
+sources = zeros(length(spat_transl_vec), 122880);
+matched_idx = cell(length(spat_transl_vec),1);
+unmatched_idx = cell(length(spat_transl_vec),1);
+
+% Fixing to MU #1 and #50
+MU1=49;
+MU2=50;
+
+I=7e-9; % 7 nA input current
+[spike_times,time_param,membr_param]=generate_spike_trains(I);
+
+noise_dB = 20;
+rand_seed = false;
+
+for i=1:length(spat_transl_vec)
+    spat_transl=spat_transl_vec(i);
+    scale_factor=1.0;
+    similar_muaps_vec=[1 MU1 MU2 spat_transl scale_factor];
+    
+    % Generate EMG signals
+    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec);
+    
+    % Select 64 out of 256 channels
+    data=data(65:128,:);
+    sig_noise=sig_noise(65:128,:);
+    data_unfilt=data_unfilt(65:128,:);
+    
+    % Set extension factor
+    R=16;
+    
+    % Extend
+    eSIG = extension(data,R);
+    
+    % Whiten data
+    [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+    
+    w = muap{MU2}(65:128,:);
+    w = extension(w,R);
+    w = whitening_matrix * w;
+    
+    % Reconstruction
+    sig=w'*wSIG;
+    
+    % Select the source with highest skewness
+    save_skew=zeros(1,size(sig,1));
+    for ind=1:size(sig,1)
+        save_skew(ind)=skewness(sig(ind,:));
+    end
+    [~,maxInd]=max(save_skew);
+    w = w(:,maxInd);
+    w = w./norm(w);
+    
+    % Reconstruction
+    sources(i,:) = w'*wSIG;
+    [~,~,matched_idx{i},~, unmatched_idx{i}]=separability_metric(sources(i,:),spike_times{MU2});
+    %[matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{MU2});
+
+end
+t_vec = linspace(0,length(sources)/fs, length(sources));
+
+save('my_data/similar_muaps_example_sources.mat', 'sources', 'matched_idx', 'unmatched_idx',...
+    't_vec','MU1','MU2','I','noise_dB');
+
+%%
 
 
 % Load data
 if useReplicationData == 1
     data20db=load('replication_data/similar_muaps_20dB.mat');
     data10db=load('replication_data/similar_muaps_10dB.mat');
+    load('replication_data/similar_muaps_example_sources.mat');
 else
     ref_data20db=load('replication_data/similar_muaps_20dB.mat');
     ref_data10db=load('replication_data/similar_muaps_10dB.mat');
     data20db=load('my_data/similar_muaps_20dB.mat');
     data10db=load('my_data/similar_muaps_10dB.mat');
+    load('my_data/similar_muaps_example_sources.mat');
     % Check if data is consitent with the reference data
     d1 = [ref_data10db.sep(:); ref_data20db.sep(:); ...
         ref_data10db.fpr(:); ref_data20db.fpr(:); ...
@@ -134,6 +207,10 @@ else
     out = compareResults(d1,d2);
     clear ref_data10db ref_data20db d1 d2
 end
+%%
+rel_amp = data10db.amp(1,:);
+cmap=lines(4);
+
 
 % Generate figure
 mymap = zeros(3,101);
@@ -152,79 +229,124 @@ mymap2(3,51:end) = linspace(1,0.7412,51);
 mymap2(2,51:end) = linspace(1,0.4471,51);
 mymap2(1,51:end) = linspace(1,0,51);
 
-t=tiledlayout(2,3);
+t=tiledlayout(2,4);
 set(gcf,'units','points','position',[216,62,1491,893])
 
+FontSize = 22;
+
 ax1 = nexttile;
-imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.sep,4));
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-ylabel('Scaled amplitude (a.u.)');
-title({'Separability metric (%)';'20 dB'},'FontWeight','normal');
-xticks(1:12)
-set(gca,'XTickLabels',split(num2str(round(100*data20db.es(:,1)',1))))
-clim([0 100]);
-colorbar;
-colormap(ax1,mymap2')
+hold on
+plot(t_vec,sources(1,:),'Color',cmap(1,:))
+yline(median(sources(1,matched_idx{1})),'--','LineWidth',2)
+yline(median(sources(1,unmatched_idx{1})),'--','LineWidth',2)
+plot(t_vec(matched_idx{1}),sources(1,matched_idx{1}), 'o', 'MarkerFaceColor', cmap(2,:), 'MarkerEdgeColor', cmap(2,:),'MarkerSize',3) 
+plot(t_vec(unmatched_idx{1}),sources(1,unmatched_idx{1}), 'o', 'MarkerFaceColor', cmap(3,:), 'MarkerEdgeColor', cmap(3,:),'MarkerSize',3)
+hold off
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
+ylabel('Amplitude (-)');
+%xlabel('Time Sample')
+title({'Rel. MUAP amplitude: 37%'; 'Reg-SqEuc distance: 1%'},'FontWeight','normal', 'FontSize', 18);
+xlim([20 40])
+ylim([-4 15])
 
 ax2 = nexttile;
-imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.fpr,4));
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-set(gca,'YTickLabel',[]);
-title({'False positive rate (%)';'20 dB'},'FontWeight','normal');
-xticks(1:12)
-set(gca,'XTickLabels',split(num2str(round(100*data20db.es(:,1)',1))))
-clim([0 100])
+imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[rel_amp(1) rel_amp(end)],100*interp2(data20db.sep,4));
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
+xlabel('Reg-SqEuc distance (%)');
+ylabel('Rel. MUAP amplitude (%)');
+title({'Separability metric (%)';'20 dB'},'FontWeight','normal');
+yticks(0.1:0.1:0.4)
+xticks(2:3:12)
+set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
+clim([0 100]);
 colorbar;
-colormap(ax2,flip(mymap'))
+colormap(ax2,mymap2')
 
 ax3 = nexttile;
-imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[data20db.scale_factor_vec(1) data20db.scale_factor_vec(end)],100*interp2(data20db.fnr,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
+imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[rel_amp(1) rel_amp(end)],100*interp2(data20db.fpr,4));
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
 set(gca,'YTickLabel',[]);
-title({'False negative rate (%)';'20 dB'},'FontWeight','normal');
-xticks(1:12)
-set(gca,'XTickLabels',split(num2str(round(100*data20db.es(:,1)',1))))
+title({'False positive rate (%)';'20 dB'},'FontWeight','normal');
+xlabel('Reg-SqEuc distance (%)');
+ylabel('Rel. MUAP amplitude (%)');
+yticks(0.1:0.1:0.4)
+xticks(2:3:12)
+set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
 clim([0 100])
 colorbar;
 colormap(ax3,flip(mymap'))
 
 ax4 = nexttile;
-imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.sep,4));
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Energy similarity (%)');
-ylabel('Scaled amplitude (a.u.)');
-title('10 dB','FontWeight','normal');
-xticks(1:12)
-set(gca,'XTickLabels',split(num2str(round(100*data10db.es(:,1)',1))))
-clim([0 100]);
+imagesc([data20db.spat_transl_vec(1) data20db.spat_transl_vec(end)],[rel_amp(1) rel_amp(end)],100*interp2(data20db.fnr,4));
 colorbar;
-colormap(ax4,mymap2')
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
+set(gca,'YTickLabel',[]);
+title({'False negative rate (%)';'20 dB'},'FontWeight','normal');
+xlabel('Reg-SqEuc distance (%)');
+ylabel('Rel. MUAP amplitude (%)');
+yticks(0.1:0.1:0.4)
+xticks(2:3:12)
+set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
+clim([0 100])
+colorbar;
+colormap(ax4,flip(mymap'))
 
 ax5 = nexttile;
-imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.fpr,4));
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Energy similarity (%)');
-set(gca,'YTickLabel',[]);
-title('10 dB','FontWeight','normal');
-xticks(1:12)
-set(gca,'XTickLabels',split(num2str(round(100*data10db.es(:,1)',1))))
-clim([0 100]);
-colorbar;
-colormap(ax5,flip(mymap'))
+hold on
+plot(t_vec,sources(2,:),'Color',cmap(1,:))
+yline(median(sources(2,matched_idx{2})),'--','LineWidth',2)
+yline(median(sources(2,unmatched_idx{2})),'--','LineWidth',2)
+plot(t_vec(matched_idx{2}),sources(2,matched_idx{2}), 'o', 'MarkerFaceColor', cmap(2,:), 'MarkerEdgeColor', cmap(2,:),'MarkerSize',3) 
+plot(t_vec(unmatched_idx{2}),sources(2,unmatched_idx{2}), 'o', 'MarkerFaceColor', cmap(3,:), 'MarkerEdgeColor', cmap(3,:),'MarkerSize',3)
+hold off
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
+ylabel('Amplitude (-)');
+xlabel('Time (s)')
+xlim([20 40])
+ylim([-4 15])
+title({'Rel. MUAP amplitude: 37%'; 'Reg-SqEuc distance: 13%'},'FontWeight','normal', 'FontSize', 18);
 
 ax6 = nexttile;
-imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[data10db.scale_factor_vec(1) data10db.scale_factor_vec(end)],100*interp2(data10db.fnr,4));
-colorbar;
-set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
-xlabel('Energy similarity (%)');
-set(gca,'YTickLabel',[]);
+imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[rel_amp(1) rel_amp(end)],100*interp2(data10db.sep,4));
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
+xlabel('Reg-SqEuc distance (%)');
+ylabel('Rel. MUAP amplitude (%)');
 title('10 dB','FontWeight','normal');
-xticks(1:12)
-set(gca,'XTickLabels',split(num2str(round(100*data10db.es(:,1)',1))))
+yticks(0.1:0.1:0.4)
+xticks(2:3:12)
+set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
 clim([0 100]);
 colorbar;
-colormap(ax6,flip(mymap'))
+colormap(ax6,mymap2')
+
+ax7 = nexttile;
+imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[rel_amp(1) rel_amp(end)],100*interp2(data10db.fpr,4));
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
+xlabel('Reg-SqEuc distance (%)');
+ylabel('Rel. MUAP amplitude (%)');
+set(gca,'YTickLabel',[]);
+title('10 dB','FontWeight','normal');
+yticks(0.1:0.1:0.4)
+xticks(2:3:12)
+set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
+clim([0 100]);
+colorbar;
+colormap(ax7,flip(mymap'))
+
+ax8 = nexttile;
+imagesc([data10db.spat_transl_vec(1) data10db.spat_transl_vec(end)],[rel_amp(1) rel_amp(end)],100*interp2(data10db.fnr,4));
+colorbar;
+set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',FontSize);
+xlabel('Reg-SqEuc distance (%)');
+ylabel('Rel. MUAP amplitude (%)');
+set(gca,'YTickLabel',[]);
+title('10 dB','FontWeight','normal');
+yticks(0.1:0.1:0.4)
+xticks(2:3:12)
+set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
+clim([0 100]);
+colorbar;
+colormap(ax8,flip(mymap'))
 
 t.TileSpacing='compact';
 t.Padding='compact';

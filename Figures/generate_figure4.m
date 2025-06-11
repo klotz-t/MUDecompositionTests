@@ -84,6 +84,9 @@ end
 w = w(:,maxInd);
 w = w./norm(w);
 
+source = w'*wSIG;
+[~,~,matched_idx,~, unmatched_idx]=separability_metric(source,spike_times{i});
+
 cd '../Figures/'
 
 % Compute mean firing rate for each motor neuron
@@ -95,15 +98,22 @@ end
 % Compute mean firing rate and its standard deviation across the pool
 disp(['The mean firing rate is: ',num2str(round(mean(FR,'omitnan'),1))])
 disp(['The standard deviation of the firing rate is: ',num2str(round(std(FR,'omitnan'),1))])
-
+%%
 % Generate figure
 t=tiledlayout(4,1);
 figure(1);set(gcf,'units','points','position',[498,61,678,804])
 time_win=[5 55];
 
+t_vec = linspace(0,length(data)/fs,size(eSIG,2));
+cmap=lines(4);
+
 nexttile;
 hold on;
-plot(linspace(0,length(data)/fs,size(eSIG,2)),w'*wSIG);
+plot(t_vec,w'*wSIG);
+yline(median(source(matched_idx)),'--','LineWidth',2)
+yline(median(source(unmatched_idx)),'--','LineWidth',2)
+plot(t_vec(matched_idx),source(matched_idx), 'o', 'MarkerFaceColor', cmap(2,:), 'MarkerEdgeColor', cmap(2,:),'MarkerSize',3) 
+plot(t_vec(unmatched_idx),source(unmatched_idx), 'o', 'MarkerFaceColor', cmap(3,:), 'MarkerEdgeColor', cmap(3,:),'MarkerSize',3)
 hold off;
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',20);
 xlim(time_win);
@@ -171,7 +181,7 @@ set(gca,'visible','off');
 
 %% Calculations for paper
 %  Construct the extended and whitened mixing matrix
-wp = muap{i}(65:128,:);
+wp = muap{1}(65:128,:);
 wp = extension2(wp,R);
 H = wp;
 for idx2=2:length(spike_times)

@@ -155,9 +155,9 @@ end
 
 %% Generate Table
 
-fprs = zeros(21,7,4);
-es_vals = zeros(21,7,4);
-rel_amps = zeros(21,7,4);
+fprs = zeros(21,7,10);
+es_vals = zeros(21,7,10);
+rel_amps = zeros(21,7,10);
 for i=1:21
     fprs(i,:,:) = all_FPR{i};
     rel_amps(i,:,:) = all_amp{i};
@@ -169,15 +169,16 @@ es_vals = reshape(es_vals,[],1);
 
 idx = find(fprs < 0.1);
 
-xedge = [0, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 1];
-yedge = [0, 0.1, 0.2, 0.3, 0.4, 1];
+xedge = [0, 0.025, 0.05, 0.075, 0.1, 0.15];
+yedge = [0, 0.1, 0.15, 0.2, 0.25];
 
 [N,Xedges,Yedges] = histcounts2(es_vals(idx), rel_amps(idx), xedge, yedge);
+[N2,Xedges2,Yedges2] = histcounts2(es_vals, rel_amps, xedge, yedge);
 
-table_vals = cumsum(N,1);
-table_vals = round((cumsum(table_vals,2)./length(idx))',3).*100;
+table_vals = N./N2;
+table_vals = round(table_vals,3)'.*100;
 
 table1 = array2table(table_vals,...
-    'RowNames',{'Amplitude <10%', 'Amplitude <20%', 'Amplitude <30%', 'Amplitude <40%', 'Amplitude <100%'},...
-    'VariableNames',{'ES < 2.5%', 'ES < 5%', 'ES < 7.5%', 'ES < 10%', 'ES < 15%', 'ES < 20%', 'ES < 100%'})
+    'RowNames',{'Amplitude: 0 - 10%', 'Amplitude: 10 - 15%', 'Amplitude: 15 - 20%',  'Amplitude: 20 - 25%'},...
+    'VariableNames',{'0 - 2.5%', '2.5 - 5%', '5 - 7.5%', '7.5 - 10%', '10 - 15%'})
 
