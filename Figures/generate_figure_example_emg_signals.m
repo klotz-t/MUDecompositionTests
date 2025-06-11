@@ -35,27 +35,29 @@ disp(['The number of active MUs is: ', num2str(length(spike_times))])
 % Bandpass 20-500 Hz
 data=bandpassingals(data,fs,1);
 
-% Estimate PSD for each channel
-pxx_vec=zeros(size(data,1),4097);
-for ind=1:size(pxx_vec,1)
-    [pxx,f]=pwelch(data(ind,(size(data,2)/2-9999):(size(data,2)/2+10000)),[],[],[],2048);
-    pxx_vec(ind,:)=pxx;
-end
-mean_pxx_sim=median(pxx_vec);
-
 % Load experimental EMG signals
 load('/Users/robinrohlen/Documents/Research/Manus/Benchmark/experimental-simulation/data/S3_30_DF.otb+_decomp.mat_edited.mat')
 
 % Bandpass 20-500 Hz
+signal.data=signal.data(1:256,:);
 signal.data=bandpassingals(signal.data,signal.fsamp,1);
 
-% Estimate PSD for each channel
-pxx_vec=zeros(size(signal.data,1),4097);
-for ind=1:size(pxx_vec,1)
-    [pxx,f]=pwelch(signal.data(85,(floor(size(signal.data,2)/2)-9999):(floor(size(signal.data,2)/2)+10000)),[],[],[],2048);
-    pxx_vec(ind,:)=pxx;
+% Estimate median frequency for each channel (simulated)
+med_freq_sim=zeros(1,size(data,1));
+for ind=1:size(med_freq_sim,2)
+    med_freq_sim(ind)=medfreq(data(ind,(size(data,2)/2-9999):(size(data,2)/2+10000)),2048);
 end
-mean_pxx_exp=median(pxx_vec);
+disp(['Median frequency (simulated): ',num2str(round(mean(med_freq_sim),1)),' +/- ',num2str(round(std(med_freq_sim),1))]);
+disp(['Median frequency (simulated ch 85): ',num2str(round(med_freq_sim(85),1))]);
+
+% Estimate PSD for each channel (experimental)
+med_freq_exp=zeros(1,size(signal.data,1));
+for ind=1:size(med_freq_exp,2)
+    med_freq_exp(ind)=medfreq(signal.data(ind,(floor(size(signal.data,2)/2)-9999):(floor(size(signal.data,2)/2)+10000)),2048);
+end
+med_freq_exp(find(med_freq_exp>150))=[];
+disp(['Median frequency (experimental): ',num2str(round(mean(med_freq_exp),1)),' +/- ',num2str(round(std(med_freq_exp),1))]);
+disp(['Median frequency (experimental ch 85): ',num2str(round(med_freq_exp(85),1))]);
 
 % Define colors
 cmap=lines(2);
@@ -134,10 +136,10 @@ set(gca,'FontSize',24);
 g=gcf;
 g.Renderer='painters';
 
-% Plot instantaneous firing rates
-figure(6);set(gcf,'units','points','position',[503,408,471,310]);
+% Plot instantaneous firing rates simulated
+figure(6);set(gcf,'units','points','position',[503,485,471,233]);
 
-cmap=flip(turbo(300));
+cmap=flip(turbo(7));
 indx=[1 25 50 75 100 125 150];
 
 % Spike train
@@ -146,18 +148,18 @@ hold on;
 for j=1:length(indx)
     ST(j,round(fs*spike_times{indx(j)}./time_param.fs))=1;
     ST(j,:)=conv(ST(j,:),hann(4000),'same');
-    plot(linspace(0,size(data,2)/fs,size(data,2)),ST(j,:),'Color',cmap(indx(j),:),'LineWidth',3);
+    plot(linspace(0,size(data,2)/fs,size(data,2)),ST(j,:),'Color',cmap(j,:),'LineWidth',3);
 end
 hold off;
 xlabel('Time (s)');
-ylabel('Frequency (Hz)');
+ylabel('Freq. (Hz)');
 set(gca,'TickDir','out');
 set(gcf,'color','w');
 set(gca,'FontSize',24);
 g=gcf;
 g.Renderer='painters';
 
-% Plot ISI CoV
+% Plot ISI CoV simulated
 ISI_CoV_vec=zeros(1,150);
 for ind=1:size(ISI_CoV_vec,2)
     if length(spike_times{ind})>2
@@ -165,14 +167,63 @@ for ind=1:size(ISI_CoV_vec,2)
     end
 end
 
-figure(7);set(gcf,'units','points','position',[503,408,471,310]);
+cmap=lines(2);
+
+figure(7);set(gcf,'units','points','position',[503,485,471,233]);
 hold on;
-histogram(100*ISI_CoV_vec,20,'FaceColor',cmap(1,:))
+histogram(100*ISI_CoV_vec,10,'FaceColor',cmap(1,:))
 hold off;
 xlabel('ISI CoV (%)');
-ylabel('Frequency');
+ylabel('# MUs');
 set(gca,'TickDir','out');
 set(gcf,'color','w');
 set(gca,'FontSize',24);
+xlim([5 30]);
+g=gcf;
+g.Renderer='painters';
+
+% Plot instantaneous firing rates experimental
+figure(8);set(gcf,'units','points','position',[503,485,471,233]);
+
+cmap=flip(turbo(size(edition.Distimeclean{3},2)));
+%indx=[1 25 50 75 100 125 150];
+
+% Spike train
+ST=zeros(size(edition.Distimeclean{3},2),size(signal.data,2));
+hold on;
+for j=1:size(edition.Distimeclean{3},2)
+    ST(j,edition.Distimeclean{3}{j})=1;
+    ST(j,:)=conv(ST(j,:),hann(4000),'same');
+    plot(linspace(0,size(signal.data,2)/fs,size(signal.data,2)),ST(j,:),'Color',cmap(j,:),'LineWidth',3);
+end
+hold off;
+xlabel('Time (s)');
+ylabel('Freq. (Hz)');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',24);
+g=gcf;
+g.Renderer='painters';
+
+% Plot ISI CoV experimental
+ISI_CoV_vec=zeros(1,size(edition.Distimeclean{3},2));
+for ind=1:size(ISI_CoV_vec,2)
+    if length(edition.Distimeclean{3}{ind})>2
+        ISI_CoV_vec(ind)=mad((diff(edition.Distimeclean{3}{ind}(:))/2.048))/median((diff(edition.Distimeclean{3}{ind}(:))/2.048));
+    end
+end
+
+cmap=lines(2);
+
+figure(9);set(gcf,'units','points','position',[503,485,471,233]);
+hold on;
+histogram(100*ISI_CoV_vec,40,'FaceColor',cmap(2,:))
+hold off;
+xlabel('ISI CoV (%)');
+ylabel('# MUs');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',24);
+xlim([5 30]);
 g=gcf;
 g.Renderer='painters';
