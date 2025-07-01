@@ -19,46 +19,55 @@ useReplicationData=1;
 % Use random seed to obtain identical results
 rng(1)
 
-% Select MUs of interest
+% EMG sample rate
+fs=2048;
+
+% Mean cortical input for each model realization
 mean_drive = (7:0.2:11)*1e-9;
 
+% For each model realization select one MU of interest
 ref_MU = [50, 39 , 41 , 31, 74, 35, 51, 77, 60, 34, 71, 99, 76, ...
    35, 52, 110, 48, 111, 105, 51, 111];
 
+% Signal-to-noise ratio (in dB) for each model realization
 noise_vec = [20, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
     26.77, 27.25, 16.36, 27.67, 28.66, 16.88, 29.28, 11.74, ...
     18.14, 25.14, 17.21, 16.41, 18.94, 15.8432787781082];
 
-% EMG sample rate
-fs=2048;
-
+% Vector for modulating the degree of non-linearity
 nl_range = [1 5 7 9 11 13];
 
 % Pre-define vectors for saving metrics
-sep =zeros(length(mean_drive)*10, length(nl_range));
-fpr =zeros(length(mean_drive)*10, length(nl_range));
-fnr =zeros(length(mean_drive)*10, length(nl_range));
-es1 =zeros(length(mean_drive)*10, length(nl_range));
-es2 =zeros(length(mean_drive)*10, length(nl_range));
-amp =zeros(length(mean_drive)*10, length(nl_range)); 
+sep =zeros(120, length(nl_range));
+fpr =zeros(120, length(nl_range));
+fnr =zeros(120, length(nl_range));
+es1 =zeros(120, length(nl_range));
+es2 =zeros(120, length(nl_range));
+amp =zeros(120, length(nl_range)); 
 
+% Index of the current model realization
 idx = 1;
 
+% Initalize progress tracking variable
 job_idx = 1;
 
 if useExistingData==0
 
     for sub_idx=1:length(mean_drive)
 
-        % Generate spike trains
+        % Simualte spike trains
         I=mean_drive(sub_idx);
-        [spike_times,time_param,membr_param,CI]=generate_spike_trains(I);    
-        noise_dB = noise_vec(sub_idx);    
+        [spike_times,time_param,membr_param,CI]=generate_spike_trains(I); 
+
+        % Get the signal-to-noise-ratio
+        noise_dB = noise_vec(sub_idx);
+
+        % Get all MUs that are identifiable in the stationary case
         tracked_mus = find(all_FPR{sub_idx}(:,2,3)<0.01);
 
         for track_idx=1:length(tracked_mus)
 
-            %MU1 = ref_MU(sub_idx);
+            % Get the indice of the MU of interest
             MU1 = tracked_mus(track_idx);
 
             for range_idx=1:length(nl_range)
@@ -66,7 +75,8 @@ if useExistingData==0
                 % Set up param vector for non-stationary spatio-temporal MUAP
                 similar_muaps_vec=[0 MU1 MU1+1 0 1];
                 changing_muap_vec=[1 MU1 0 nl_range(range_idx) 1];
-                % Generate EMG signals
+
+                % Simulate EMG signals
                 [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,sub_idx,similar_muaps_vec,changing_muap_vec,CI);
             
                 % Compute mean MUAP
@@ -88,17 +98,19 @@ if useExistingData==0
                 eSIG = extension(data,R);
                 [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
         
+                % Root-mean-square value of the EMG signal
                 rms_sig = rms(data_unfilt,'all');
             
+                % Get the reference MUAP (cooresponding to the stationary case
                 i = ceil(nl_range(range_idx)/2);
     
-                % Compute MU filter
+                % Compute all MU filters
                 muap_i = muap{MU1}{i}(65:128,:);
                 w = muap_i;
                 w = extension(w,R);
                 w = whitening_matrix * w;
         
-                % Reconstruction
+                % Reconstruct all delayed sources
                 sig=w'*wSIG;
         
                 % Select the source with highest skewness
@@ -107,6 +119,8 @@ if useExistingData==0
                     save_skew(ind)=skewness(sig(ind,:));
                 end
                 [~,maxInd]=max(save_skew);
+
+                % Normalize the MU filter corresponding to the highest skewness
                 w = w(:,maxInd);
                 w = w./norm(w);
         
@@ -146,21 +160,26 @@ if useExistingData==0
     return
 end
 
-%% Exampe spike trains
+%% Simulate examplary spike trains
+
+% Control the random number generator
 rng(1)
 
+% Define the degree of non-linearity
 temp_range = [5, 13];
 
+% Initalize outputs
 sources = zeros(2, 122880);
 matched_idx = cell(2, 1);
 unmatched_idx = cell(2, 1);
 
+% Specify a model realization 
 sub_idx = 8;
 noise_dB = noise_vec(sub_idx);
 I=mean_drive(sub_idx); % 7 nA input current
 MU1 = ref_MU(sub_idx);
 
-
+% Simulate spike trains
 [spike_times,time_param,~,CI]=generate_spike_trains(I);
 
 
@@ -169,7 +188,8 @@ for i=1:length(temp_range)
     % Set up param vector for non-stationary spatio-temporal MUAP
     similar_muaps_vec=[0 MU1 MU1+1 0 1];
     changing_muap_vec=[1 MU1 1 temp_range(i) 1];
-    % Generate EMG signals
+
+    % Simulate EMG signals
     [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,sub_idx,similar_muaps_vec,changing_muap_vec,CI);
     
     % Select 64 out of 256 channels
@@ -215,7 +235,6 @@ for i=1:length(temp_range)
     % Reconstruction
     sources(i,:) = w'*wSIG;
     [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{MU1});
-
     
 end
 %%
@@ -264,7 +283,7 @@ for i=1:size(muap{MU1},2)
 end
 
 % Generate figure
-cmap=lines(2);
+cmap=lines(4);
 
 mymap2 = zeros(3,101);
 mymap2(1,1:51) = linspace(0.8510,1,51);
