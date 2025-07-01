@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 6 in "Revisiting convolutive blind source 
+% Code to generate Table 1 in "Revisiting convolutive blind source 
 % separation for identifying spiking motor neuron activity: 
 % From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,20 +23,25 @@ truncate=1;
 % EMG sample rate
 fs=2048;
 
-% Select MUs of interest
+% Mean drive values
 mean_drive = (7:0.2:11)*1e-9;
 
+% Select MUs of interest
 ref_MU = [50, 39 , 41 , 31, 74, 35, 51, 77, 60, 34, 71, 99, 76, ...
    35, 52, 110, 48, 111, 105, 51, 111];
 
+% Random signal-to-noise ratio values (10 to 30 dB)
 noise_vec = [15, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
     26.77, 27.25, 16.36, 27.67, 28.66, 16.88, 29.28, 11.74, ...
     18.14, 25.14, 17.21, 16.41, 18.94, 15.8432787781082];
 
-% Vector of coefficient of variations for the common and independent noise (%)
+% Vector of shifted MUAP realizations
 space_trans_vec=[3,4,5,6,7,8,10];
+
+% Vector of scaling values of the MUAP amplitudes
 scale_fac_vec=0.2:0.2:2;
 
+% Initalize simulation outputs
 all_SEP = cell(length(ref_MU),1);
 all_FPR = cell(length(ref_MU),1);
 all_FNR = cell(length(ref_MU),1);
@@ -44,19 +49,21 @@ all_amp = cell(length(ref_MU),1);
 all_cs = cell(length(ref_MU),1);
 all_es = cell(length(ref_MU),1);
 
+% Helper variable
 MU1 = 1;
 
-job_idx = 1;
-
+% Start a parallel computing environment
 parpool('local',10)
 
 if useExistingData==0
     for sub_idx=1:length(mean_drive)
 
+        % Get the signal-to-noise ratio
         noise_dB = noise_vec(sub_idx);
+        % Get the index of the motor unit of interest
         MU2 = ref_MU(sub_idx);
 
-        % Generate spike trains
+        % Simulate spike trains
         [spike_times,time_param,~,CI]=generate_spike_trains(mean_drive(sub_idx),20,5);
 
         % Pre-define matrices for saving metrics
@@ -68,15 +75,17 @@ if useExistingData==0
         es  = zeros(length(space_trans_vec), length(scale_fac_vec));
 
         for i=1:length(space_trans_vec)
-            spat_transl=space_trans_vec(i);
-            parfor j=1:length(scale_fac_vec)
-                %disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
 
-                % Set up MUAPs vector
+            % Specify the degree of MUAP similarity
+            spat_transl=space_trans_vec(i);
+
+            parfor j=1:length(scale_fac_vec)
+
+                % Input vector for generating a similar copy of the MUAP of interest
                 scale_factor=scale_fac_vec(j);
                 similar_muaps_vec=[1 MU1 MU2 spat_transl scale_factor];
                 
-                % Generate EMG signals
+                % Simulate EMG signals
                 [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,sub_idx,similar_muaps_vec);
 
                 % Select 64 out of 256 channels
@@ -125,20 +134,17 @@ if useExistingData==0
                 cs(i,j)=cosine_similarity;
                 es(i,j)=energy_similarity;
 
-
-                %disp(['finished_job ', num2str(job_idx)])
-                %job_idx = job_idx + 1;
             end
         end
+
+        % Set output 
         all_SEP{sub_idx} = SEP;
         all_FPR{sub_idx} = FPR;
         all_FNR{sub_idx} = FNR;
         all_amp{sub_idx} = amp;
         all_es{sub_idx} = es;
         all_cs{sub_idx} = cs;
-
-        
-        
+     
     end
     % Save data
     if not(isfolder('my_data/'))
@@ -155,6 +161,7 @@ end
 
 %% Generate Table
 
+% Convert cells to arrays
 fprs = zeros(21,7,10);
 es_vals = zeros(21,7,10);
 rel_amps = zeros(21,7,10);
@@ -163,22 +170,30 @@ for i=1:21
     rel_amps(i,:,:) = all_amp{i};
     es_vals(i,:,:) = all_es{i};
 end
+
+% Flatten the data
 fprs = reshape(fprs,[],1);
 rel_amps = reshape(rel_amps,[],1);
 es_vals = reshape(es_vals,[],1);
 
+% Find all decomposable motor units
 idx = find(fprs < 0.1);
 
+% Make bins for a discrete probability distribution
 xedge = [0, 0.025, 0.05, 0.075, 0.1, 0.15];
 yedge = [0, 0.1, 0.15, 0.2, 0.25];
 
+% Calculate discrete probability distribution
 [N,Xedges,Yedges] = histcounts2(es_vals(idx), rel_amps(idx), xedge, yedge);
 [N2,Xedges2,Yedges2] = histcounts2(es_vals, rel_amps, xedge, yedge);
 
 table_vals = N./N2;
 table_vals = round(table_vals,3)'.*100;
 
+% Print the results in tabular format
 table1 = array2table(table_vals,...
     'RowNames',{'Amplitude: 0 - 10%', 'Amplitude: 10 - 15%', 'Amplitude: 15 - 20%',  'Amplitude: 20 - 25%'},...
-    'VariableNames',{'0 - 2.5%', '2.5 - 5%', '5 - 7.5%', '7.5 - 10%', '10 - 15%'})
+    'VariableNames',{'0 - 2.5%', '2.5 - 5%', '5 - 7.5%', '7.5 - 10%', '10 - 15%'});
+
+disp(table1)
 

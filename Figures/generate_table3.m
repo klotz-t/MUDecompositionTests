@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 6 in "Revisiting convolutive blind source 
+% Code to generate Table 3 in "Revisiting convolutive blind source 
 % separation for identifying spiking motor neuron activity: 
 % From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,21 +23,24 @@ truncate=1;
 % EMG sample rate
 fs=2048;
 
-% Select MUs of interest
+% Make a vector of mean drives
 mean_drive = (7:0.2:11)*1e-9;
 
+% Select for each model realization the MU to be perturbed
 ref_MU = [50, 39 , 41 , 31, 74, 35, 51, 77, 60, 34, 71, 99, 76, ...
    35, 52, 110, 48, 111, 105, 51, 111];
 
+% Vector of random noise realizations
 noise_vec = [15, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
     26.77, 27.25, 16.36, 27.67, 28.66, 16.88, 29.28, 11.74, ...
     18.14, 25.14, 17.21, 16.41, 18.94, 15.8432787781082];
 
-% Vector of coefficient of variations for the common and independent noise (%)
+% Vector specifying the degree of non-linearity
 nl_range_vec=[1 5 7 9 11 13 15 17 19];
-%nl_range = [1 5 7 9 11 13 15 17];
+% Vector of amplitude scaling
 scale_fac_vec=0.2:0.2:2;
 
+% Initalize simulation outputs
 all_SEP = cell(length(ref_MU),1);
 all_FPR = cell(length(ref_MU),1);
 all_FNR = cell(length(ref_MU),1);
@@ -46,19 +49,22 @@ all_es_mean = cell(length(ref_MU),1);
 all_es_max = cell(length(ref_MU),1);
 all_corr = cell(length(ref_MU),1);
 
-
+% Define reference MUAP (i.e., the stationary case)
 mid_idx = 10;
 
+% Start a parallel computing environment
 parpool('local',9)
 
 if useExistingData==0
     for sub_idx=1:length(mean_drive)
         disp(['Model configuration ', num2str(sub_idx), ' out of ', num2str(length(mean_drive))])
 
+        % Signal-to-noise ratio
         noise_dB = noise_vec(sub_idx);
+        % MU of interest
         MU1 = ref_MU(sub_idx);
 
-        % Generate spike trains
+        % Simulate spike trains
         [spike_times,time_param,~,CI]=generate_spike_trains(mean_drive(sub_idx),20,5);
 
         % Pre-define matrices for saving metrics
@@ -71,18 +77,19 @@ if useExistingData==0
         corr = zeros(length(nl_range_vec), length(scale_fac_vec));
 
         for i=1:length(scale_fac_vec)
-            disp(['i: ',num2str(i),'/',num2str(length(scale_fac_vec))]);
-            scale_factor = scale_fac_vec(i);
-            parfor j=1:length(nl_range_vec)
-                %disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
 
-                % Set up MUAPs vector
-                %spat_transl=nl_range_vec(i);
-                %scale_factor=scale_fac_vec(j);
+            disp(['i: ',num2str(i),'/',num2str(length(scale_fac_vec))]);
+            
+            % Scale the MUAP amplitude
+            scale_factor = scale_fac_vec(i);
+
+            parfor j=1:length(nl_range_vec)
+
+                % Vector specifying the model's non-linearity
                 similar_muaps_vec=[0 MU1 MU1+1 0 1];
                 changing_muap_vec=[1 MU1 0 nl_range_vec(j) mid_idx scale_factor];
                 
-                % Generate EMG signals
+                % Simulate EMG signals
                 [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,sub_idx,similar_muaps_vec,changing_muap_vec,CI);
 
                 % Compute mean MUAP
@@ -104,12 +111,13 @@ if useExistingData==0
                 eSIG = extension(data,R);
                 [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
         
+                % Root-mean-square value of the EMG signal
                 rms_sig = rms(data_unfilt,'all');
             
-                % Get the representative MUAP
+                % Get the stationary reference MUAP
                 k = ceil(nl_range_vec(j)/2);
     
-                % Compute MU filter
+                % Compute MU filter corresponding to the reference MUAP
                 muap_i = muap{MU1}{k}(65:128,:);
                 w = muap_i;
                 w = extension(w,R);
@@ -133,6 +141,8 @@ if useExistingData==0
                 % Compute separability and MUAP similarity metrics
                 tmp=separability_metric(sig,spike_times{MU1});
                 [~,energy_similarity1]=compute_cosine_similarity(mean_muap,muap{MU1}{k}(65:128,:));
+
+                % Compare the referecne MUAP and the most disimilar MUAP
                 energy_similarity2 = 0;
                 corr_val = 1;
                 for muap_idx=1:nl_range_vec(j)
@@ -157,6 +167,8 @@ if useExistingData==0
                 corr(j,i)=corr_val;
             end
         end
+
+        % Save results of the model configuration in cell arrays
         all_SEP{sub_idx} = SEP;
         all_FPR{sub_idx} = FPR;
         all_FNR{sub_idx} = FNR;
@@ -167,7 +179,10 @@ if useExistingData==0
         
         
     end
+    
+    % Shut down the parallel computing environment
     delete(gcp("nocreate"));
+
     % Save data
     if not(isfolder('my_data/'))
         mkdir('my_data/')
@@ -184,6 +199,7 @@ load my_data/changing_muaps_pop.mat
 
 %% Generate Table
 
+% Convert cell to array
 fprs = zeros(21,9,10);
 es_vals = zeros(21,9,10);
 rel_amps = zeros(21,9,10);
@@ -194,27 +210,30 @@ for i=1:21
     es_vals(i,:,:) = all_es_max{i};
     corr_vals(i,:,:) = all_corr{i};
 end
+
+% Flatten the data
 fprs = reshape(fprs,[],1);
 rel_amps = reshape(rel_amps,[],1);
 es_vals = reshape(es_vals,[],1);
 
+% Find all identifiable MUs
 k = find(fprs < 0.05);
 
-%xedge = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 1];
+% Make bins 
 xedge = [0, 0.025, 0.05, 0.1, 0.15, 0.2];
 yedge = [0, 0.1, 0.15, 0.2, 0.25];
 
+% Calculate discrete probability distributions
 [N,Xedges,Yedges] = histcounts2(es_vals(k), rel_amps(k), xedge, yedge);
 [N2,Xedges2,Yedges2] = histcounts2(es_vals, rel_amps, xedge, yedge);
-
-%N = rot90(N);
-%N = flipud(N);
-%N = fliplr(N);
 
 table_vals = N./N2;
 table_vals = round(table_vals,3)'.*100;
 
-table1 = array2table(table_vals,...
+% Output results as table
+table3 = array2table(table_vals,...
     'RowNames',{'Amplitude: 0 - 10%', 'Amplitude: 10 - 15%', 'Amplitude: 15 - 20%',  'Amplitude: 20 - 25%'},...
-    'VariableNames',{'0 - 2.5%', '2.5 - 5%', '5 - 10%', '10 - 15%', '15 - 20%'})
+    'VariableNames',{'0 - 2.5%', '2.5 - 5%', '5 - 10%', '10 - 15%', '15 - 20%'});
+
+disp(table3)
 

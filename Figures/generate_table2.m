@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 6 in "Revisiting convolutive blind source 
+% Code to generate Table 2 in "Revisiting convolutive blind source 
 % separation for identifying spiking motor neuron activity: 
 % From theory to practice"
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,9 +26,11 @@ fs=2048;
 % Select MUs of interest
 mean_drive = (7:0.2:11)*1e-9;
 
+% Fix the size of the active MU pool at each simulated model realization
 active_pool = [58, 63 , 67 ,71, 75, 79, 83, 86, 90, 93, 97, 100, 103, ...
    106, 109, 112, 115, 118, 120, 123, 125];
 
+% Random signal-to-noise ratio values (10 to 30 dB)
 noise_vec = [15, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
     26.77, 27.25, 16.36, 27.67, 28.66, 16.88, 29.28, 11.74, ...
     18.14, 25.14, 17.21, 16.41, 18.94, 15.8432787781082];
@@ -37,19 +39,22 @@ noise_vec = [15, 17.91, 26.5177702940420, 15.94,	22.13, 25.55, 14.65, ...
 CCoV_vec=10:10:60;
 ICoV_vec=0:4:20;
 
+% Initalize output variables
 all_SEP = cell(length(active_pool),1);
 all_FPR = cell(length(active_pool),1);
 all_FNR = cell(length(active_pool),1);
 all_wNorm = cell(length(active_pool),1);
 all_sCos = cell(length(active_pool),1);
 
-
+% Initalize status update variable
 job_idx = 1;
 
 if useExistingData==0
     for sub_idx=1:length(mean_drive)
 
+        % Set the signal-to-noise ratio
         noise_dB = noise_vec(sub_idx);
+        % Size of the active motor unit pool
         MUs = 1:active_pool(sub_idx);
 
         % Pre-define matrices for saving metrics
@@ -61,12 +66,12 @@ if useExistingData==0
 
         for i=1:length(CCoV_vec)
             for j=1:length(ICoV_vec)
-                %disp(['i: ',num2str(i),'/',num2str(length(CCoV_vec)),' j: ',num2str(j),'/',num2str(length(ICoV_vec))]);
-
+                
+                % Get the input noise amplitudes
                 CCoV=CCoV_vec(i);
                 ICoV=ICoV_vec(j);
 
-                % Generate spike trains
+                % Simulate spike trains
                 I=7e-9; % 7 nA input current
                 [spike_times,time_param,~,CI]=generate_spike_trains(mean_drive(sub_idx),CCoV,ICoV);
                 
@@ -77,7 +82,7 @@ if useExistingData==0
                     end
                 end
                 
-                % Generate EMG signals
+                % Simulate EMG signals
                 [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,sub_idx);
 
                 % Select 64 out of 256 channels
