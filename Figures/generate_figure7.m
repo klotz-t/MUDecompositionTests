@@ -213,26 +213,13 @@ for i=1:length(temp_range)
     % Whiten data
     [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
 
+    % Get representative MUAP
+    my_muap = muap{MU1}{ceil(temp_range(i)/2)}(65:128,:);
+    
+    % Reconstruct the source
+    [sources(i), ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
 
-    % Compute MU filter
-    w = muap{MU1}{ceil(temp_range(i)/2)}(65:128,:);
-    w = extension(w,R);
-    w = whitening_matrix * w;
-
-    % Reconstruction
-    sig=w'*wSIG;
-
-    % Select the source with highest skewness
-    save_skew=zeros(1,size(sig,1));
-    for ind=1:size(sig,1)
-        save_skew(ind)=skewness(sig(ind,:));
-    end
-    [~,maxInd]=max(save_skew);
-    w = w(:,maxInd);
-    w = w./norm(w);
-
-    % Reconstruction
-    sources(i,:) = w'*wSIG;
+    % Match true and predicted sources
     [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{MU1});
     
 end

@@ -82,18 +82,8 @@ if useExistingData == 0
         eSIG = extension(data,R);
         [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
     
-        % Compute the mixing matrix
-        w = muap{1}(65:128,:);
-        w = extension2(w,R);
-        H = w;
-        for idx2=2:length(spike_times)
-            w = muap{idx2}(65:128,:);
-            w = extension2(w,R);
-            H = cat(2,H,w);
-        end
-    
         % Compute the extended and whitened mixing matrix
-        wH   = whitening_matrix*H;
+        wH = whiten_mixing_matrix(muap(1:length(spike_times)), R, whitening_matrix);
     
         % Compute the energy similarity between all pairs of MUAPs
         mu_responses = zeros(length(spike_times),64,101);
@@ -147,11 +137,6 @@ if useExistingData == 0
             decomp_out{idx}(mu_idx,4)=tmp(2);
             % False negative rate
             decomp_out{idx}(mu_idx,5)=tmp(3);
-    
-            % tmp = cST((mu_idx-1)+maxInd, (mu_idx-1)+maxInd);
-            % tmp2 = cST((mu_idx-1)+maxInd,:);
-            % tmp2((mu_idx-1)+maxInd) = [];
-            %sum(tmp2)/tmp;
             
             % Diagonal dominance of spike train covariance matrix
             decomp_out{idx}(mu_idx,6)= sum(diag(cST))/sum(cST,'all'); 
