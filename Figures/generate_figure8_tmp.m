@@ -10,9 +10,9 @@ addpath '../LIF model/'
 addpath '../Functions/'
 
 % 0: Run simulation, 1: Plot data
-useExistingData=0;
+useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
-useReplicationData=1;
+useReplicationData=0;
 
 % Use random seed to obtain identical results
 rng(0)
@@ -20,35 +20,28 @@ rng(0)
 % EMG sample rate
 fs=2048;
 
-% Fixing to MU #1 and #50
-MU1=1;
-MU2=50;
+% Number of model realizations
+nsim = 20;
+
+% Mean cortical input for each model configuration
+drive     = (5 + rand(1,nsim)*5)*1e-9;
 
 % Set the coefficient of variation for the common and independent noise (%)
 CCoV=20;
 ICoV=10;
 
-
-
-
 % Vector of extension factors
 extF = [1 2 4 8 12 16 24];
 
-% drives used for multiple runs
-nsim = 20;
-drive     = (5 + rand(1,nsim)*5)*1e-9;
-
-% Set the signal-to-noise ratio (dB)
+% Randomly define the signal-to-noise ratio values (in dB)
 noise_vec = rand(1,nsim)*20 + 10;
 
-% Pre-define vectors
+% Initalize simulation output for all model realizations
 mu_norms = cell(nsim,1);
-%MU50_norm = zeros(length(extF),1);
 noise_peaks = cell(nsim,1);
-%c50 = zeros(length(extF),1);
 similarities = cell(nsim,1);
-%s50 = zeros(length(extF),1);
 
+% Initalize progress variable
 job_idx = 1;
 
 if useExistingData==0
@@ -56,17 +49,21 @@ if useExistingData==0
     % Loop around simulations
     for sub_idx=1:nsim
 
+        % Set the signal-to-noise ratio    
         noise_dB = noise_vec(sub_idx);    
     
-        % Generate spike trains
-        I=drive(sub_idx); % 7 nA input current
+        % Simulate spike trains
+        I=drive(sub_idx); 
         [spike_times,time_param,~,CI]=generate_spike_trains(I,CCoV,ICoV);
         
+        % Get all motor units that are regularily active
         n_spikes = zeros(1,length(spike_times));
         for mu_idx=1:length(spike_times)
             n_spikes(mu_idx) = length(spike_times{mu_idx});
         end
         n_units = find(n_spikes < 100, 1);
+
+        % Initalize the output variables for the current model configuration
         mu_norms{sub_idx} = zeros(length(extF), n_units);
         noise_peaks{sub_idx} = zeros(length(extF), n_units);
         similarities{sub_idx} = zeros(length(extF), n_units);
@@ -81,13 +78,15 @@ if useExistingData==0
     
         % Loop through each extension factor
         for ext_idx=1:length(extF)
-            % Temporary extension factor R
+
+            % Extension factor R
             R=extF(ext_idx);
         
             % Extend and whiten
             eSIG = extension(data,R);
             [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
     
+            % Compute the extened an whitened mixing matrix
             w = muap{1}(65:128,:);
             w = extension2(w,R);
             w = whitening_matrix*w;
@@ -99,29 +98,38 @@ if useExistingData==0
                 H = cat(2,H,w);
             end
             
+            % Decompose the MUs of interest
             for mu_idx=1:n_units
-                
-        
-                % MU1
+                  
+                % Get the MU filter
                 w = muap{mu_idx}(65:128,:);
                 w = extension(w,R);
                 w = whitening_matrix * w;
         
+                % Get the norm of the extended and whitened mixing matrix
                 tmp = sqrt(sum(w.^2,1));
                 [mu_norm, idx] = max(tmp);
                 mu_norms{sub_idx}(ext_idx,mu_idx) = mu_norm;
+
+                % Normalize the MU filter
                 w = w(:,idx);
                 w = w./norm(w);
         
+                % Mixing matrix without the MU of interest
                 tmp = H;
                 tmp(:,(mu_idx-1)*(101+R-1)+1:mu_idx*(101+R-1)) = [];
-                
+       
+                % Get the largest background peak
                 back_ampl = w'*tmp;
                 noise_peaks{sub_idx}(ext_idx,mu_idx) = max(back_ampl);
+
+                % Get the most similar extended and whitened MUAP
                 s_cos = w'*tmp./sqrt(sum(tmp.^2,1));
                 similarities{sub_idx}(ext_idx,mu_idx) = max(s_cos);
                 
             end
+
+            % Display status
             disp(['finished_job ', num2str(job_idx)])
             job_idx = job_idx + 1;
         end 
@@ -136,24 +144,10 @@ if useExistingData==0
 end
 
 %%
-
-% 
-% 
 if useReplicationData == 1
     load('replication_data/extension_factor_population.mat')
 else
     load('my_data/extension_factor_population.mat')
-    % Check for consistency
-    % ref_data = load('replication_data/extension_factor.mat');
-    % check_val = isApproxEqual(ref_data.c1,c1) & isApproxEqual(ref_data.c50,c50) & ...
-    %     isApproxEqual(ref_data.MU1_norm,MU1_norm) & isApproxEqual(ref_data.MU50_norm,MU50_norm) & ...
-    %     isApproxEqual(ref_data.s1,s1) & isApproxEqual(ref_data.s50,s50);
-    % % Check if data is consitent with the reference data
-    % d1 = [ref_data.c1(:); ref_data.c50(:); ref_data.MU1_norm(:);...
-    %     ref_data.MU50_norm(:); ref_data.s1(:); ref_data.s50(:)];
-    % d2 = [c1(:); c50(:); MU1_norm(:);...
-    %     MU50_norm(:); s1(:); s50(:)];
-    % out = compareResults(d1,d2);
 end
 
 %% Generate figure
@@ -177,6 +171,7 @@ all_sep(all_sep > 1) = 1;
 % Filter the data and only consider units that are detectable at R=16
 my_idx = find(all_sep(6,:) > 0.5 & all_norms(6,:)>3);
 
+% Define colors
 cmap(2,:) = [0.2 0.2 0.2];
 cmap(1,:) = [0 0.4471 0.7412];
 alpha_val = 0.1;
@@ -196,8 +191,8 @@ set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Spike amplitude');
 title({'Spike amplitude'},'FontWeight','normal');
-h=legend([p1 p2 p3],{'Median','10^{th} to 90^{th} percentile', '25^{th} to 75^{th} percentile'},'location','south','FontSize',16);
-h.Box='off';
+%h=legend([p1 p2 p3],{'Median','10^{th} to 90^{th} percentile', '25^{th} to 75^{th} percentile'},'location','south','FontSize',16);
+%h.Box='off';
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xticks(0:8:24)
 
@@ -213,8 +208,8 @@ set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Separability metric');
 title({'Difference to background peak'},'FontWeight','normal');
-h=legend([p1 p2 p3],{'Median','10^{th} to 90^{th} percentile', '25^{th} to 75^{th} percentile'},'location','south','FontSize',16);
-h.Box='off';
+h=legend([p1 p2 p3],{'Median','10th to 90th percentile', '25th to 75th percentile'},'location','southoutside','Orientation','horizontal');%,'FontSize',16);
+%h.Box='off';
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xticks(0:8:24)
 
@@ -230,8 +225,8 @@ set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',16);
 xlabel('Extension factor');
 ylabel('Cosine similarity');
 title({'Most similar MUAP'},'FontWeight','normal');
-h=legend([p1 p2 p3],{'Median','10^{th} to 90^{th} percentile', '25^{th} to 75^{th} percentile'},'location','south','FontSize',16);
-h.Box='off';
+%h=legend([p1 p2 p3],{'Median','10^{th} to 90^{th} percentile', '25^{th} to 75^{th} percentile'},'location','south','FontSize',16);
+%h.Box='off';
 set(gca,'TickDir','out');set(gcf,'color','w');set(gca,'FontSize',28);
 xticks(0:8:24)
 
