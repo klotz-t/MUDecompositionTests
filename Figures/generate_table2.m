@@ -100,38 +100,19 @@ if useExistingData==0
                 [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
 
                 % Compute the extended and whitened mixing matrix
-                w = muap{1}(65:128,:);
-                w = extension2(w,R);
-                H = w;
-                for idx2=2:length(spike_times)
-                    w = muap{idx2}(65:128,:);
-                    w = extension2(w,R);
-                    H = cat(2,H,w);
-                end
-                wH   = whitening_matrix*H;
+                wH = whiten_mixing_matrix(muap(1:length(spike_times)), R, whitening_matrix);
                 
                 for k=1:length(MUs)
                     % Select MUAP
                     mu_idx = MUs(k);
-                    w = muap{mu_idx}(65:128,:);
-                    w = extension(w,R);
-                    w = whitening_matrix * w;
-    
-                    % Reconstruction
-                    sig=w'*wSIG;
-    
-                    % Select the source with highest skewness
-                    save_skew=zeros(1,size(sig,1));
-                    for ind=1:size(sig,1)
-                        save_skew(ind)=skewness(sig(ind,:));
-                    end
-                    [~,maxInd]=max(save_skew);
-                    w = w(:,maxInd);
-                    wNorm(k,i,j) = norm(w);
-                    w = w./norm(w);
-    
-                    % Reconstruction
-                    sig=w'*wSIG;
+                    my_muap = muap{mu_idx}(65:128,:);
+                    
+                    % Reconstruct source
+                    [sig, w, w_norm] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+
+                    % Save the norm of the representative extended and
+                    % whitened MUAP
+                    wNorm(k,i,j) = w_norm;
                     
                     % Compute the cosine similarity of the most similar
                     % extended and whitened MUAP

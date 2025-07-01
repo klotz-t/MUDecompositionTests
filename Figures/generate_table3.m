@@ -119,24 +119,9 @@ if useExistingData==0
     
                 % Compute MU filter corresponding to the reference MUAP
                 muap_i = muap{MU1}{k}(65:128,:);
-                w = muap_i;
-                w = extension(w,R);
-                w = whitening_matrix * w;
-        
-                % Reconstruction
-                sig=w'*wSIG;
-        
-                % Select the source with highest skewness
-                save_skew=zeros(1,size(sig,1));
-                for delay_idx=1:size(sig,1)
-                    save_skew(delay_idx)=skewness(sig(delay_idx,:));
-                end
-                [~,maxInd]=max(save_skew);
-                w = w(:,maxInd);
-                w = w./norm(w);
-        
-                % Reconstruction
-                sig=w'*wSIG;
+                
+                % Reconstruct source
+                [sig, ~, ~] = decompose_from_muap(muap_i, R, whitening_matrix, wSIG);
         
                 % Compute separability and MUAP similarity metrics
                 tmp=separability_metric(sig,spike_times{MU1});
@@ -179,7 +164,7 @@ if useExistingData==0
         
         
     end
-    
+
     % Shut down the parallel computing environment
     delete(gcp("nocreate"));
 

@@ -143,26 +143,15 @@ for i=1:length(spat_transl_vec)
     % Whiten data
     [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
     
-    w = muap{MU2}(65:128,:);
-    w = extension(w,R);
-    w = whitening_matrix * w;
-    
-    % Reconstruction
-    sig=w'*wSIG;
-    
-    % Select the source with highest skewness
-    save_skew=zeros(1,size(sig,1));
-    for ind=1:size(sig,1)
-        save_skew(ind)=skewness(sig(ind,:));
-    end
-    [~,maxInd]=max(save_skew);
-    w = w(:,maxInd);
-    w = w./norm(w);
-    
-    % Reconstruction
-    sources(i,:) = w'*wSIG;
+
+    % Compute MU filter
+    my_muap = muap{MU2}(65:128,:);
+
+    % Reconstruct source
+    [sources(i,:), w, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+
+    % Match predicted and true spikes
     [~,~,matched_idx{i},~, unmatched_idx{i}]=separability_metric(sources(i,:),spike_times{MU2});
-    %[matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{MU2});
 
 end
 t_vec = linspace(0,length(sources)/fs, length(sources));

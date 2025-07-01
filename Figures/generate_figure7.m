@@ -215,7 +215,6 @@ for i=1:length(temp_range)
 
 
     % Compute MU filter
-    w = mean_muap;
     w = muap{MU1}{ceil(temp_range(i)/2)}(65:128,:);
     w = extension(w,R);
     w = whitening_matrix * w;

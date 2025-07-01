@@ -102,25 +102,11 @@ if useExistingData==0
                 % Whiten data
                 [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
 
-                % Compute MU filter
-                w = muap{MU2}(65:128,:);
-                w = extension(w,R);
-                w = whitening_matrix * w;
-
-                % Reconstruction
-                sig=w'*wSIG;
-
-                % Select the source with highest skewness
-                save_skew=zeros(1,size(sig,1));
-                for ind=1:size(sig,1)
-                    save_skew(ind)=skewness(sig(ind,:));
-                end
-                [~,maxInd]=max(save_skew);
-                w = w(:,maxInd);
-                w = w./norm(w);
-
-                % Reconstruction
-                sig=w'*wSIG;
+                % MUAP of interest
+                my_muap = muap{MU2}(65:128,:);
+                
+                % Reconstruct source
+                [sig, ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
 
                 % Compute metrics
                 tmp=separability_metric(sig,spike_times{MU2});
