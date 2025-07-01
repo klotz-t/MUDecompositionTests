@@ -77,46 +77,19 @@ if useExistingData==0
                 [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
 
                 % Compute the extended and whitened mixing matrix
-                w = muap{1}(65:128,:);
-                w = extension2(w,R);
-                H = w;
-                for idx2=2:length(spike_times)
-                    w = muap{idx2}(65:128,:);
-                    w = extension2(w,R);
-                    H = cat(2,H,w);
-                end
-                wH   = whitening_matrix*H;
+                wH = whiten_mixing_matrix(muap(1:length(spike_times)), R, whitening_matrix);
                 
                 for k=1:length(MUs)
                     % Select MUAP
                     mu_idx = MUs(k);
-                    w = muap{mu_idx}(65:128,:);
-                    w = extension(w,R);
-                    w = whitening_matrix * w;
-    
-                    % Reconstruction
-                    sig=w'*wSIG;
-    
-                    % Select the source with highest skewness
-                    save_skew=zeros(1,size(sig,1));
-                    for ind=1:size(sig,1)
-                        save_skew(ind)=skewness(sig(ind,:));
-                    end
-                    [~,maxInd]=max(save_skew);
-                    w = w(:,maxInd);
-                    wNorm(k,i,j) = norm(w);
-                    w = w./norm(w);
-    
-                    % Reconstruction
-                    sig=w'*wSIG;
+                    my_muap = muap{mu_idx}(65:128,:);
 
-                    if CCoV == 10 && ICoV==15 && mu_idx==1
-                        ex_sig1 = sig;
-                        [TP1, FP1] = match_spikes(sig, spike_times{mu_idx});
-                    elseif CCoV == 50 && ICoV==15 && mu_idx==1
-                        ex_sig2 = sig;
-                        [TP2, FP2] = match_spikes(sig, spike_times{mu_idx});
-                    end
+                    % Reconstruct source
+                    [sig, w, w_norm] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+
+                    % Save the norm of the representative extended and
+                    % whitened MUAP
+                    wNorm(k,i,j) = w_norm;
                     
                     % Compute the cosine similarity of the most similar
                     % extended and whitened MUAP
@@ -146,18 +119,25 @@ if useExistingData==0
     end
 end
 
-%%
-%% Exampe spike trains
+%% Compute exemplary spike trains
+
+% Conrol the random seed
 rng(0)
 
+% Mean cortical input
+I=7e-9; 
+
+% Define the common noise variability
 CCoV_vec = [0, 50];
+
+% Signal-to-noise ratio
+noise_dB = 15;
+
+% Initalize output variables
 sources = zeros(length(CCoV_vec), 122880);
 matched_idx = cell(length(CCoV_vec),1);
 unmatched_idx = cell(length(CCoV_vec),1);
 
-
-noise_dB = 15;
-I=7e-9; % 7 nA input current
 
 for i=1:length(CCoV_vec)
     CCoV = CCoV_vec(i);
@@ -182,26 +162,14 @@ for i=1:length(CCoV_vec)
     % Whiten data
     [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
     
+    % Get the MUAP of interest
     mu_idx = 1;
-    w = muap{mu_idx}(65:128,:);
-    w = extension(w,R);
-    w = whitening_matrix * w;
-    
-    % Reconstruction
-    sig=w'*wSIG;
-    
-    % Select the source with highest skewness
-    save_skew=zeros(1,size(sig,1));
-    for ind=1:size(sig,1)
-        save_skew(ind)=skewness(sig(ind,:));
-    end
-    [~,maxInd]=max(save_skew);
-    w = w(:,maxInd);
-    w = w./norm(w);
-    
-    % Reconstruction
-    sources(i,:) = w'*wSIG;
+    my_muap = muap{mu_idx}(65:128,:);
 
+    % Reconstruct the source
+    [sources(i), ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+
+    % Match predicted and ground truth spikes
     [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{1});
 
 end
