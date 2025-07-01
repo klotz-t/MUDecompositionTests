@@ -1,146 +1,229 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Code to generate figure 2 in "Revisiting convolutive blind source 
-% separation for identifying spiking motor neuron activity: 
-% From theory to practice"
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 clearvars; close all;
+
+cd '/Users/robinrohlen/Documents/GitHub/MUDecompositionTests/Figures'
 
 addpath '../LIF model/'
 addpath '../Functions/'
+addpath '../experimental-simulation/functions/'
 
-% 0: Run simulation, 1: Plot data
-useExistingData=1;
-% 1: plot the replication data, 0: Plot your own data
-useReplicationData=1;
+% Use random seed to obtain identical results
+rng(1)
 
-% Set number of motor neurons in the pool
-n_mn=300;
+% EMG sample rate
+fs=2048;
 
-% Set number of functional motor neuron clusters
-n_clust=1;
+% Set the maximum input current in the trapezoid (nA)
+I=13e-9;
 
-% Set soma diameters
-min_soma_diameter = 50e-6; % in micrometers, for smallest MN
-max_soma_diameter = 100e-6; % in micrometers, for largest MN
+% Set the signal-to-noise ratio (dB)
+noise_dB=20;
 
-size_distribution_exponent = 2;
-lerp=@(a,b,t) a + t * (b - a);
-motoneuron_soma_diameters = zeros(1,n_mn);
-for mni=1:n_mn
-    motoneuron_soma_diameters(mni) = lerp(min_soma_diameter,max_soma_diameter, (mni/(n_mn-1))^size_distribution_exponent );
+% Random Seed for drawing MUAPs
+random_seed = false;
+
+% Set CCoV and ICoV
+CCoV=10;
+ICoV=10;
+
+% Generate motor neuron spike trains
+[spike_times,time_param,membr_param,CI]=generate_spike_trains(I,CCoV,ICoV);
+disp(['The number of active MUs is: ', num2str(length(spike_times))])
+
+% Generate EMG signals
+[data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,random_seed);
+
+% Bandpass 20-500 Hz
+data=bandpassingals(data,fs,1);
+
+% Load experimental EMG signals
+load('/Users/robinrohlen/Documents/Research/Manus/Benchmark/experimental-simulation/data/S3_30_DF.otb+_decomp.mat_edited.mat')
+
+% Bandpass 20-500 Hz
+signal.data=signal.data(1:256,:);
+signal.data=bandpassingals(signal.data,signal.fsamp,1);
+
+% Estimate median frequency for each channel (simulated)
+med_freq_sim=zeros(1,size(data,1));
+for ind=1:size(med_freq_sim,2)
+    med_freq_sim(ind)=medfreq(data(ind,(size(data,2)/2-9999):(size(data,2)/2+10000)),2048);
 end
+disp(['Median frequency (simulated): ',num2str(round(mean(med_freq_sim),1)),' +/- ',num2str(round(std(med_freq_sim),1))]);
+disp(['Median frequency (simulated ch 85): ',num2str(round(med_freq_sim(85),1))]);
 
-% Reset potential (V)
-membr_param.V_reset = -70e-3;
-% Leak reversal potential (V)
-membr_param.V_e = -70e-3;
-% Spike threshold (V)
-membr_param.V_th = -50e-3;
-% Refractory times (s)
-membr_param.tref = 2.7e-8./(motoneuron_soma_diameters.^1.51) .* 0.2;
-% Membrane resistances (Ohm)
-membr_param.Rm=(1.68e-10)./(3.96e-4.*(3.85e-9 .* 9.1.^(((1:n_mn)./n_mn).^1.1831)).^0.396).^2.43;
-% Membrane time constants (s)
-membr_param.tau_m=7.9e-5.*(motoneuron_soma_diameters.^1) .*  membr_param.Rm;
-% Gain parameters (leakage and excitability)
-membr_param.gain_leak=linspace(0.25,0.15,n_mn); 
-membr_param.gain_exc=membr_param.gain_leak;
+% Estimate PSD for each channel (experimental)
+med_freq_exp=zeros(1,size(signal.data,1));
+for ind=1:size(med_freq_exp,2)
+    med_freq_exp(ind)=medfreq(signal.data(ind,(floor(size(signal.data,2)/2)-9999):(floor(size(signal.data,2)/2)+10000)),2048);
+end
+med_freq_exp(find(med_freq_exp>150))=[];
+disp(['Median frequency (experimental): ',num2str(round(mean(med_freq_exp),1)),' +/- ',num2str(round(std(med_freq_exp),1))]);
+disp(['Median frequency (experimental ch 85): ',num2str(round(med_freq_exp(85),1))]);
 
-% Set time parameters
-time_param.T_dur = 60; % Total duration (s)
-time_param.fs = 10e3; % 10 kHz
-time_param.dt = 1/time_param.fs; % Time step (s)
-time_param.T = 0:time_param.dt:time_param.T_dur; % Time vector
+% Define colors
+cmap=lines(2);
 
-if useExistingData==0
-    current_range=linspace(5e-9,45e-9,1000);
-    firing_rates=zeros(length(current_range),n_mn);
+% Plot EMG signals
 
-    for ind=1:length(current_range)
-        spike_times=lif_model(n_mn,current_range(ind)*ones(n_mn,size(time_param.T,2)),membr_param,time_param);
-        if size(spike_times,2) > 0
-            for tmp=1:size(spike_times,2)
-                firing_rates(ind,tmp)=median(1./diff(spike_times{tmp}/(1/time_param.dt)));
-            end
-        end
+% Simulated EMG signal
+figure(1);set(gcf,'units','points','position',[347,501,864,204]);
+hold on;
+plot(linspace(0,size(data,2)/fs,size(data,2)),data(85,:)./max(data(85,:)),'Color',cmap(1,:));
+hold off;
+ylim([-1 1]);ytickformat('%.1f');
+xlabel('Time (s)');
+ylabel('Amplitude (n.u.)');
+title('Simulated EMG signal (13 nA, ch 85)','FontWeight','normal');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',20);
+g=gcf;
+g.Renderer='painters';
+
+% Zoom into the middle and visualise 10 sec of the simulated EMG signal
+figure(2);set(gcf,'units','points','position',[159,171,1258,242]);
+hold on;
+plot(data(85,(size(data,2)/2-999):(size(data,2)/2+1000))./max(data(85,(size(data,2)/2-999):(size(data,2)/2+1000))),'Color',cmap(1,:),'LineWidth',1.5);
+hold off;
+ylim([-1 1]);
+set(gca,'Visible','off');
+set(gcf,'color','w');
+g=gcf;
+g.Renderer='painters';
+
+% Experimental EMG signal
+figure(3);set(gcf,'units','points','position',[347,501,864,204]);
+hold on;
+plot(linspace(0,size(signal.data,2)/fs,size(signal.data,2)),signal.data(85,:)./max(signal.data(85,:)),'Color',cmap(2,:));
+hold off;
+axis tight;
+ylim([-1 1]);ytickformat('%.1f');
+xlabel('Time (s)');
+ylabel('Amplitude (n.u.)');
+title('Experimental EMG signal (subject 3, 30% MVC, ch 85)','FontWeight','normal');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',20);
+g=gcf;
+g.Renderer='painters';
+
+% Zoom into the middle and visualise 10 sec of the experimental EMG signal
+figure(4);set(gcf,'units','points','position',[159,171,1258,242]);
+hold on;
+plot(signal.data(85,(floor(size(signal.data,2)/2)-999):(floor(size(signal.data,2)/2)+1000))./max(signal.data(85,(floor(size(signal.data,2)/2)-999):(floor(size(signal.data,2)/2)+1000))),'Color',cmap(2,:),'LineWidth',1.5);
+hold off;
+axis tight;
+ylim([-1 1]);
+set(gca,'Visible','off');
+set(gcf,'color','w');
+g=gcf;
+g.Renderer='painters';
+
+% Plot normalised median PSD for simulated and experimental EMG signals
+figure(5);set(gcf,'units','points','position',[503,408,471,310]);
+hold on;
+plot(f,mean_pxx_sim./max(mean_pxx_sim),'Color',cmap(1,:));
+plot(f,mean_pxx_exp./max(mean_pxx_exp),'Color',cmap(2,:));
+hold off;
+l=legend('Simulated','Experimental');
+l.Box='off';
+xlim([0 500]);
+ytickformat('%.1f');
+xlabel('Frequency (Hz)');
+ylabel('Median PSD (n.u.)');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',24);
+g=gcf;
+g.Renderer='painters';
+
+% Plot instantaneous firing rates simulated
+figure(6);set(gcf,'units','points','position',[503,485,471,233]);
+
+cmap=flip(turbo(7));
+indx=[1 25 50 75 100 125 150];
+
+% Spike train
+ST=zeros(length(indx),size(data,2));
+hold on;
+for j=1:length(indx)
+    ST(j,round(fs*spike_times{indx(j)}./time_param.fs))=1;
+    ST(j,:)=conv(ST(j,:),hann(4000),'same');
+    plot(linspace(0,size(data,2)/fs,size(data,2)),ST(j,:),'Color',cmap(j,:),'LineWidth',3);
+end
+hold off;
+xlabel('Time (s)');
+ylabel('Freq. (Hz)');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',24);
+g=gcf;
+g.Renderer='painters';
+
+% Plot ISI CoV simulated
+ISI_CoV_vec=zeros(1,150);
+for ind=1:size(ISI_CoV_vec,2)
+    if length(spike_times{ind})>2
+        ISI_CoV_vec(ind)=mad((diff(spike_times{ind}(:))/10))/median((diff(spike_times{ind}(:))/10));
     end
-    % Save data
-    if not(isfolder('my_data/'))
-        mkdir('my_data/')
+end
+
+cmap=lines(2);
+
+figure(7);set(gcf,'units','points','position',[503,485,471,233]);
+hold on;
+histogram(100*ISI_CoV_vec,10,'FaceColor',cmap(1,:))
+hold off;
+xlabel('ISI CoV (%)');
+ylabel('# MUs');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',24);
+xlim([5 30]);
+g=gcf;
+g.Renderer='painters';
+
+% Plot instantaneous firing rates experimental
+figure(8);set(gcf,'units','points','position',[503,485,471,233]);
+
+cmap=flip(turbo(size(edition.Distimeclean{3},2)));
+%indx=[1 25 50 75 100 125 150];
+
+% Spike train
+ST=zeros(size(edition.Distimeclean{3},2),size(signal.data,2));
+hold on;
+for j=1:size(edition.Distimeclean{3},2)
+    ST(j,edition.Distimeclean{3}{j})=1;
+    ST(j,:)=conv(ST(j,:),hann(4000),'same');
+    plot(linspace(0,size(signal.data,2)/fs,size(signal.data,2)),ST(j,:),'Color',cmap(j,:),'LineWidth',3);
+end
+hold off;
+xlabel('Time (s)');
+ylabel('Freq. (Hz)');
+set(gca,'TickDir','out');
+set(gcf,'color','w');
+set(gca,'FontSize',24);
+g=gcf;
+g.Renderer='painters';
+
+% Plot ISI CoV experimental
+ISI_CoV_vec=zeros(1,size(edition.Distimeclean{3},2));
+for ind=1:size(ISI_CoV_vec,2)
+    if length(edition.Distimeclean{3}{ind})>2
+        ISI_CoV_vec(ind)=mad((diff(edition.Distimeclean{3}{ind}(:))/2.048))/median((diff(edition.Distimeclean{3}{ind}(:))/2.048));
     end
-    save('my_data/frequency_current_relation.mat','current_range','firing_rates')
-    return
 end
 
-% Load data
-if useReplicationData == 1
-    load('replication_data/frequency_current_relation.mat');
-else
-    ref_data = load('replication_data/frequency_current_relation.mat');
-    load('my_data/frequency_current_relation.mat');
-    % Compare to reference data
-    d1 = ref_data.firing_rates(:);
-    d2 = firing_rates(:);
-    out = compareResults(d1,d2);
-    clear ref_data
-end
+cmap=lines(2);
 
-% Generate figure
-cmap=flip(turbo(n_mn));
-
-t=tiledlayout(2,2);
-figure(1);set(gcf,'units','points','position',[322,89,903,776]);
-
-nexttile;
+figure(9);set(gcf,'units','points','position',[503,485,471,233]);
 hold on;
-plot(1:n_mn,membr_param.Rm*1e-6,'-','LineWidth',6,'Color',cmap(280,:));
+histogram(100*ISI_CoV_vec,40,'FaceColor',cmap(2,:))
 hold off;
+xlabel('ISI CoV (%)');
+ylabel('# MUs');
 set(gca,'TickDir','out');
 set(gcf,'color','w');
-set(gca,'FontSize',18);
-xlabel('Motor neuron number');
-ylabel('Membrane resistance (MOhm)');
-
-nexttile;
-hold on;
-plot(1:n_mn,membr_param.tau_m*1e3,'-','LineWidth',6,'Color',cmap(280,:));
-hold off;
-set(gca,'TickDir','out');
-set(gcf,'color','w');
-set(gca,'FontSize',18);
-xlabel('Motor neuron number');
-ylabel('Membrane time constant (ms)');
-
-nexttile;
-hold on;
-plot(1:n_mn,membr_param.tref*1e3,'-','LineWidth',6,'Color',cmap(280,:));
-hold off;
-set(gca,'TickDir','out');
-set(gcf,'color','w');
-set(gca,'FontSize',18);
-xlabel('Motor neuron number');
-ylabel('Refractory time (ms)');
-
-nexttile;
-cmap=flip(turbo(n_mn));
-hold on;
-for ind=([1 50 100 150 200 250 300])
-    plot(1e9*current_range(find(firing_rates(:,ind)~=0)),firing_rates(find(firing_rates(:,ind)~=0),ind),'-','LineWidth',6,'Color',cmap(ind,:));
-end
-hold off;
-set(gca,'TickDir','out');
-set(gcf,'color','w');
-set(gca,'FontSize',18);
-xlabel('Input current (nA)');
-ylabel('Firing rate (Hz)');
-xlim([0 45])
-ylim([0 50])
-h=legend('1st MN','50th MN','100th MN','150th MN','200th MN','250th MN','300th MN','location','northwest','NumColumns',2);
-h.Box='off';
-
-t.TileSpacing='compact';
-t.Padding='compact';
-
+set(gca,'FontSize',24);
+xlim([5 30]);
 g=gcf;
 g.Renderer='painters';
