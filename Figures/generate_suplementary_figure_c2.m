@@ -64,21 +64,11 @@ wMU = whitening_matrix*eMU;
 ePy = extension(data_unfilt-mu_sig,R);
 wPy = whitening_matrix*ePy;
 
-w = muap{MU}(65:128,:);
-w = extension(w,R);
-w = whitening_matrix * w;
+% Get the MUAP of interest
+my_muap = muap{MU}(65:128,:);
 
-% Reconstruction
-sig=w'*wMU;
-
-% Select the source with highest skewness
-save_skew=zeros(1,size(sig,1));
-for ind=1:size(sig,1)
-    save_skew(ind)=skewness(sig(ind,:));
-end
-[~,maxInd]=max(save_skew);
-w = w(:,maxInd);
-w = w./norm(w);
+% Reconstruct source
+[sig, w, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
 
 % Generate figure
 t=tiledlayout(2,2);

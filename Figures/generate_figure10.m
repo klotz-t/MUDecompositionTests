@@ -91,7 +91,6 @@ if useExistingData == 0
             mu_responses(mu_idx,:,:) = muap{mu_idx}(65:128,:);
         end
         [~, energy_similarity] = compute_cosine_similarity2(mu_responses);
-        %clear mu_responses
     
         % Initalize output
         decomp_out{idx} = zeros(length(spike_times),15);
@@ -99,27 +98,15 @@ if useExistingData == 0
         for mu_idx=1:length(spike_times)
     
             % Select all columns of the mixing matrix of one source
-            w = muap{mu_idx}(65:128,:);
-            decomp_out{idx}(mu_idx,8)= rms(w,'all')/rms_emg;
-            w = extension(w,R);
-            w = whitening_matrix * w;
-        
-            % Reconstruction of all delayed sources
-            sig=w'*wSIG;
-            % sig=sig./max(sig);
-        
-            % Select the source with highest skewness
-            save_skew=zeros(1,size(sig,1));
-            for ind=1:size(sig,1)
-                save_skew(ind)=skewness(sig(ind,:));
-            end
-            [~,maxInd]=max(save_skew);
-            w = w(:,maxInd);
-            decomp_out{idx}(mu_idx,1) = norm(w); % Norm of the whitened MUAP
-            w = w./norm(w);
-        
-            % Reconstruction
-            sig=w'*wSIG;
+            my_muap = muap{mu_idx}(65:128,:);
+            decomp_out{idx}(mu_idx,8)= rms(my_muap,'all')/rms_emg;
+            
+            % Reconstruct source
+            [sig, w, w_norm] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+
+            % Norm of the extended and whitened MUAP
+            decomp_out{idx}(mu_idx,1) = w_norm; 
+
             % Binary spike train
             est_spikes=est_spike_times(sig,fs);
             

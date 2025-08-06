@@ -86,17 +86,8 @@ if useExistingData==0
             eSIG = extension(data,R);
             [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
     
-            % Compute the extened an whitened mixing matrix
-            w = muap{1}(65:128,:);
-            w = extension2(w,R);
-            w = whitening_matrix*w;
-            H = w;
-            for idx2=2:length(spike_times)
-                w = muap{idx2}(65:128,:);
-                w = extension2(w,R);
-                w = whitening_matrix*w;
-                H = cat(2,H,w);
-            end
+            % Compute the extended and whitened mixing matrix
+            H = whiten_mixing_matrix(muap(1:length(spike_times)), R, whitening_matrix);
             
             % Decompose the MUs of interest
             for mu_idx=1:n_units
