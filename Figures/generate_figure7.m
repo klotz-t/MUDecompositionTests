@@ -11,7 +11,7 @@ addpath '../Functions/'
 
 
 % If 0 rerun simulation
-useExistingData=0;
+useExistingData=1;
 % If 1 plot the replication data
 useReplicationData=1;
 
@@ -23,7 +23,7 @@ mean_drive = 7*1e-9;
 
 MU1 = 50;
 
-noise_dB = 10; 
+noise_dB = 20; 
 
 % EMG sample rate
 fs=2048;
@@ -40,13 +40,13 @@ es2 =zeros(length(scale_fact), length(nl_range));
 amp =zeros(length(scale_fact), length(nl_range));
 corr =zeros(length(scale_fact), length(nl_range));
 
-parpool('local', 5);
-
 mid_idx=10;
 
 
 if useExistingData==0
-
+    
+    % Start parallel environement
+    parpool('local', 5);
 
     % Generate spike trains
     sub_idx = 1;
@@ -89,24 +89,9 @@ if useExistingData==0
 
             % Compute MU filter
             muap_i = muap{MU1}{i}(65:128,:);
-            w = muap_i;
-            w = extension(w,R);
-            w = whitening_matrix * w;
-    
-            % Reconstruction
-            sig=w'*wSIG;
-    
-            % Select the source with highest skewness
-            save_skew=zeros(1,size(sig,1));
-            for ind=1:size(sig,1)
-                save_skew(ind)=skewness(sig(ind,:));
-            end
-            [~,maxInd]=max(save_skew);
-            w = w(:,maxInd);
-            w = w./norm(w);
-    
-            % Reconstruction
-            sig=w'*wSIG;
+            
+            % Reconstruct source
+            [sig, w, ~] = decompose_from_muap(muap_i, R, whitening_matrix, wSIG);
     
             % Compute separability and MUAP similarity metrics
             tmp=separability_metric(sig,spike_times{MU1});
@@ -140,85 +125,71 @@ if useExistingData==0
     if not(isfolder('my_data/'))
         mkdir('my_data/')
     end
-    save('my_data/changing_muap_test_10dB.mat','mean_drive' ,'MU1','time_param','sep','fpr','fnr','es1','es2','amp','corr'); 
+    save(['my_data/changing_muap_',num2str(noise_dB),'dB.mat'],'mean_drive' ,'MU1','time_param','sep','fpr','fnr','es1','es2','amp','corr'); 
+
+    % Exampe spike trains
+    rng(1)
+    
+    temp_range = [11, 19];
+    amp_range = [0.8 0.5];
+    
+    sources = zeros(2, 122880);
+    matched_idx = cell(2, 1);
+    unmatched_idx = cell(2, 1);
+    
+    sub_idx = 1;
+    noise_dB = 20;
+    I=7e-9; % 7 nA input current
+    MU1 = 50;
+    
+    
+    [spike_times,time_param,~,CI]=generate_spike_trains(I);
+    
+    t_vec = linspace(0,length(sources)/fs, length(sources));
+    
+    
+    for i=1:length(temp_range)
+    
+        % Set up param vector for non-stationary spatio-temporal MUAP
+        similar_muaps_vec=[0 MU1 MU1+1 0 1];
+        changing_muap_vec=[1 MU1 1 temp_range(i) mid_idx amp_range(i)];
+        % Generate EMG signals
+        [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,sub_idx,similar_muaps_vec,changing_muap_vec,CI);
+        
+        % Select 64 out of 256 channels
+        data=data(65:128,:);
+        sig_noise=sig_noise(65:128,:);
+        data_unfilt=data_unfilt(65:128,:);
+        
+        % Set extension factor
+        R=16;
+        
+        % Extend
+        eSIG = extension(data,R);
+        
+        % Whiten data
+        [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+    
+    
+        % Compute MU filter
+        my_muap = muap{MU1}{ceil(temp_range(i)/2)}(65:128,:);
+        
+        % Reconstruct the source
+        [sources(i,:), ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+    
+        % Match predicted and ground truth spikes
+        [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{MU1});
+        % Save outout
+        save('my_data/chaning_muap_example_sources.mat', 'sources', 'matched_idx', 'unmatched_idx',...
+            't_vec','MU1','I','noise_dB');
+    
+        
+    end
+
     return
 end
 
-%% Exampe spike trains
-rng(1)
 
-temp_range = [11, 19];
-amp_range = [0.8 0.5];
-
-sources = zeros(2, 122880);
-matched_idx = cell(2, 1);
-unmatched_idx = cell(2, 1);
-
-sub_idx = 1;
-noise_dB = 20;
-I=7e-9; % 7 nA input current
-MU1 = 50;
-
-
-[spike_times,time_param,~,CI]=generate_spike_trains(I);
-
-t_vec = linspace(0,length(sources)/fs, length(sources));
-
-
-for i=1:length(temp_range)
-
-    % Set up param vector for non-stationary spatio-temporal MUAP
-    similar_muaps_vec=[0 MU1 MU1+1 0 1];
-    changing_muap_vec=[1 MU1 1 temp_range(i) mid_idx amp_range(i)];
-    % Generate EMG signals
-    [data,data_unfilt,sig_noise,muap,amp_vary]=generate_emg_signals(spike_times,time_param,noise_dB,sub_idx,similar_muaps_vec,changing_muap_vec,CI);
-    
-    % Select 64 out of 256 channels
-    data=data(65:128,:);
-    sig_noise=sig_noise(65:128,:);
-    data_unfilt=data_unfilt(65:128,:);
-
-    % Compute mean MUAP
-    muap_stacked=zeros(64,size(muap{MU1}{1},2),size(muap{MU1},2));
-    for ind=1:size(muap{MU1},2)
-        muap_stacked(:,:,ind)=muap{MU1}{ind}(65:128,:);
-    end
-    mean_muap=mean(muap_stacked,3);
-    
-    % Set extension factor
-    R=16;
-    
-    % Extend
-    eSIG = extension(data,R);
-    
-    % Whiten data
-    [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
-
-
-    % Compute MU filter
-    w = mean_muap;
-    w = muap{MU1}{ceil(temp_range(i)/2)}(65:128,:);
-    w = extension(w,R);
-    w = whitening_matrix * w;
-
-    % Reconstruction
-    sig=w'*wSIG;
-
-    % Select the source with highest skewness
-    save_skew=zeros(1,size(sig,1));
-    for ind=1:size(sig,1)
-        save_skew(ind)=skewness(sig(ind,:));
-    end
-    [~,maxInd]=max(save_skew);
-    w = w(:,maxInd);
-    w = w./norm(w);
-
-    % Reconstruction
-    sources(i,:) = w'*wSIG;
-    [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{MU1});
-
-    
-end
 
 
 %%
@@ -227,15 +198,12 @@ end
 
 if useReplicationData == 1
     % Load reference data
-    load('replication_data/changing_muap.mat');
+    load('replication_data/changing_muap_20dB.mat');
+    load('replication_data/chaning_muap_example_sources.mat')
 else
-    % Load data and compare to reference data
-    ref_data = load('replication_data/changing_muap.mat');
-    load('my_data/changing_muap.mat');
-    % Check if data is consitent with the reference data
-    d1 = [ref_data.sep(:); ref_data.fpr(:); ref_data.fnr(:)];
-    d2 = [sep(:); fpr(:); fnr(:)];
-    out = compareResults(d1,d2);
+    % Load my data
+    load(['my_data/changing_muap_',num2str(noise_dB),'dB.mat'])
+    load('my_data/chaning_muap_example_sources.mat')
 end
 
 
