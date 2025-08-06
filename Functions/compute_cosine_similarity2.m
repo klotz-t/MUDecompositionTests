@@ -1,3 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Function to compute the cosine similarity and 
+% the energy similarity (= maximum regularized squared Euclidean distance) 
+% between all pairs of motor unit responses
+%
+% Input:    mu_responses = dictonary of all MU responses
+%
+% Output:   cosine_similarity = Cosine similarity metric
+%           energy_similarity = Energy similarity metric (normalized mean
+%               square difference)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 function [cosine_similarity,energy_similarity] = compute_cosine_similarity2(mu_responses)
 % Function to compute the cosine similarity between all motor unit
 % responses in a motor unit pool.

@@ -1,9 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Function to compute the cosine similarity and the energy similarity.
+% Function to compute the cosine similarity and the
+% energy similarity (= maximum regularized squared Euclidean distance).
 % The energy similarity is defined as the normalised mean square difference
 % of two spatio-temporal MUAPs that are stacked. This implementation is
-% based on the interpretation of the metric used in
+% based on our interpretation of the metric described in
 % Farina et al. (2008): https://doi.org/10.1152/jn.90219.2008
 %
 % Input:    x = spatio-temporal MUAP 1
