@@ -115,71 +115,76 @@ if useExistingData==0
         save(['my_data/common_spikes_',num2str(noise_dB),'dB.mat'], ...
             'ICoV_vec','CCoV_vec', 'SEP', 'FNR', 'FPR', 'wNorm', 'sCos', ...
             'noise_dB','fs','MUs','I','spike_times','time_param')
-        return
     end
+
+    % Compute exemplary spike trains
+
+    % Conrol the random seed
+    rng(0)
+    
+    % Mean cortical input
+    I=7e-9; 
+    
+    % Define the common noise variability
+    CCoV_vec = [0, 50];
+    
+    % Signal-to-noise ratio
+    noise_dB = 15;
+    
+    % Initalize output variables
+    sources = zeros(length(CCoV_vec), 122880);
+    matched_idx = cell(length(CCoV_vec),1);
+    unmatched_idx = cell(length(CCoV_vec),1);
+    
+    
+    for i=1:length(CCoV_vec)
+        CCoV = CCoV_vec(i);
+        ICoV = 15;
+        [spike_times,time_param,~,CI]=generate_spike_trains(I,CCoV,ICoV);
+        spike_times = spike_times(1:58);
+        
+        % Generate EMG signals
+        [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
+        
+        % Select 64 out of 256 channels
+        data=data(65:128,:);
+        sig_noise=sig_noise(65:128,:);
+        data_unfilt=data_unfilt(65:128,:);
+        
+        % Set extension factor
+        R=16;
+        
+        % Extend
+        eSIG = extension(data,R);
+        
+        % Whiten data
+        [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+        
+        % Get the MUAP of interest
+        mu_idx = 1;
+        my_muap = muap{mu_idx}(65:128,:);
+    
+        % Reconstruct the source
+        [sources(i), ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+    
+        % Match predicted and ground truth spikes
+        [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{1});
+    
+    end
+    
+    t_vec = linspace(0,length(sources)/fs, length(sources));
+    save('my_data/spike_correlation_example_sources.mat', 'sources', 'matched_idx', 'unmatched_idx',...
+        't_vec','mu_idx','I','noise_dB');
+    return
 end
 
-%% Compute exemplary spike trains
 
-% Conrol the random seed
-rng(0)
-
-% Mean cortical input
-I=7e-9; 
-
-% Define the common noise variability
-CCoV_vec = [0, 50];
-
-% Signal-to-noise ratio
-noise_dB = 15;
-
-% Initalize output variables
-sources = zeros(length(CCoV_vec), 122880);
-matched_idx = cell(length(CCoV_vec),1);
-unmatched_idx = cell(length(CCoV_vec),1);
-
-
-for i=1:length(CCoV_vec)
-    CCoV = CCoV_vec(i);
-    ICoV = 15;
-    [spike_times,time_param,~,CI]=generate_spike_trains(I,CCoV,ICoV);
-    spike_times = spike_times(1:58);
-    
-    % Generate EMG signals
-    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB);
-    
-    % Select 64 out of 256 channels
-    data=data(65:128,:);
-    sig_noise=sig_noise(65:128,:);
-    data_unfilt=data_unfilt(65:128,:);
-    
-    % Set extension factor
-    R=16;
-    
-    % Extend
-    eSIG = extension(data,R);
-    
-    % Whiten data
-    [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
-    
-    % Get the MUAP of interest
-    mu_idx = 1;
-    my_muap = muap{mu_idx}(65:128,:);
-
-    % Reconstruct the source
-    [sources(i), ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
-
-    % Match predicted and ground truth spikes
-    [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{1});
-
-end
-
-t_vec = linspace(0,length(sources)/fs, length(sources));
 %% Generate Figure
 
 % Load the data and select MUs to be visualised
 if useReplicationData == 1
     load('./replication_data/common_spikes_15dB.mat')
+    load('./replication_data/spike_correlation_example_sources.mat');
 else
     % Check if data is consitent with the reference data
     data1 = load('./replication_data/common_spikes_15dB.mat');
@@ -189,10 +194,10 @@ else
     out = compareResults(d1,d2);
     clear data1 data2 d1 d2
     load('./my_data/common_spikes_15dB.mat')
+    load('./my_data/spike_correlation_example_sources.mat');
 end
 
-save('my_data/spike_correlation_example_sources.mat', 'sources', 'matched_idx', 'unmatched_idx',...
-'t_vec','mu_idx','I','noise_dB');
+
 %%
 sep1 = squeeze(SEP(1,:,:));
 fpr1 = squeeze(FPR(1,:,:));

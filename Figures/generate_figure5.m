@@ -99,65 +99,67 @@ if useExistingData==0
         save(['my_data/similar_muaps_',num2str(noise_dB),'dB.mat'], ...
             'spat_transl_vec','scale_factor_vec', 'sep', 'fnr', 'fpr', 'cs', 'es', 'amp', ...
             'noise_dB','fs','I','spike_times','time_param','MU1','MU2')
-        return
+        
     end
+    % Get exampe spike trains
+    rng(0)
+    
+    spat_transl_vec = [2 12];
+    sources = zeros(length(spat_transl_vec), 122880);
+    matched_idx = cell(length(spat_transl_vec),1);
+    unmatched_idx = cell(length(spat_transl_vec),1);
+    
+    % Fixing to MU #1 and #50
+    MU1=49;
+    MU2=50;
+    
+    I=7e-9; % 7 nA input current
+    [spike_times,time_param,membr_param]=generate_spike_trains(I);
+    
+    noise_dB = 20;
+    rand_seed = false;
+    
+    for i=1:length(spat_transl_vec)
+        spat_transl=spat_transl_vec(i);
+        scale_factor=1.0;
+        similar_muaps_vec=[1 MU1 MU2 spat_transl scale_factor];
+        
+        % Generate EMG signals
+        [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec);
+        
+        % Select 64 out of 256 channels
+        data=data(65:128,:);
+        sig_noise=sig_noise(65:128,:);
+        data_unfilt=data_unfilt(65:128,:);
+        
+        % Set extension factor
+        R=16;
+        
+        % Extend
+        eSIG = extension(data,R);
+        
+        % Whiten data
+        [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
+        
+    
+        % Compute MU filter
+        my_muap = muap{MU2}(65:128,:);
+    
+        % Reconstruct source
+        [sources(i,:), w, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+    
+        % Match predicted and true spikes
+        [~,~,matched_idx{i},~, unmatched_idx{i}]=separability_metric(sources(i,:),spike_times{MU2});
+    
+    end
+    t_vec = linspace(0,length(sources)/fs, length(sources));
+    
+    save('my_data/similar_muaps_example_sources.mat', 'sources', 'matched_idx', 'unmatched_idx',...
+        't_vec','MU1','MU2','I','noise_dB');
+    return
 end
 
-%% Exampe spike trains
-rng(0)
 
-spat_transl_vec = [2 12];
-sources = zeros(length(spat_transl_vec), 122880);
-matched_idx = cell(length(spat_transl_vec),1);
-unmatched_idx = cell(length(spat_transl_vec),1);
-
-% Fixing to MU #1 and #50
-MU1=49;
-MU2=50;
-
-I=7e-9; % 7 nA input current
-[spike_times,time_param,membr_param]=generate_spike_trains(I);
-
-noise_dB = 20;
-rand_seed = false;
-
-for i=1:length(spat_transl_vec)
-    spat_transl=spat_transl_vec(i);
-    scale_factor=1.0;
-    similar_muaps_vec=[1 MU1 MU2 spat_transl scale_factor];
-    
-    % Generate EMG signals
-    [data,data_unfilt,sig_noise,muap]=generate_emg_signals(spike_times,time_param,noise_dB,rand_seed,similar_muaps_vec);
-    
-    % Select 64 out of 256 channels
-    data=data(65:128,:);
-    sig_noise=sig_noise(65:128,:);
-    data_unfilt=data_unfilt(65:128,:);
-    
-    % Set extension factor
-    R=16;
-    
-    % Extend
-    eSIG = extension(data,R);
-    
-    % Whiten data
-    [wSIG, whitening_matrix] = whitening(eSIG,'ZCA');
-    
-
-    % Compute MU filter
-    my_muap = muap{MU2}(65:128,:);
-
-    % Reconstruct source
-    [sources(i,:), w, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
-
-    % Match predicted and true spikes
-    [~,~,matched_idx{i},~, unmatched_idx{i}]=separability_metric(sources(i,:),spike_times{MU2});
-
-end
-t_vec = linspace(0,length(sources)/fs, length(sources));
-
-save('my_data/similar_muaps_example_sources.mat', 'sources', 'matched_idx', 'unmatched_idx',...
-    't_vec','MU1','MU2','I','noise_dB');
 
 %%
 
