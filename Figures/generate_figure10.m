@@ -90,7 +90,7 @@ if useExistingData == 0
         for mu_idx=1:length(spike_times)
             mu_responses(mu_idx,:,:) = muap{mu_idx}(65:128,:);
         end
-        [~, energy_similarity] = compute_cosine_similarity2(mu_responses);
+        [~, energy_similarity] = compute_pairwise_mu_distance(mu_responses);
     
         % Initalize output
         decomp_out{idx} = zeros(length(spike_times),15);
