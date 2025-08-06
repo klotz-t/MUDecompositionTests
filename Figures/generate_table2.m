@@ -10,7 +10,7 @@ addpath '../LIF model/'
 addpath '../Functions/'
 
 % 0: Run simulation, 1: Plot data
-useExistingData=0;
+useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
 useReplicationData=1;
 
@@ -153,12 +153,19 @@ if useExistingData==0
     return
 end
 
+%% Load Data
 
+if useReplicationData == 1
+    % Load reference data
+    load('replication_data/common_spikes_pop.mat')
+else
+    % Load my data
+    load('my_data/common_spikes_pop.mat')
+end
 
 
 %% Generate Table
 
-load my_data/common_spikes_pop.mat
 
 for i=1:21 
     n_mu(i,:,:) = squeeze(sum(all_FPR{i} < 0.1,1)); 

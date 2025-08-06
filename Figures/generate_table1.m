@@ -10,7 +10,7 @@ addpath '../LIF model/'
 addpath '../Functions/'
 
 % 0: Run simulation, 1: Plot data
-useExistingData=0;
+useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
 useReplicationData=1;
 
@@ -52,10 +52,13 @@ all_es = cell(length(ref_MU),1);
 % Helper variable
 MU1 = 1;
 
-% Start a parallel computing environment
-parpool('local',10)
+
 
 if useExistingData==0
+
+    % Start a parallel computing environment
+    parpool('local',10)
+
     for sub_idx=1:length(mean_drive)
 
         % Get the signal-to-noise ratio
@@ -141,9 +144,15 @@ if useExistingData==0
         'all_amp','noise_vec','fs','ref_MU','mean_drive')
     return
 end
+%% Load Data
 
-
-
+if useReplicationData == 1
+    % Load reference data
+    load('replication_data/similar_muaps_pop.mat')
+else
+    % Load my data
+    load('my_data/similar_muaps_pop.mat')
+end
 
 %% Generate Table
 

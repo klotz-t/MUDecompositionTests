@@ -10,7 +10,7 @@ addpath '../LIF model/'
 addpath '../Functions/'
 
 % 0: Run simulation, 1: Plot data
-useExistingData=0;
+useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
 useReplicationData=1;
 
@@ -52,10 +52,12 @@ all_corr = cell(length(ref_MU),1);
 % Define reference MUAP (i.e., the stationary case)
 mid_idx = 10;
 
-% Start a parallel computing environment
-parpool('local',9)
 
 if useExistingData==0
+
+    % Start a parallel computing environment
+    parpool('local',9)
+
     for sub_idx=1:length(mean_drive)
         disp(['Model configuration ', num2str(sub_idx), ' out of ', num2str(length(mean_drive))])
 
@@ -179,8 +181,15 @@ if useExistingData==0
 end
 
 
-%%
-load my_data/changing_muaps_pop.mat
+%% Load Data
+
+if useReplicationData == 1
+    % Load reference data
+    load('replication_data/changing_muaps_pop.mat')
+else
+    % Load my data
+    load('my_data/changing_muaps_pop.mat')
+end
 
 %% Generate Table
 
