@@ -2,15 +2,21 @@
 This repository contains Matlab codes to replicate the data presented in *Klotz and Rohlen (2025) "Revisiting convolutive blind source separation for identifying spiking motor neuron activity: From theory to practice".* 
 
 
-### Installation
-1. You need a working Matlab installation (tested on Matlab2024a)
+### Installation 
+1. You need a working MATLAB installation
 
 2. Clone the repository:
 ```bash
 git clone https://github.com/klotz-t/MUDecompositionTests.git
 ```
 
-### Repository Structure
+### Requirements
+1. Matlab2024a
+2. Signal Processing Toolbox
+3. Statistics and Machine Learning Toolbox
+4. Parallel Computing Toolbox
+
+### Repository structure
 ```
 MUDecompositionTests/
 ├── experimental-simulation/     % Contains the scripts used to extract the experimental MUAPs (+ a copy of the MUAPs we have used)
