@@ -165,7 +165,7 @@ if useExistingData==0
         my_muap = muap{mu_idx}(65:128,:);
     
         % Reconstruct the source
-        [sources(i), ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
+        [sources(i, :), ~, ~] = decompose_from_muap(my_muap, R, whitening_matrix, wSIG);
     
         % Match predicted and ground truth spikes
         [matched_idx{i}, unmatched_idx{i}] = match_spikes(sources(i,:), spike_times{mu_idx});
