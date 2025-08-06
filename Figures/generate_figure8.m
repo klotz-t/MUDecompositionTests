@@ -12,7 +12,7 @@ addpath '../Functions/'
 % 0: Run simulation, 1: Plot data
 useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
-useReplicationData=0;
+useReplicationData=1;
 
 % Use random seed to obtain identical results
 rng(0)
