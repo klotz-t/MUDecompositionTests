@@ -10,7 +10,7 @@ addpath '../LIF model/'
 addpath '../Functions/'
 
 % 0: Run simulation, 1: Plot data
-useExistingData=0;
+useExistingData=1;
 % 1: plot the replication data, 0: Plot your own data
 useReplicationData=1;
 
