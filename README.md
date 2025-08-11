@@ -1,5 +1,5 @@
 ### Description
-This repository contains Matlab codes to replicate the data presented in *Klotz and Rohlen (2025) "Revisiting convolutive blind source separation for identifying spiking motor neuron activity: From theory to practice".* 
+This repository contains Matlab codes to replicate the data presented in *Klotz and Rohlen (2025) "Revisiting convolutive blind source separation for identifying spiking motor neuron activity: From theory to practice", Journal of Neural Engineering, http://dx.doi.org/10.1088/1741-2552/adf886* 
 
 
 ### Installation 
