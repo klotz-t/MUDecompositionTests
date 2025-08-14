@@ -242,7 +242,7 @@ end
 % xlabel('Columns');
 % ylabel('Rows');
 yticklabels(names(11:-1:1)), xticklabels(names(1:5))
-title('Decomposition performance summary','Influecne of multiple factors');
+title('Decomposition performance summary','Influence of multiple factors');
 % Adjust the axis to display correctly
 set(gca, 'XTick', 1:numCols, 'YTick', 1:numRows);
 set(gca,'TickDir','out');

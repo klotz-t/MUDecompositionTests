@@ -234,6 +234,7 @@ xlabel('Reg-SqEuc distance (%)');
 ylabel('Rel. MUAP amplitude (%)');
 title({'Separability metric (%)';'20 dB'},'FontWeight','normal');
 yticks(0.1:0.1:0.4)
+yticklabels({'10', '20', '30', '40'})
 xticks(2:3:12)
 set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
 clim([0 100]);
@@ -291,6 +292,7 @@ xlabel('Reg-SqEuc distance (%)');
 ylabel('Rel. MUAP amplitude (%)');
 title('10 dB','FontWeight','normal');
 yticks(0.1:0.1:0.4)
+yticklabels({'10', '20', '30', '40'})
 xticks(2:3:12)
 set(gca,'XTickLabels',split(num2str(round(100*data20db.es(2:3:end,1)',1))))
 clim([0 100]);
